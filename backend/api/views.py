@@ -9,3 +9,6 @@ from rest_framework.response import Response
 def ping(request):
     return Response({"message": "pong"})
 
+@api_view(["GET"])
+def root(request):
+    return Response({"status": "ok", "endpoints": ["/admin/", "/api/ping/"]})
