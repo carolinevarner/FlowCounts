@@ -13,5 +13,5 @@ FlowCounts is a modern, intuitive accounting platform designed to demystify busi
 This project is collaboratively built by:
 
 *   [Caroline Varner](https://github.com/carolinevarner)
-*   [Brenden Horne](https://github.com/yourusername)
+*   [Brenden Horne](https://github.com/BrendenHorne)
 *   [Ali Dabdoub](https://github.com/alid03)
