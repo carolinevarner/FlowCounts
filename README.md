@@ -15,3 +15,11 @@ This project is collaboratively built by:
 *   [Caroline Varner](https://github.com/carolinevarner)
 *   [Brenden Horne](https://github.com/BrendenHorne)
 *   [Ali Dabdoub](https://github.com/alid03)
+
+cd backend 
+.\venv\Scripts\Activate
+.\venv\Scripts\python.exe manage.py migrate
+.\venv\Scripts\python.exe manage.py runserver 8000
+
+cd frontnd 
+npm run dev

@@ -37,16 +37,17 @@
 }
 
 .auth-card {
-  width: min(560px, 92vw);
+  width: min(530px, 82vw);
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 50px 80px 50px;
+  padding: 30px 60px 30px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); 
+  margin-bottom: 150px;
 }
 
 .auth-title {
-  font-size: 2rem;
+  font-size: 1.7rem;
   text-align: center;
   /* font-weight: 800; */
   margin: 0 0 16px;
@@ -125,8 +126,8 @@
 
 /* Add a simple placeholder “logo” above titles */
 .auth-logo {
-  width: 64px;
-  height: 64px;
+  width: 90px;
+  height: 90px;
   margin: 0 auto 12px;
   border-radius: 50%;
   background: linear-gradient(145deg, #e8e8e8, #f7f7f7);

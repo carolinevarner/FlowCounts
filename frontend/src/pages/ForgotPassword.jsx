@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-//import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
 // import api from "../api"; // wire later
 
@@ -24,7 +24,7 @@ function pickThreeRandom(arr) {
 }
 
 export default function ForgotPassword() {
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const questions = useMemo(() => pickThreeRandom(ALL_QUESTIONS), []);
   const [form, setForm] = useState({
@@ -74,7 +74,7 @@ export default function ForgotPassword() {
 
       setOk("If the information matches our records, you’ll receive instructions shortly.");
       // Optionally navigate back to login after a delay
-      // setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("/login"), 1500);
     } catch {
       setError("We could not process your request. Please try again.");
     }
