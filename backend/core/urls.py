@@ -14,20 +14,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# from django.contrib import admin
-# from django.urls import path
-
-# urlpatterns = [
-#     path('admin/', admin.site.urls),
-# ]
-
 from django.contrib import admin
-from django.urls import path
-from api.views import ping, root
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from accounts.views import UserAdminViewSet, RegistrationRequestViewSet, FlowTokenView, me
+from api.views import ping  # your existing test endpoint
+from django.conf import settings
+from django.conf.urls.static import static
+
+router = DefaultRouter()
+router.register("admin/users", UserAdminViewSet, basename="admin-users")
+router.register("auth/registration-requests", RegistrationRequestViewSet, basename="registration-requests")
 
 urlpatterns = [
-    path("", root),
     path("admin/", admin.site.urls),
     path("api/ping/", ping),
-]
-
+    path("api/auth/token/", FlowTokenView.as_view()),   # JWT login (enhanced)
+    path("api/auth/me/", me),
+    path("api/", include(router.urls)),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

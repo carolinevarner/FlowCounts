@@ -146,15 +146,15 @@
 /* Two-or-three button rows */
 .auth-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* two buttons side-by-side */
+  grid-template-columns: 1fr 1fr; 
   gap: 10px;
   margin-top: 6px;
 }
 .auth-actions-3 {
-  grid-template-columns: 1fr 1fr 1fr; /* for Forgot Password page buttons */
+  /* grid-template-columns: 1fr 1fr 1fr;  */
 }
 
-/* Secondary button (cancel/back) */
+
 .auth-button.secondary, .auth-linkbtn.secondary {
   background: #1C302F;
   color: #FFFFFF;

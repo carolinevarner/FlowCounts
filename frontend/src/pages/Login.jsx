@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
-// import api from "../api"; // uncomment when you wire real login
+import api from "../api"; // uncomment when you wire real login
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -14,22 +14,43 @@ export default function Login() {
   }
 
   async function onSubmit(e) {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      // When backend is ready (JWT), do:
-      // const { data } = await api.post("/auth/token/", { username: form.email, password: form.password });
-      // localStorage.setItem("access", data.access);
-      // localStorage.setItem("refresh", data.refresh);
+  try {
+    const { data } = await api.post("/auth/token/", {
+      username: form.email, // or let user type handle/username/email; label your input accordingly
+      password: form.password
+    });
 
-      // TEMP success:
-      localStorage.setItem("access", "demo-token");
-      navigate("/app");
-    } catch {
-      setError("Invalid credentials");
+    // success: store token and user
+    localStorage.setItem("access", data.access);
+    localStorage.setItem("refresh", data.refresh);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    navigate("/app");
+  } catch (err) {
+    // backend returns attempts_left and locked when it can
+    const detail = err?.response?.data?.detail || "Invalid credentials.";
+    const attemptsLeft = err?.response?.data?.attempts_left;
+    const locked = err?.response?.data?.locked;
+
+    if (locked) {
+      setError("Account suspended due to too many failed attempts.");
+      return;
+    }
+
+    if (typeof attemptsLeft === "number") {
+      if (attemptsLeft === 1) {
+        setError(`Invalid credentials. Last login attempt allowed.`);
+      } else {
+        const used = (3 - attemptsLeft);
+        setError(`Invalid credentials. Attempt ${used} of 3.`);
+      }
+    } else {
+      setError(detail);
     }
   }
+}
 
   return (
     <AuthLayout title="FlowCounts" subtitle="Welcome to FlowCounts!">
