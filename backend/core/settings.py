@@ -12,28 +12,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-4e5u8tf)tap$o%!11w2q6jj&=(e$&t9z1$qqdk-**45o-ns^pj'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
-# Application definition
-
-# core/settings.py
-
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -41,17 +28,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third-party
     "corsheaders",
     "rest_framework",
 
-    # Your apps
     "accounts",
-    "api",   # keep only if you actually have an `api` app
+    "api",   
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",   # keep this near the top
+    "corsheaders.middleware.CorsMiddleware",   
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -62,9 +47,11 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React dev server
+    "http://localhost:5173",  
     "http://127.0.0.1:5173",
 ]
+
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 
 ROOT_URLCONF = 'core.urls'
 
@@ -154,6 +141,10 @@ REST_FRAMEWORK = {
     ),
 }
 
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
 ADMIN_NOTIFICATION_EMAILS = ["varner4262@gmail.com"]
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -165,7 +156,6 @@ EMAIL_HOST_PASSWORD = "fokfddazweldxgpx"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-# Password policy + expiry
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
@@ -176,7 +166,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 PASSWORD_MAX_AGE_DAYS = 90
 PASSWORD_EXPIRY_WARNING_DAYS = 3
-MAX_FAILED_LOGINS = 3   # suspend after this many failed attempts
+MAX_FAILED_LOGINS = 3   
 
 MEDIA_URL = "/media/"
 from pathlib import Path

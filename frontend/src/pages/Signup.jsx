@@ -47,10 +47,25 @@ export default function Signup() {
         email: form.email,
       });
 
-      // TEMP: pretend success → back to login
       navigate("/login");
-    } catch {
-      setError("Could not sign up");
+    } catch (err) {
+      console.log("signup error:", err.response?.data || err.message);
+
+      let msg = "Could not sign up";
+      const data = err.response?.data;
+
+      if (data) {
+        if (typeof data === "string") msg = data;
+        else if (data.detail) msg = data.detail;
+        else if (typeof data === "object") {
+          msg = Object.entries(data)
+            .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : String(v)}`)
+            .join(" | ");
+        }
+      } else if (err.message) {
+        msg = err.message;
+      }
+      setError(msg);
     }
   }
 
@@ -120,7 +135,6 @@ export default function Signup() {
           required
         />
 
-        {/* Register + Cancel */}
         <div className="auth-actions">
           <button className="auth-button" type="submit">Request</button>
           <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>

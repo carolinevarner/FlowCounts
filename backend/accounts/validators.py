@@ -25,7 +25,7 @@ class PreventPasswordReuseValidator:
     def validate(self, password, user=None):
         if not user or not getattr(user, "id", None):
             return
-        history = user.password_history.all()[:5]  # block last 5 passwords
+        history = user.password_history.all()[:5]  
         for ph in history:
             if check_password(password, ph.password):
                 raise ValidationError(_("You cannot reuse a recent password."))

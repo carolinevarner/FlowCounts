@@ -23,7 +23,6 @@ def set_username_if_blank(sender, instance, **kwargs):
 
 @receiver(post_save, sender=User)
 def on_user_saved(sender, instance: User, created, **kwargs):
-    # set initial expiry & store initial password hash
     if created:
         PasswordHistory.objects.create(user=instance, password=instance.password)
         max_age = getattr(settings, "PASSWORD_MAX_AGE_DAYS", 90)
@@ -40,23 +39,6 @@ def on_user_saved(sender, instance: User, created, **kwargs):
                 last_password_change=timezone.now(),
                 failed_attempts=0
             )
-
-# @receiver(user_login_failed)
-# def on_login_failed(sender, credentials, **kwargs):
-#     username = credentials.get("username")
-#     # Our Token view lets username be DB username OR display_handle OR email
-#     try:
-#         user = (User.objects.filter(username=username).first()
-#                 or User.objects.filter(display_handle=username).first()
-#                 or User.objects.filter(email=username).first())
-#     except Exception:
-#         user = None
-#     if not user:
-#         return
-#     user.failed_attempts = (user.failed_attempts or 0) + 1
-#     if user.failed_attempts >= getattr(settings, "MAX_FAILED_LOGINS", 3):
-#         user.is_active = False  # suspended
-#     user.save(update_fields=["failed_attempts", "is_active"])
 
 @receiver(user_logged_in)
 def on_login_success(sender, user: User, request, **kwargs):

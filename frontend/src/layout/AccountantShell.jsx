@@ -1,4 +1,3 @@
-// AccountantShell.jsx
 import { Outlet, NavLink } from "react-router-dom";
 import "../styles/layout.css";
 
@@ -12,6 +11,13 @@ const LINKS = [
   { to: "/accountant/balance", label: "Balance Sheet" },
   { to: "/accountant/retained", label: "Statement of Retained Earnings" },
 ];
+
+function doLogout() {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+  localStorage.removeItem("user");
+  window.location.href = "/login";
+}
 
 export default function AccountantShell() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -29,6 +35,10 @@ export default function AccountantShell() {
             </NavLink>
           ))}
         </nav>
+        <div className="side-footer">
+            <button className="side-logout" onClick={doLogout}>Log out</button>
+        </div>
+
       </aside>
       <main className="main">
         <header className="main-top">
@@ -45,3 +55,4 @@ export default function AccountantShell() {
     </div>
   );
 }
+

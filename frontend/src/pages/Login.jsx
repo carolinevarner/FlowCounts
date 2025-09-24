@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
-import api from "../api"; // uncomment when you wire real login
+import api from "../api"; 
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -19,23 +19,21 @@ export default function Login() {
 
   try {
     const { data } = await api.post("/auth/token/", {
-      username: form.email, // or let user type handle/username/email; label your input accordingly
+      username: form.email, 
       password: form.password
     });
 
-    // success: store token and user
     localStorage.setItem("access", data.access);
     localStorage.setItem("refresh", data.refresh);
     localStorage.setItem("user", JSON.stringify(data.user));
 
-    // route by role
     const role = data.user?.role;
     if (role === "ADMIN") navigate("/admin/dashboard");
     else if (role === "MANAGER") navigate("/manager/dashboard");
     else if (role === "ACCOUNTANT") navigate("/accountant/dashboard");
     else navigate("/login");
   } catch (err) {
-    // backend returns attempts_left and locked when it can
+
     const detail = err?.response?.data?.detail || "Invalid credentials.";
     const attemptsLeft = err?.response?.data?.attempts_left;
     const locked = err?.response?.data?.locked;
@@ -81,13 +79,11 @@ export default function Login() {
           required
         />
 
-        {/* Primary actions: Login + Cancel */}
         <div className="auth-actions">
           <button className="auth-button" type="submit">Login</button>
           <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
         </div>
 
-        {/* Forgot password + Create account */}
         <div className="auth-footer">
           <button
             type="button"

@@ -1,37 +1,59 @@
-from django.conf import settings
 from django.utils import timezone
-from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth import authenticate
-import logging
-from django.core.mail import send_mail
+from django.db import transaction
+from django.db.models import Q
 from django.conf import settings
-from .serializers import UserSerializer, CreateUserSerializer, RegistrationRequestSerializer
-from .permissions import IsAdmin
+from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
+
+from rest_framework import viewsets, mixins, status
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from django.core.mail import send_mail
+import logging, secrets, string
+
 from .models import RegistrationRequest
+from .serializers import (
+    UserSerializer,
+    UserLiteSerializer,
+    RegistrationRequestSerializer,
+)
+from .permissions import IsAdmin 
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-# --- JWT with attempts remaining + lockout messaging ---
+def build_username(first_name: str, last_name: str, when=None) -> str:
+    when = when or timezone.now()
+    mmYY = when.strftime("%m%y")
+    base = f"{(first_name or '').strip()[:1]}{(last_name or '').strip()}".lower()
+    base = "".join(ch for ch in base if ch.isalnum())
+    candidate = f"{base}{mmYY}" if base else f"user{mmYY}"
+    if not User.objects.filter(username__iexact=candidate).exists():
+        return candidate
+    i = 2
+    while True:
+        test = f"{candidate}{i}"
+        if not User.objects.filter(username__iexact=test).exists():
+            return test
+        i += 1
+
 class FlowTokenSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         return super().get_token(user)
 
     def validate(self, attrs):
-        # login id may be display_handle / username / email
         username = attrs.get("username")
         pwd = attrs.get("password")
-        # Let backend handle authentication via AUTHENTICATION_BACKENDS
         data = super().validate(attrs)
 
-        # At this point login succeeded; include who + picture + attempts info
         data.update({
             "user": {
                 "id": self.user.id,
@@ -45,64 +67,47 @@ class FlowTokenSerializer(TokenObtainPairSerializer):
         return data
 
 class FlowTokenView(TokenObtainPairView):
-    serializer_class = FlowTokenSerializer
+    """Accept username OR email OR display_handle + password; return JWT + user."""
+    permission_classes = [AllowAny]
 
-    def post(self, request, *args, **kwargs):
-        username = request.data.get("username", "")
-        password = request.data.get("password", "")
+    def post(self, request):
+        ident = (request.data.get("username") or "").strip()
+        password = (request.data.get("password") or "").strip()
 
-        # Find the user record for pre-checks (suspension / expiry / counter)
-        user = (User.objects.filter(username=username).first()
-                or User.objects.filter(display_handle=username).first()
-                or User.objects.filter(email=username).first())
+        if not ident or not password:
+            return Response({"detail": "Missing username or password"}, status=400)
 
-        # If we found a user, apply suspension/expiry pre-checks first
-        if user:
-            if not user.is_active or user.is_currently_suspended():
-                return Response({"detail": "Account suspended. Please contact admin."},
-                                status=status.HTTP_403_FORBIDDEN)
-            if user.password_expires_at and user.password_expires_at < timezone.now():
-                return Response({"detail": "Password expired. Please reset your password."},
-                                status=status.HTTP_403_FORBIDDEN)
+        user_obj = User.objects.filter(
+            Q(username__iexact=ident) |
+            Q(email__iexact=ident) |
+            Q(display_handle__iexact=ident)
+        ).first()
 
-        # Authenticate using our MultiField backend (email/display_handle/db username)
-        authed = authenticate(request, username=username, password=password)
+        real_username = user_obj.username if user_obj else ident
+        user = authenticate(request, username=real_username, password=password)
+        if not user:
+            logger.warning("Login failed for ident=%s (mapped=%s)", ident, real_username)
+            return Response({"detail": "Invalid credentials"}, status=400)
+        if not user.is_active:
+            return Response({"detail": "User is inactive/suspended"}, status=403)
 
-        if not authed:
-            # Increment exactly ONCE here
-            if user:
-                max_tries = getattr(settings, "MAX_FAILED_LOGINS", 3)
-                user.failed_attempts = (user.failed_attempts or 0) + 1
-                # Lock if exceeded
-                if user.failed_attempts >= max_tries:
-                    user.is_active = False
-                user.save(update_fields=["failed_attempts", "is_active"])
+        refresh = RefreshToken.for_user(user)
+        access = str(refresh.access_token)
+        data_user = {
+            "id": user.id,
+            "username": user.username,
+            "role": user.role,
+            "first_name": user.first_name or "",
+            "last_name": user.last_name or "",
+            "display_handle": getattr(user, "display_handle", "") or "",
+        }
+        return Response({"access": access, "refresh": str(refresh), "user": data_user}, status=200)
 
-                attempts_left = max(0, max_tries - (user.failed_attempts or 0))
-                locked = not user.is_active
-            else:
-                attempts_left = None
-                locked = False
-
-            return Response(
-                {"detail": "Invalid credentials.", "attempts_left": attempts_left, "locked": locked},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        # Success: reset attempts
-        if authed.failed_attempts:
-            authed.failed_attempts = 0
-            authed.save(update_fields=["failed_attempts"])
-
-        # Issue JWT via parent (this sets tokens and user payload through serializer)
-        request._full_data = request.data  # ensure serializer sees credentials
-        return super().post(request, *args, **kwargs)
-
-
-# --- Admin user management ---
-class UserAdminViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by("id")
+class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdmin]
+    queryset = User.objects.all().order_by("date_joined")
+    serializer_class = UserLiteSerializer
 
     def get_serializer_class(self):
         return CreateUserSerializer if self.action == "create" else UserSerializer
@@ -141,17 +146,16 @@ class UserAdminViewSet(viewsets.ModelViewSet):
         return Response(UserSerializer(qs, many=True).data)
 
 class RegistrationRequestViewSet(viewsets.ModelViewSet):
-    queryset = RegistrationRequest.objects.all().order_by("-created_at")
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = RegistrationRequestSerializer
+    queryset = RegistrationRequest.objects.all().order_by("-created_at")
 
     def get_permissions(self):
         if self.action in ["create"]:
             return [AllowAny()]
-        return super().get_permissions()
+        return [IsAuthenticated(), IsAdmin()]
 
     def list(self, request, *args, **kwargs):
-        # Admin sees all; non-admin sees their own requests (by email)
         qs = self.get_queryset()
         if getattr(request.user, "role", "") != "ADMIN":
             qs = qs.filter(email=request.user.email)
@@ -160,8 +164,9 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated, IsAdmin])
     def pending(self, request):
-        qs = RegistrationRequest.objects.filter(approved__isnull=True).order_by("created_at")
-        return Response(self.get_serializer(qs, many=True).data)
+        qs = self.get_queryset().filter(approved__isnull=True)
+        ser = self.get_serializer(qs, many=True)
+        return Response(ser.data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -171,62 +176,86 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
 
         admins = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
         if admins:
-            subject = "FlowCounts: New Registration Request"
-            msg = (
-                "A new registration request was submitted.\n\n"
-                f"Name: {data.get('first_name','')} {data.get('last_name','')}\n"
-                f"Email: {data.get('email','')}\n"
-                f"DOB: {data.get('dob','')}\n"
-                f"Address: {data.get('address','')}\n\n"
-                "Please review it on the Admin → Users page."
-            )
-            sent = send_mail(subject, msg, settings.DEFAULT_FROM_EMAIL, admins, fail_silently=False)
-            logger.info("Sent admin registration email to %s (sent=%s)", admins, sent)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=self.get_success_headers(serializer.data))
+            try:
+                sent = send_mail(
+                    "FlowCounts: New Registration Request",
+                    (
+                        "A new registration request was submitted.\n\n"
+                        f"Name: {data.get('first_name','')} {data.get('last_name','')}\n"
+                        f"Email: {data.get('email','')}\n"
+                        f"DOB: {data.get('dob','')}\n"
+                        f"Address: {data.get('address','')}\n\n"
+                        "Please review it on the Admin → Users page."
+                    ),
+                    settings.DEFAULT_FROM_EMAIL,
+                    admins,
+                    fail_silently=False,
+                )
+                logger.info("Sent admin registration email to %s (sent=%s)", admins, sent)
+            except Exception as e:
+                logger.error("Admin notify email failed: %s", e, exc_info=True)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED,
+                        headers=self.get_success_headers(serializer.data))
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
     def approve(self, request, pk=None):
         req = self.get_object()
-        req.approved = True
-        req.reviewed_by = request.user
-        req.save(update_fields=["approved", "reviewed_by"])
 
-        temp = User.objects.make_random_password()
-        user = User.objects.create_user(
-            first_name=req.first_name, last_name=req.last_name,
-            email=req.email, display_handle="", username="", role="ACCOUNTANT",
-            address=req.address, dob=req.dob, is_active=True
-        )
-        user.set_password(temp); user.save()
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*()"
+        temp = ''.join(secrets.choice(alphabet) for _ in range(12))
 
-        body = (
-            f"Hello {req.first_name},\n\n"
-            "Your access request to FlowCounts has been approved.\n\n"
-            f"Username: {user.username}\n"
-            f"Temporary password: {temp}\n"
-            "Login: http://localhost:5173/login\n"
-        )
-        sent = send_mail("FlowCounts access approved", body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
-        logger.info("Sent approval email to %s (sent=%s)", req.email, sent)
-        return Response({"detail": "Approved and user created", "user_id": user.id})
+        with transaction.atomic():
+            req.approved = True
+            req.reviewed_by = request.user
+            req.save(update_fields=["approved", "reviewed_by"])
+
+            username = build_username(req.first_name, req.last_name, when=timezone.now())
+            user = User.objects.create_user(
+                username=username,
+                first_name=req.first_name,
+                last_name=req.last_name,
+                email=req.email,
+                role="ACCOUNTANT",  
+                address=req.address,
+                dob=req.dob,
+                is_active=True,
+            )
+            user.set_password(temp)
+            user.save()
+
+            subject = "FlowCounts Access Approved"
+            body = (
+                f"Hello {req.first_name},\n\n"
+                "Your access request to FlowCounts has been approved.\n\n"
+                f"Username: {user.username}\n"
+                f"Temporary password: {temp}\n"
+                "Login: http://localhost:5173/login\n\n"
+                "Please change your password after logging in."
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
+
+        return Response({"detail": "Approved and user created", "user_id": user.id, "email_sent": True})
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
     def reject(self, request, pk=None):
         req = self.get_object()
-        req.approved = False
-        req.reviewed_by = request.user
         note = request.data.get("note", "")
-        req.review_note = note
-        req.save(update_fields=["approved", "reviewed_by", "review_note"])
+        with transaction.atomic():
+            req.approved = False
+            req.reviewed_by = request.user
+            req.review_note = note
+            req.save(update_fields=["approved", "reviewed_by", "review_note"])
 
-        body = (
-            f"Hello {req.first_name},\n\n"
-            "Your request for access to FlowCounts was not approved."
-            + (f"\nReason: {note}" if note else "")
-        )
-        sent = send_mail("FlowCounts access decision", body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
-        logger.info("Sent rejection email to %s (sent=%s)", req.email, sent)
-        return Response({"detail": "Request rejected"})
+            subject = "FlowCounts access decision"
+            body = (
+                f"Hello {req.first_name},\n\n"
+                "Your request for access to FlowCounts was not approved."
+                + (f"\nReason: {note}" if note else "")
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
+
+        return Response({"detail": "Request rejected", "email_sent": True})  
 
 @api_view(["GET"])
 def me(request):

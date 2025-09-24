@@ -11,8 +11,6 @@
   --bg: #fff;
   --btn: #111;
   --btnText: #fff;
-  /* font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji; */
-  /* font-family: 'Ovo'; */
   font-family: "Playfair Display", sans-serif;
 }
 
@@ -49,9 +47,7 @@
 .auth-title {
   font-size: 1.7rem;
   text-align: center;
-  /* font-weight: 800; */
   margin: 0 0 16px;
-  /* font-family: 'Ovo'; */
   font-family: "Playfair Display", sans-serif;
 }
 
@@ -62,7 +58,6 @@
 }
 
 .auth-input, .auth-button, .auth-linkbtn {
-  /* font-family: 'Ovo'; */
   font-family: sans-serif;
   height: 36px;
   border-radius: 6px;
@@ -70,6 +65,7 @@
 
 .auth-input {
   width: 100%;
+  background: #fafafa;
   border: 1px solid var(--border);
   padding: 0 10px;
   outline: none;
@@ -90,7 +86,7 @@
 }
 
 .auth-button:hover {
-  background: #000000; /* Slightly darker on hover */
+  background: #000000; 
 }
 
 .auth-row {
@@ -113,7 +109,6 @@
 .auth-linkbtn {
   border: 0;
   padding: 0 12px;
-  /* background: var(--btn); */
   color: var(--btnText);
   cursor: pointer;
   background:#1C302F;
@@ -121,10 +116,9 @@
 }
 
 .auth-linkbtn:hover {
-  background: #000000;
+  background: #1C5C59;
 }
 
-/* Add a simple placeholder “logo” above titles */
 .auth-logo {
   width: 90px;
   height: 90px;
@@ -135,7 +129,7 @@
   display: grid;
   place-items: center;
 }
-/* If you switch to a real <img>, keep it tidy */
+
 .auth-logo img {
   max-width: 64px;
   max-height: 64px;
@@ -143,17 +137,12 @@
   border-radius: 50%;
 }
 
-/* Two-or-three button rows */
 .auth-actions {
   display: grid;
   grid-template-columns: 1fr 1fr; 
   gap: 10px;
   margin-top: 6px;
 }
-.auth-actions-3 {
-  /* grid-template-columns: 1fr 1fr 1fr;  */
-}
-
 
 .auth-button.secondary, .auth-linkbtn.secondary {
   background: #1C302F;
@@ -161,8 +150,7 @@
   border: 2px solid var(--border);
 }
 
-/* We already set your primary color earlier; keeping hover consistent */
 .auth-button:hover,
 .auth-linkbtn:hover {
-  background: #000000;
+  background: #1C5C59;
 }

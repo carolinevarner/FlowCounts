@@ -1,4 +1,3 @@
-// AdminShell.jsx
 import { Outlet, NavLink } from "react-router-dom";
 import "../styles/layout.css";
 
@@ -9,6 +8,13 @@ const LINKS = [
   { to: "/admin/users", label: "Users" },
   { to: "/admin/events", label: "Event Log" },
 ];
+
+function doLogout() {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+  localStorage.removeItem("user");
+  window.location.href = "/login";
+}
 
 export default function AdminShell() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -27,6 +33,10 @@ export default function AdminShell() {
             </NavLink>
           ))}
         </nav>
+        <div className="side-footer">
+            <button className="side-logout" onClick={doLogout}>Log out</button>
+        </div>
+
       </aside>
 
       <main className="main">

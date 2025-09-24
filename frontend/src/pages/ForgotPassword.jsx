@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
-// import api from "../api"; // wire later
+import api from "../api"; 
 
 const ALL_QUESTIONS = [
   "What is your favorite color?",
@@ -13,7 +13,6 @@ const ALL_QUESTIONS = [
   "What was the make of your first car?",
 ];
 
-// pick 3 unique questions each visit
 function pickThreeRandom(arr) {
   const copy = [...arr];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -64,16 +63,14 @@ export default function ForgotPassword() {
     }
 
     try {
-      // Later: POST to your API with { email, userId, answers[], newPassword }
-      // await api.post("/auth/forgot-password/", {
-      //   email: form.email,
-      //   username: form.userId,
-      //   answers: [form.q0, form.q1, form.q2],
-      //   new_password: form.newPassword,
-      // });
+      await api.post("/auth/forgot-password/", {
+         email: form.email,
+         username: form.userId,
+         answers: [form.q0, form.q1, form.q2],
+         new_password: form.newPassword,
+      });
 
       setOk("If the information matches our records, you’ll receive instructions shortly.");
-      // Optionally navigate back to login after a delay
       setTimeout(() => navigate("/login"), 1500);
     } catch {
       setError("We could not process your request. Please try again.");
@@ -103,7 +100,6 @@ export default function ForgotPassword() {
           required
         />
 
-        {/* 3 randomly selected security questions */}
         <div className="auth-row">
           <label>{questions[0]}</label>
           <input
@@ -155,7 +151,6 @@ export default function ForgotPassword() {
           required
         />
 
-        {/* Three buttons: Request, Cancel (reset), Back to Login */}
         <div className="auth-actions">
           <button className="auth-button" type="submit">Request Reset</button>
           <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>

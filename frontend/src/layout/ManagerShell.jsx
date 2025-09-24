@@ -1,4 +1,3 @@
-// ManagerShell.jsx
 import { Outlet, NavLink } from "react-router-dom";
 import "../styles/layout.css";
 
@@ -12,6 +11,13 @@ const LINKS = [
   { to: "/manager/balance", label: "Balance Sheet" },
   { to: "/manager/retained", label: "Statement of Retained Earnings" },
 ];
+
+function doLogout() {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+  localStorage.removeItem("user");
+  window.location.href = "/login";
+}
 
 export default function ManagerShell() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -29,6 +35,10 @@ export default function ManagerShell() {
             </NavLink>
           ))}
         </nav>
+        <div className="side-footer">
+            <button className="side-logout" onClick={doLogout}>Log out</button>
+        </div>
+
       </aside>
       <main className="main">
         <header className="main-top">
