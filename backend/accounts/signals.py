@@ -5,9 +5,21 @@ from django.contrib.auth.signals import user_logged_in, user_login_failed
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.contrib.auth.hashers import check_password
 from .models import PasswordHistory
 
 User = get_user_model()
+
+@receiver(pre_save, sender=User)
+def keep_password_history(sender, instance: User, **kwargs):
+    if not instance.pk:
+        return
+    try:
+        old = User.objects.get(pk=instance.pk)
+    except User.DoesNotExist:
+        return
+    if old.password != instance.password and old.password:
+        PasswordHistory.objects.create(user=instance, password=old.password)
 
 def _gen_username(first_name: str, last_name: str, created: timezone.datetime):
     mm = f"{created.month:02d}"

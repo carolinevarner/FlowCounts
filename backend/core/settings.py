@@ -18,6 +18,10 @@ SECRET_KEY = 'django-insecure-4e5u8tf)tap$o%!11w2q6jj&=(e$&t9z1$qqdk-**45o-ns^pj
 
 DEBUG = True
 
+SECURE_SSL_REDIRECT = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
@@ -31,7 +35,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
 
-    "accounts",
+    "accounts.apps.AccountsConfig",
     "api",   
 ]
 
@@ -54,6 +58,13 @@ CORS_ALLOWED_ORIGINS = [
 AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 
 ROOT_URLCONF = 'core.urls'
+
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+]
 
 TEMPLATES = [
     {
@@ -102,6 +113,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_PASSWORD_VALIDATORS += [
+    {"NAME": "accounts.validators.PasswordNotInHistoryValidator", "OPTIONS": {"last_n": 5}},
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

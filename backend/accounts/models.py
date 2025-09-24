@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 class Role(models.TextChoices):
     ADMIN = "ADMIN", "Administrator"
@@ -11,16 +12,13 @@ def avatar_path(instance, filename):
     return f"avatars/{instance.id}/{filename}"
 
 class User(AbstractUser):
-    # Display handle shown in the UI (e.g., adminUser). Real username (for DB) is auto-generated (f+lastname+mmyy)
     display_handle = models.CharField(max_length=50, unique=True, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.ACCOUNTANT)
     picture = models.ImageField(upload_to=avatar_path, blank=True, null=True)
 
-    # suspension & activation window
     suspend_from = models.DateField(blank=True, null=True)
     suspend_to = models.DateField(blank=True, null=True)
 
-    # login control
     failed_attempts = models.PositiveIntegerField(default=0)
     last_password_change = models.DateTimeField(blank=True, null=True)
     password_expires_at = models.DateTimeField(blank=True, null=True)
@@ -35,12 +33,16 @@ class User(AbstractUser):
         return False
 
 class PasswordHistory(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="password_history")
-    password = models.CharField(max_length=256)  # hashed
-    changed_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="password_history",
+    )
+    password = models.CharField(max_length=256)  
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-changed_at"]
+        ordering = ["-created_at"]
 
 class RegistrationRequest(models.Model):
     first_name = models.CharField(max_length=150)
@@ -57,4 +59,4 @@ class RegistrationRequest(models.Model):
 class SecurityQuestion(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="security_questions")
     question = models.CharField(max_length=255)
-    answer_hash = models.CharField(max_length=255)  # hashed answer
+    answer_hash = models.CharField(max_length=255)  

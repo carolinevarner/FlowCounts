@@ -21,13 +21,17 @@ class ContainsLetterNumberSpecialValidator:
     def get_help_text(self):
         return _("Include at least one letter, one number, and one special character.")
 
-class PreventPasswordReuseValidator:
+class PasswordNotInHistoryValidator:
+    def __init__(self, last_n=5):
+        self.last_n = last_n
+
     def validate(self, password, user=None):
-        if not user or not getattr(user, "id", None):
+        if not user or not user.pk:
             return
-        history = user.password_history.all()[:5]  
-        for ph in history:
-            if check_password(password, ph.password):
-                raise ValidationError(_("You cannot reuse a recent password."))
+        recent = user.password_history.order_by("-created_at")[:self.last_n]
+        for h in recent:
+            if check_password(password, h.password):
+                raise ValidationError("You cannot reuse a recent password.", code="password_in_history")
+
     def get_help_text(self):
-        return _("You cannot reuse your recent passwords.")
+        return "Your new password cannot match your recent passwords."
