@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
-// import api from "../api"; // hook up later
+import api from "../api"; 
 
 export default function Signup() {
   const [form, setForm] = useState({
@@ -39,14 +39,13 @@ export default function Signup() {
     }
 
     try {
-      // When backend registration endpoint is ready:
-      // await api.post("/auth/registration-requests/", {
-      //   first_name: form.first,
-      //   last_name: form.last,
-      //   address: form.address,
-      //   dob: form.dob,
-      //   email: form.email,
-      // });
+      await api.post("/auth/registration-requests/", {
+        first_name: form.first,
+        last_name: form.last,
+        address: form.address,
+        dob: form.dob,
+        email: form.email,
+      });
 
       // TEMP: pretend success → back to login
       navigate("/login");
@@ -123,7 +122,7 @@ export default function Signup() {
 
         {/* Register + Cancel */}
         <div className="auth-actions">
-          <button className="auth-button" type="submit">Request Access</button>
+          <button className="auth-button" type="submit">Request</button>
           <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
         </div>
 

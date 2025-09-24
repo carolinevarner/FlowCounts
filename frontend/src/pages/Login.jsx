@@ -27,7 +27,13 @@ export default function Login() {
     localStorage.setItem("access", data.access);
     localStorage.setItem("refresh", data.refresh);
     localStorage.setItem("user", JSON.stringify(data.user));
-    navigate("/app");
+
+    // route by role
+    const role = data.user?.role;
+    if (role === "ADMIN") navigate("/admin/dashboard");
+    else if (role === "MANAGER") navigate("/manager/dashboard");
+    else if (role === "ACCOUNTANT") navigate("/accountant/dashboard");
+    else navigate("/login");
   } catch (err) {
     // backend returns attempts_left and locked when it can
     const detail = err?.response?.data?.detail || "Invalid credentials.";

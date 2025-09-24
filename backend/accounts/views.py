@@ -140,19 +140,30 @@ class UserAdminViewSet(viewsets.ModelViewSet):
         qs = User.objects.filter(password_expires_at__lt=timezone.now())
         return Response(UserSerializer(qs, many=True).data)
 
-# --- Registration requests (create by anyone, review by admin) ---
 class RegistrationRequestViewSet(viewsets.ModelViewSet):
     queryset = RegistrationRequest.objects.all().order_by("-created_at")
     permission_classes = [IsAuthenticated]
     serializer_class = RegistrationRequestSerializer
 
     def get_permissions(self):
-        if self.action == "create":
+        if self.action in ["create"]:
             return [AllowAny()]
         return super().get_permissions()
 
+    def list(self, request, *args, **kwargs):
+        # Admin sees all; non-admin sees their own requests (by email)
+        qs = self.get_queryset()
+        if getattr(request.user, "role", "") != "ADMIN":
+            qs = qs.filter(email=request.user.email)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated, IsAdmin])
+    def pending(self, request):
+        qs = RegistrationRequest.objects.filter(approved__isnull=True).order_by("created_at")
+        return Response(self.get_serializer(qs, many=True).data)
+
     def create(self, request, *args, **kwargs):
-        # Explicit create so we can guarantee email with fail_silently=False
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -167,22 +178,18 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
                 f"Email: {data.get('email','')}\n"
                 f"DOB: {data.get('dob','')}\n"
                 f"Address: {data.get('address','')}\n\n"
-                "Approve or reject this request in your admin panel/API."
+                "Please review it on the Admin → Users page."
             )
             sent = send_mail(subject, msg, settings.DEFAULT_FROM_EMAIL, admins, fail_silently=False)
             logger.info("Sent admin registration email to %s (sent=%s)", admins, sent)
-        else:
-            logger.warning("No ADMIN_NOTIFICATION_EMAILS configured; admin email not sent.")
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=self.get_success_headers(serializer.data))
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
     def approve(self, request, pk=None):
         req = self.get_object()
         req.approved = True
         req.reviewed_by = request.user
-        req.save(update_fields=["approved","reviewed_by"])
+        req.save(update_fields=["approved", "reviewed_by"])
 
         temp = User.objects.make_random_password()
         user = User.objects.create_user(
@@ -192,28 +199,35 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
         )
         user.set_password(temp); user.save()
 
-        subject = "Your FlowCounts access was approved"
         body = (
+            f"Hello {req.first_name},\n\n"
+            "Your access request to FlowCounts has been approved.\n\n"
             f"Username: {user.username}\n"
             f"Temporary password: {temp}\n"
-            f"Login: http://localhost:5173/login\n"
+            "Login: http://localhost:5173/login\n"
         )
-        sent = send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
+        sent = send_mail("FlowCounts access approved", body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
         logger.info("Sent approval email to %s (sent=%s)", req.email, sent)
-
         return Response({"detail": "Approved and user created", "user_id": user.id})
-
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
     def reject(self, request, pk=None):
         req = self.get_object()
         req.approved = False
         req.reviewed_by = request.user
-        req.review_note = request.data.get("note","")
-        req.save(update_fields=["approved","reviewed_by","review_note"])
-        return Response({"detail":"Request rejected"})
+        note = request.data.get("note", "")
+        req.review_note = note
+        req.save(update_fields=["approved", "reviewed_by", "review_note"])
 
-# --- Simple 'me' endpoint for header (picture + handle) ---
+        body = (
+            f"Hello {req.first_name},\n\n"
+            "Your request for access to FlowCounts was not approved."
+            + (f"\nReason: {note}" if note else "")
+        )
+        sent = send_mail("FlowCounts access decision", body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
+        logger.info("Sent rejection email to %s (sent=%s)", req.email, sent)
+        return Response({"detail": "Request rejected"})
+
 @api_view(["GET"])
 def me(request):
     return Response(UserSerializer(request.user).data)

@@ -1,27 +1,134 @@
+// import { Routes, Route, Navigate } from "react-router-dom";
+// import "./styles/auth.css";
+// import "./styles/layout.css";
+
+// // pages
+// import Login from "./pages/Login";
+// import Signup from "./pages/Signup";
+// import Forgot from "./pages/ForgotPassword";
+// import AdminShell from "./layout/AdminShell";
+// import ManagerShell from "./layout/ManagerShell";
+// import AccountantShell from "./layout/AccountantShell";
+// import Protected from "./components/Protected";
+
+// export default function App() {
+//   return (
+//     <Routes>
+//       {/* Always land on login by default */}
+//       <Route path="/" element={<Navigate to="/login" replace />} />
+
+//       {/* Auth */}
+//       <Route path="/login" element={<Login />} />
+//       <Route path="/signup" element={<Signup />} />
+//       <Route path="/forgot" element={<Forgot />} />
+
+//       {/* Admin */}
+//       <Route path="/admin/*" element={
+//         <Protected roles={["ADMIN"]}><AdminShell /></Protected>
+//       }/>
+
+//       {/* Manager */}
+//       <Route path="/manager/*" element={
+//         <Protected roles={["MANAGER"]}><ManagerShell /></Protected>
+//       }/>
+
+//       {/* Accountant */}
+//       <Route path="/accountant/*" element={
+//         <Protected roles={["ACCOUNTANT"]}><AccountantShell /></Protected>
+//       }/>
+
+//       <Route path="*" element={<Navigate to="/login" replace />} />
+//     </Routes>
+//   );
+// }
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import "./styles/auth.css";
+import "./styles/layout.css";
 
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
+import Forgot from "./pages/ForgotPassword.jsx";
+import Protected from "./components/Protected.jsx";
 
-function AppHome() {
-  return (
-    <div style={{ padding: 24 }}>
-      <h2>App Home</h2>
-      <p>You’re logged in (placeholder). Replace with your dashboard.</p>
-    </div>
-  );
+import AdminShell from "./layout/AdminShell.jsx";
+import ManagerShell from "./layout/ManagerShell.jsx";
+import AccountantShell from "./layout/AccountantShell.jsx";
+import AdminUsers from "./pages/AdminUsers.jsx";
+
+// small helper so every page has a title right away
+function Blank({ title }) {
+  return <div style={{ padding: 24 }}><h2>{title}</h2></div>;
 }
 
 export default function App() {
   return (
     <Routes>
+      {/* Always land on login */}
       <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* Auth */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/forgot" element={<ForgotPassword />} />
-      <Route path="/app" element={<AppHome />} />
+      <Route path="/forgot" element={<Forgot />} />
+
+      {/* Admin area */}
+      <Route
+        path="/admin/*"
+        element={
+          <Protected roles={["ADMIN"]}>
+            <AdminShell />
+          </Protected>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<Blank title="Admins HomePage" />} />
+        <Route path="chart" element={<Blank title="Admin • Chart of Accounts" />} />
+        <Route path="accounts" element={<Blank title="Admin • Accounts" />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="events" element={<Blank title="Admin • Event Log" />} />
+      </Route>
+
+      {/* Manager area */}
+      <Route
+        path="/manager/*"
+        element={
+          <Protected roles={["MANAGER"]}>
+            <ManagerShell />
+          </Protected>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<Blank title="Managers HomePage" />} />
+        <Route path="chart" element={<Blank title="Manager • Chart of Accounts" />} />
+        <Route path="accounts" element={<Blank title="Manager • Accounts" />} />
+        <Route path="journal" element={<Blank title="Manager • Journalize" />} />
+        <Route path="trial" element={<Blank title="Manager • Trial Balance" />} />
+        <Route path="income" element={<Blank title="Manager • Income Statement" />} />
+        <Route path="balance" element={<Blank title="Manager • Balance Sheet" />} />
+        <Route path="retained" element={<Blank title="Manager • Statement of Retained Earnings" />} />
+      </Route>
+
+      {/* Accountant area */}
+      <Route
+        path="/accountant/*"
+        element={
+          <Protected roles={["ACCOUNTANT"]}>
+            <AccountantShell />
+          </Protected>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<Blank title="Accountants HomePage" />} />
+        <Route path="chart" element={<Blank title="Accountant • Chart of Accounts" />} />
+        <Route path="accounts" element={<Blank title="Accountant • Accounts" />} />
+        <Route path="journal" element={<Blank title="Accountant • Journalize" />} />
+        <Route path="trial" element={<Blank title="Accountant • Trial Balance" />} />
+        <Route path="income" element={<Blank title="Accountant • Income Statement" />} />
+        <Route path="balance" element={<Blank title="Accountant • Balance Sheet" />} />
+        <Route path="retained" element={<Blank title="Accountant • Statement of Retained Earnings" />} />
+      </Route>
+
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
