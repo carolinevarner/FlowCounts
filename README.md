@@ -18,8 +18,7 @@ This project is collaboratively built by:
 
 cd backend 
 .\venv\Scripts\Activate
-.\venv\Scripts\python.exe manage.py migrate
-.\venv\Scripts\python.exe manage.py runserver 8000
+python.exe manage.py runserver 8000
 
 cd frontnd 
 npm run dev
