@@ -23,8 +23,17 @@ class User(AbstractUser):
     last_password_change = models.DateTimeField(blank=True, null=True)
     password_expires_at = models.DateTimeField(blank=True, null=True)
 
+    profile_image = models.ImageField(upload_to="profiles/", null=True, blank=True)
+
     address = models.CharField(max_length=255, blank=True)
     dob = models.DateField(blank=True, null=True)
+
+    role = models.CharField(max_length=20, choices=[
+        ('ADMIN', 'Admin'),
+        ('MANAGER', 'Manager'),
+        ('ACCOUNTANT', 'Accountant'),
+    ])
+    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
 
     def is_currently_suspended(self) -> bool:
         today = timezone.localdate()

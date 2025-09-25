@@ -4,6 +4,8 @@ from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -14,6 +16,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.parsers import MultiPartParser, FormParser
+
+import time
 
 from django.core.mail import send_mail
 import logging, secrets, string
@@ -256,6 +261,34 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
             send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
 
         return Response({"detail": "Request rejected", "email_sent": True})  
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upload_profile_photo(request):
+    """
+    Accepts multipart/form-data with field 'photo' (JPEG).
+    Saves to MEDIA_ROOT/profiles/, updates request.user.profile_image,
+    returns {'profile_image_url': '...'}.
+    """
+    file = request.FILES.get("photo")
+    if not file:
+        return Response({"detail": "No file provided (field 'photo')."}, status=400)
+
+    ctype = (file.content_type or "").lower()
+    if ctype not in ("image/jpeg", "image/jpg"):
+        return Response({"detail": "Only JPEG images are allowed."}, status=400)
+
+    if file.size > 5 * 1024 * 1024:
+        return Response({"detail": "Max file size is 5MB."}, status=400)
+
+    fname = f"profiles/user_{request.user.id}_{int(time.time())}.jpg"
+    saved_path = default_storage.save(fname, ContentFile(file.read()))
+
+    request.user.profile_image.name = saved_path
+    request.user.save(update_fields=["profile_image"])
+
+    ser = UserSerializer(request.user, context={"request": request})
+    return Response({"profile_image_url": ser.data.get("profile_image_url")})
 
 @api_view(["GET"])
 def me(request):

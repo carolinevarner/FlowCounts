@@ -1,0 +1,46 @@
+.sidebar-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: auto;
+  position: relative;
+}
+
+.profile-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.profile-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #1C302F;
+}
+
+.dropdown-menu {
+  position: absolute;
+  bottom: -120px;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  width: 150px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  padding: 10px;
+  font-size: 14px;
+  background: white;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: #f0f0f0;
+}

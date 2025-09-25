@@ -6,14 +6,21 @@ from .models import RegistrationRequest, User
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    profile_image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
-            "id", "username", "email",
-            "first_name", "last_name",
-            "role", "address", "dob",
-            "is_active", "date_joined",
+            "id","username","email","first_name","last_name","role",
+            "address","dob","is_active","date_joined","profile_image_url",
         ]
+
+    def get_profile_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.profile_image and hasattr(obj.profile_image, "url"):
+            url = obj.profile_image.url
+            return request.build_absolute_uri(url) if request else url
+        return None
 
 class UserLiteSerializer(serializers.ModelSerializer):
     class Meta:

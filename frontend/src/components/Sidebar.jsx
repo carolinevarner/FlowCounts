@@ -1,17 +1,44 @@
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 import "./Sidebar.css";
+import api from "../api";
 
-export default function Sidebar({ links, user }) {
+export default function Sidebar({ links, user, onLogout }) {
   const location = useLocation();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    try {
+      await api.post("/auth/upload-profile-photo/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      alert("Profile photo updated!");
+      window.location.reload(); 
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed. Please use a JPEG under 5MB.");
+    }
+  };
 
   return (
     <div className="sidebar">
+      {/* Logo Section */}
       <div className="sidebar-logo">
         <img src="/logo-placeholder.png" alt="FlowCounts Logo" />
         <h2>FlowCounts</h2>
       </div>
+
+      {/* Navigation Links */}
       <nav className="sidebar-nav">
-        {links.map(link => (
+        {links.map((link) => (
           <Link
             key={link.path}
             to={link.path}
@@ -21,9 +48,36 @@ export default function Sidebar({ links, user }) {
           </Link>
         ))}
       </nav>
+
+      {/* User Section */}
       <div className="sidebar-user">
         <span>{user?.name}</span>
-        <img src={user?.image || "/placeholder-user.png"} alt="User" />
+        <div className="profile-container">
+          <img
+            src={user?.image || "/placeholder-user.png"}
+            alt="User"
+            onClick={toggleDropdown}
+            className="profile-img"
+          />
+
+          {dropdownOpen && (
+            <div className="dropdown-menu">
+              <label className="dropdown-item">
+                Upload Photo
+                <input
+                  type="file"
+                  accept="image/jpeg"
+                  onChange={handleUpload}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <button className="dropdown-item">View Profile</button>
+              <button className="dropdown-item logout" onClick={onLogout}>
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

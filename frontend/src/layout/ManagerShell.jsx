@@ -1,4 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
+import UserAvatarMenu from "../components/UserAvatarMenu.jsx";
 import "../styles/layout.css";
 
 const LINKS = [
@@ -20,7 +21,6 @@ function doLogout() {
 }
 
 export default function ManagerShell() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
   return (
     <div className="shell">
       <aside className="side">
@@ -43,10 +43,7 @@ export default function ManagerShell() {
       <main className="main">
         <header className="main-top">
           <div />
-          <div className="user-box">
-            <div className="user-name">{[user.first_name, user.last_name].filter(Boolean).join(" ")}</div>
-            <div className="user-avatar" />
-          </div>
+          <UserAvatarMenu />
         </header>
         <div className="main-body">
           <Outlet />

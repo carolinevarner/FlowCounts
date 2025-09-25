@@ -5,7 +5,7 @@
 
 :root {
   --radius: 8px;
-  --border: #d8d8d8;
+  --border: #000000;
   --text: #111;
   --muted: #666;
   --bg: #fff;
@@ -25,6 +25,10 @@
   color: var(--text);
 }
 
+h2{
+  font-family: "Playfair Display";
+}
+
 .auth-subtitle {
   font-size: 2rem;
   font-weight: 500;
@@ -32,6 +36,7 @@
   margin-bottom: 4rem;
   line-height: 1rem;
   font-family: "Playfair Display";
+  color: #000000;
 }
 
 .auth-card {
@@ -49,6 +54,7 @@
   text-align: center;
   margin: 0 0 16px;
   font-family: "Playfair Display", sans-serif;
+  color: #000000;
 }
 
 .auth-grid-2 {
@@ -70,13 +76,13 @@
   padding: 0 10px;
   outline: none;
   color: #1C302F;
+  border-color: #a09f9f;
 
 }
 
 .auth-button {
   width: 100%;
   border: 0;
-  /* background: var(--btn); */
   color: var(--btnText); 
   cursor: pointer;
   font-weight: 500;
@@ -93,6 +99,7 @@
   display: grid;
   gap: 10px;
   margin-bottom: 10px;
+  color: #000000;
 }
 
 .auth-footer {
@@ -146,6 +153,7 @@
 
 .auth-button.secondary, .auth-linkbtn.secondary {
   background: #1C302F;
+  border-color: #1C302F;
   color: #FFFFFF;
   border: 2px solid var(--border);
 }
