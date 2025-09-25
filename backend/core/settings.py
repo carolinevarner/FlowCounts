@@ -186,6 +186,7 @@ MEDIA_URL = "/media/"
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = BASE_DIR / "media"
+PUBLIC_ORIGIN = "http://127.0.0.1:8000"
 
 AUTHENTICATION_BACKENDS = [
     "accounts.backends.MultiFieldModelBackend",

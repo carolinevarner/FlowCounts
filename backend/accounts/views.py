@@ -288,7 +288,8 @@ def upload_profile_photo(request):
     request.user.save(update_fields=["profile_image"])
 
     ser = UserSerializer(request.user, context={"request": request})
-    return Response({"profile_image_url": ser.data.get("profile_image_url")})
+    return Response({"profile_image_url": ser.data.get("profile_image_url")}, status=200)
+
 
 @api_view(["GET"])
 def me(request):

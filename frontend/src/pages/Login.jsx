@@ -27,10 +27,13 @@ export default function Login() {
     localStorage.setItem("refresh", data.refresh);
     localStorage.setItem("user", JSON.stringify(data.user));
 
-    const role = data.user?.role;
-    if (role === "ADMIN") navigate("/admin/dashboard");
-    else if (role === "MANAGER") navigate("/manager/dashboard");
-    else if (role === "ACCOUNTANT") navigate("/accountant/dashboard");
+    const me = await api.get("/auth/me/");
+    localStorage.setItem("user", JSON.stringify(me.data));
+
+    const role = me.data.role;
+    if (role === "ADMIN") navigate("/admin");
+    else if (role === "MANAGER") navigate("/manager");
+    else if (role === "ACCOUNTANT") navigate("/accountant");
     else navigate("/login");
   } catch (err) {
 
