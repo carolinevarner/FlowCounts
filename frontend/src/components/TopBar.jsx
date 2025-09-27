@@ -69,15 +69,13 @@ export default function TopBar() {
 
   return (
     <div className="topbar">
-      {/* Left brand/logo (keep yours if you already have it) */}
       <div className="brand">
-        <div className="logo-dot" />
+        <img src="/logo.jpg" alt="FlowCounts Logo" className="topbar-logo" />
         <div className="brand-name">FlowCounts</div>
       </div>
 
       <div className="spacer" />
 
-      {/* Avatar + dropdown */}
       <div className="topbar-user" ref={menuRef}>
         <button className="avatar" onClick={toggle} aria-label="Open user menu">
           {avatarUrl ? (
@@ -103,7 +101,6 @@ export default function TopBar() {
           </div>
         )}
 
-        {/* hidden file input */}
         <input
           ref={fileRef}
           type="file"

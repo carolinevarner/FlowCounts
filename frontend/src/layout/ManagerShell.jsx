@@ -24,10 +24,12 @@ export default function ManagerShell() {
   return (
     <div className="shell">
       <aside className="side">
-        <div className="brand">
-          <div className="brand-logo" />
-          <div className="brand-name">FlowCounts</div>
+      <div className="brand">
+        <div className="brand-logo">
+          <img src="/logo.jpg" alt="FlowCounts Logo" className="brand-logo-img" />
         </div>
+        <div className="brand-name">FlowCounts</div>
+      </div>
         <nav className="side-nav">
           {LINKS.map((l) => (
             <NavLink key={l.to} to={l.to} end className={({isActive}) => "side-link" + (isActive ? " active" : "")}>

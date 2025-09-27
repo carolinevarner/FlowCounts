@@ -5,7 +5,7 @@ export default function AuthLayout({ title, children, subtitle }) {
 
       <div className="auth-card">
         <div className="auth-logo">
-          {<img src="/logo.jpg" alt="Logo" />}
+          <img src="/logo.jpg" alt="FlowCounts Logo" />
         </div>
 
         <h1 className="auth-title">{title}</h1>

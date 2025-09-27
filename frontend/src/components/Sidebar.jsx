@@ -30,13 +30,13 @@ export default function Sidebar({ links, user, onLogout }) {
 
   return (
     <div className="sidebar">
-      {/* Logo Section */}
-      <div className="sidebar-logo">
-        <img src="/logo-placeholder.png" alt="FlowCounts Logo" />
-        <h2>FlowCounts</h2>
+      <div className="brand">
+        <div className="brand-logo">
+          <img src="/logo.jpg" alt="FlowCounts Logo" className="brand-logo-img" />
+        </div>
+        <div className="brand-name">FlowCounts</div>
       </div>
 
-      {/* Navigation Links */}
       <nav className="sidebar-nav">
         {links.map((link) => (
           <Link
@@ -49,7 +49,6 @@ export default function Sidebar({ links, user, onLogout }) {
         ))}
       </nav>
 
-      {/* User Section */}
       <div className="sidebar-user">
         <span>{user?.name}</span>
         <div className="profile-container">

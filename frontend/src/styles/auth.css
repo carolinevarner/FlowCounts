@@ -127,21 +127,16 @@ h2{
 }
 
 .auth-logo {
-  width: 90px;
-  height: 90px;
-  margin: 0 auto 12px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #e8e8e8, #f7f7f7);
-  border: 1px solid var(--border);
-  display: grid;
-  place-items: center;
+  width: 100px;
+  height: auto;
+  margin: 0 auto 8px;
 }
 
 .auth-logo img {
-  max-width: 64px;
-  max-height: 64px;
   display: block;
-  border-radius: 50%;
+  width: 100%;
+  height: auto;
+  border-radius: 6px; 
 }
 
 .auth-actions {
