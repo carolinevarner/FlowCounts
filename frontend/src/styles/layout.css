@@ -313,3 +313,83 @@
     font-weight: 700; 
     font-size: 18px; 
 }
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.users-table th, .users-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-size: 14.5px;
+}
+
+.users-table th:nth-child(1) { width: 22%; }
+.users-table th:nth-child(2) { width: 18%; }
+.users-table th:nth-child(3) { width: 26%; }
+.users-table th:nth-child(4) { width: 14%; }
+.users-table th:nth-child(5) { width: 8%;  }
+.users-table th:nth-child(6) { width: 8%;  }
+.users-table th:nth-child(7) { width: 4%;  }
+
+.row-flex { 
+    display: flex; 
+    gap: 8px; 
+    align-items: center; 
+}
+
+.row-actions { 
+    position: relative; 
+    display: inline-block; 
+}
+
+.kebab {
+  border: none; 
+  background: #fff; 
+  border-radius: 8px; 
+  padding: 6px 8px; 
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+.kebab:hover { 
+    background: #f7f7f7; 
+}
+
+.row-menu {
+  position: absolute; 
+  right: 0; top: 36px; 
+  width: 180px; 
+  background: #fff; 
+  border: 1px solid #eee;
+  border-radius: 10px; 
+  box-shadow: 0 12px 24px rgba(0,0,0,.12); 
+  overflow: hidden; 
+  z-index: 9999;
+}
+
+.row-menu-item {
+  width: 100%; 
+  text-align: left; 
+  padding: 10px 12px; 
+  background: #fff; 
+  border: none; 
+  cursor: pointer;
+}
+
+.row-menu-item:hover { 
+    background: #f7f7f7; 
+}
+
+.card, table, thead, tbody, tr, td, th { 
+    overflow: visible; 
+}
+
+.muted { 
+    color:#777; 
+}
