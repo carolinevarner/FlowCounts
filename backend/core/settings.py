@@ -98,25 +98,6 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-AUTH_PASSWORD_VALIDATORS += [
-    {"NAME": "accounts.validators.PasswordNotInHistoryValidator", "OPTIONS": {"last_n": 5}},
-]
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -176,7 +157,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
     {"NAME": "accounts.validators.StartsWithLetterValidator"},
     {"NAME": "accounts.validators.ContainsLetterNumberSpecialValidator"},
-    {"NAME": "accounts.validators.PreventPasswordReuseValidator"},
+    {"NAME": "accounts.validators.PasswordNotInHistoryValidator", "OPTIONS": {"last_n": 5}},
 ]
 PASSWORD_MAX_AGE_DAYS = 90
 PASSWORD_EXPIRY_WARNING_DAYS = 3

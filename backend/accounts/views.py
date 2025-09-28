@@ -30,6 +30,10 @@ from .serializers import (
     RegistrationRequestSerializer,
 )
 from .permissions import IsAdmin 
+from .models import SecurityQuestion
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -294,3 +298,94 @@ def upload_profile_photo(request):
 @api_view(["GET"])
 def me(request):
     return Response(UserSerializer(request.user).data)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    """
+    POST /api/auth/forgot-password/
+    Body: { email, username, answers: [a0,a1,a2], new_password }
+
+    Validates that the username+email map to a user and that the provided
+    answers match the user's stored security question answer hashes (order-independent).
+    If validated, runs Django password validators and sets the new password.
+    Returns 200 on success, 400 on failure.
+    """
+    data = request.data or {}
+    email = (data.get("email") or "").strip()
+    username = (data.get("username") or "").strip()
+    answers = data.get("answers") or []
+    new_password = data.get("new_password") or ""
+
+    if not email or not username or not answers or not new_password:
+        return Response({"detail": "Missing required fields."}, status=400)
+
+    # Accept username OR display_handle OR email as the identifier the user types in
+    ident = username
+    user = User.objects.filter(
+        Q(username__iexact=ident) | Q(display_handle__iexact=ident) | Q(email__iexact=ident)
+    ).first()
+    if not user or (user.email or "").lower() != email.lower():
+        # Do not reveal which piece failed; return generic 400
+        return Response({"detail": "Invalid information provided."}, status=400)
+
+    qs = list(SecurityQuestion.objects.filter(user=user))
+    if not qs:
+        return Response({"detail": "No security questions configured for this account."}, status=400)
+
+    # Try to match each provided answer to one of the stored hashes (order-independent)
+    remaining = qs.copy()
+    matched = 0
+    for ans in answers:
+        found = False
+        for sq in remaining:
+            if check_password((ans or "").strip(), sq.answer_hash):
+                remaining.remove(sq)
+                matched += 1
+                found = True
+                break
+        if not found:
+            # one answer didn't match any remaining question
+            return Response({"detail": "Security answers did not match."}, status=400)
+
+    # Validate password against Django validators
+    try:
+        password_validation.validate_password(new_password, user=user)
+    except DjangoValidationError as e:
+        return Response({"detail": "; ".join(e.messages)}, status=400)
+
+    # All good — set the new password
+    user.set_password(new_password)
+    user.save()
+
+    return Response({"detail": "Password updated."}, status=200)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def forgot_password_questions(request):
+    """
+    GET /api/auth/forgot-password/questions/?username=xxx&email=yyy
+
+    Returns the list of security question texts configured for the user identified
+    by username+email. Returns a generic 400 on missing/invalid information to
+    avoid leaking account existence.
+    """
+    username = (request.query_params.get("username") or "").strip()
+    email = (request.query_params.get("email") or "").strip()
+    if not username or not email:
+        return Response({"detail": "Missing required fields."}, status=400)
+    # Accept username OR display_handle OR email as identifier
+    ident = username
+    user = User.objects.filter(
+        Q(username__iexact=ident) | Q(display_handle__iexact=ident) | Q(email__iexact=ident)
+    ).first()
+    if not user or (user.email or "").lower() != email.lower():
+        return Response({"detail": "Invalid information provided."}, status=400)
+
+    qs = list(SecurityQuestion.objects.filter(user=user).values_list("question", flat=True))
+    if not qs:
+        return Response({"detail": "No security questions configured for this account."}, status=400)
+
+    return Response({"questions": qs}, status=200)

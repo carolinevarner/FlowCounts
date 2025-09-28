@@ -9,6 +9,8 @@ from accounts.views import (
     FlowTokenView,
     me,
     upload_profile_photo,
+    forgot_password,
+    forgot_password_questions,
 )
 
 router = DefaultRouter()
@@ -20,6 +22,8 @@ urlpatterns = [
     path("api/auth/token/", FlowTokenView.as_view()),
     path("api/auth/me/", me),
     path("api/auth/me/photo/", upload_profile_photo, name="upload-profile-photo"),
+    path("api/auth/forgot-password/", forgot_password),
+    path("api/auth/forgot-password/questions/", forgot_password_questions),
 ]
 
 if settings.DEBUG:

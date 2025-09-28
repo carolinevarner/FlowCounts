@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from datetime import timedelta
 
 class Role(models.TextChoices):
     ADMIN = "ADMIN", "Administrator"
@@ -40,6 +41,13 @@ class User(AbstractUser):
         if self.suspend_from and self.suspend_to:
             return self.suspend_from <= today <= self.suspend_to
         return False
+    
+    def set_password(self, raw_password):
+        super().set_password(raw_password)
+        now = timezone.now()
+        self.last_password_change = now
+        max_days = getattr(settings, "PASSWORD_MAX_AGE_DAYS", 90)
+        self.password_expires_at = now + timedelta(days=max_days)
 
 class PasswordHistory(models.Model):
     user = models.ForeignKey(

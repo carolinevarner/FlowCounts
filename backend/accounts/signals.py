@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.contrib.auth.hashers import check_password
 from .models import PasswordHistory
+from .models import User
 
 User = get_user_model()
 
@@ -57,3 +58,14 @@ def on_login_success(sender, user: User, request, **kwargs):
     if user.failed_attempts:
         user.failed_attempts = 0
         user.save(update_fields=["failed_attempts"])
+
+@receiver(post_save, sender=User)
+def ensure_password_dates(sender, instance, created, **kwargs):
+    if created:
+        now = timezone.now()
+        max_days = getattr(settings, "PASSWORD_MAX_AGE_DAYS", 90)
+        if not instance.last_password_change or not instance.password_expires_at:
+            User.objects.filter(pk=instance.pk).update(
+                last_password_change=now,
+                password_expires_at=now + timedelta(days=max_days),
+            )
