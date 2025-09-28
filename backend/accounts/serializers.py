@@ -2,29 +2,41 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import RegistrationRequest, User
+from .views import build_username
 
 User = get_user_model()
 
-class UserSerializer(serializers.ModelSerializer):
-    profile_image_url = serializers.SerializerMethodField()
+class CreateUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    username = serializers.CharField(required=False, allow_blank=True)  # ✅ allow missing
+    is_active = serializers.BooleanField(required=False)
 
     class Meta:
-        model = User  
-        fields = (
-            "id", "username", "email", "first_name", "last_name", "role",
-            "is_active", "profile_image_url",
-        )
+        model = User
+        fields = [
+            "username", "display_handle", "first_name", "last_name",
+            "email", "role", "password", "picture", "address", "dob",
+            "is_active", "suspend_from", "suspend_to",
+        ]
 
-    def get_profile_image_url(self, obj):
-        if not obj.profile_image:
-            return None
-        request = self.context.get("request")
-        url = obj.profile_image.url  
-        if request is not None:
-            return request.build_absolute_uri(url) 
-        from django.conf import settings
-        base = getattr(settings, "PUBLIC_ORIGIN", "http://127.0.0.1:8000")
-        return f"{base}{url}"
+    def create(self, data):
+        pwd = data.pop("password")
+
+            # Auto-generate username if not provided
+        if not data.get("username"):
+            data["username"] = build_username(
+                data.get("first_name", ""),
+                data.get("last_name", "")
+            )
+
+        # Default to active unless explicitly false
+        if "is_active" not in data:
+            data["is_active"] = True
+
+        user = User(**data)
+        user.set_password(pwd)
+        user.save()
+        return user
 
 
 class UserLiteSerializer(serializers.ModelSerializer):

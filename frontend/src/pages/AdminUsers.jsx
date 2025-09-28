@@ -77,6 +77,85 @@ export default function AdminUsers() {
   // const [openMenuFor, setOpenMenuFor] = useState(null);
   // const menuRef = useClickAway(() => setOpenMenuFor(null));
 
+  // add right after: const [msg, setMsg] = useState("");
+const [busyId, setBusyId] = useState(null); // to disable buttons while a row is saving
+
+async function toggleActive(u, toActive) {
+  try {
+    setBusyId(u.id);
+    await api.post(`/auth/users/${u.id}/${toActive ? "activate" : "deactivate"}`);
+    await load();
+  } catch (e) {
+    alert("Failed to change status. Check server.");
+  } finally {
+    setBusyId(null);
+  }
+}
+
+async function suspendUser(u) {
+  const from = prompt('Suspend FROM date (YYYY-MM-DD)');
+  if (!from) return;
+  const to = prompt('Suspend TO date (YYYY-MM-DD)');
+  if (!to) return;
+
+  try {
+    setBusyId(u.id);
+    await api.post(`/auth/users/${u.id}/suspend`, {
+      suspend_from: from,
+      suspend_to: to,
+    });
+    await load();
+  } catch (e) {
+    alert("Suspend failed. Check server.");
+  } finally {
+    setBusyId(null);
+  }
+}
+
+async function editUser(u) {
+  const nextRole = prompt('Set role (ADMIN | MANAGER | ACCOUNTANT):', u.role || 'ACCOUNTANT');
+  if (!nextRole) return;
+  try {
+    setBusyId(u.id);
+    await api.patch(`/auth/users/${u.id}/`, { role: nextRole.toUpperCase() });
+    await load();
+  } catch (e) {
+    alert("Edit failed. Check server.");
+  } finally {
+    setBusyId(null);
+  }
+}
+
+async function createUserQuick() {
+  const first = prompt("First name:");
+  if (!first) return;
+  const last = prompt("Last name:");
+  if (!last) return;
+  const email = prompt("Email:");
+  if (!email) return;
+  const role = prompt("Role (ADMIN | MANAGER | ACCOUNTANT):", "ACCOUNTANT");
+  if (!role) return;
+  const tempPassword = prompt("Temp password (min 8 chars):", "TempPass!23");
+  if (!tempPassword) return;
+
+  try {
+    setMsg("");
+    await api.post("/auth/users/", {
+      first_name: first,
+      last_name: last,
+      email,
+      role: role.toUpperCase(),
+      password: tempPassword,
+      is_active: true,
+    });
+    setMsg("User created.");
+    await load();
+  } catch (e) {
+    setMsg("Create failed. Check server.");
+  }
+}
+
+
   function RowActions({ row }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
@@ -216,8 +295,12 @@ export default function AdminUsers() {
           </div>
 
           <div className="card">
-            <br></br>
-            <h2>Current Users</h2>
+            <br />
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <h2 style={{ margin: 0 }}>Current Users</h2>
+              <button className="auth-button" onClick={createUserQuick}>+ Create User</button>
+             </div>
+
             {users.length === 0 ? (
               <div className="muted">No users.</div>
             ) : (
@@ -246,13 +329,47 @@ export default function AdminUsers() {
                           <td>{u.role}</td>
                           <td>{u.is_active ? "Yes" : "No"}</td>
                           <td>
-                            <button className="auth-button secondary" onClick={() => { /* TODO: wire later */ }}>
-                              Edit
+                            <button
+                              className="auth-button secondary"
+                              disabled={busyId === u.id}
+                              onClick={() => editUser(u)}
+                             >
+                              {busyId === u.id ? "Saving..." : "Edit"}
                             </button>
+
                           </td>
                           <td>
-                            <RowActions row={u} />
+                            <div className="row-flex" style={{ gap: 8 }}>
+                              {u.is_active ? (
+                                <button
+                                  className="auth-button secondary"
+                                  disabled={busyId === u.id}
+                                  onClick={() => toggleActive(u, false)}
+                                >
+                                  {busyId === u.id ? "…" : "Deactivate"}
+                                </button>
+                              ) : (
+                                <button
+                                  className="auth-button"
+                                  disabled={busyId === u.id}
+                                  onClick={() => toggleActive(u, true)}
+                                >
+                                  {busyId === u.id ? "…" : "Activate"}
+                                </button>
+                              )}
+                              <button
+                                className="auth-button secondary"
+                                disabled={busyId === u.id}
+                                onClick={() => suspendUser(u)}
+                              >
+                                Suspend
+                              </button>
+
+                              {/* keep your  menu for "Send Email" */}
+                              <RowActions row={u} />
+                            </div>
                           </td>
+
                         </tr>
                       ))}
                   </tbody>

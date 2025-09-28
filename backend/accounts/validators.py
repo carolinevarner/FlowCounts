@@ -35,3 +35,16 @@ class PasswordNotInHistoryValidator:
 
     def get_help_text(self):
         return "Your new password cannot match your recent passwords."
+    
+class PreventPasswordReuseValidator:
+    """
+    Placeholder validator so Django can import it.
+    Later, wire this into PasswordHistory like PasswordNotInHistoryValidator.
+    """
+    def validate(self, password, user=None):
+        # TODO: enforce "no reuse" properly
+        return
+
+    def get_help_text(self):
+        return "You cannot reuse a previous password."
+

@@ -108,7 +108,7 @@ class FlowTokenView(TokenObtainPairView):
         }
         return Response({"access": access, "refresh": str(refresh), "user": data_user}, status=200)
 
-class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class UserAdminViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdmin]
     queryset = User.objects.all().order_by("date_joined")
