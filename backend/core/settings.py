@@ -192,3 +192,7 @@ AUTHENTICATION_BACKENDS = [
     "accounts.backends.MultiFieldModelBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+# Dev email so approve/reject doesn't crash
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@flowcounts.local"
