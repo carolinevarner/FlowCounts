@@ -1,4 +1,6 @@
 from django.utils import timezone
+from django.utils.dateparse import parse_date
+from datetime import date
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
@@ -17,6 +19,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.parsers import MultiPartParser, FormParser
+
 
 import time
 
@@ -49,6 +52,17 @@ def build_username(first_name: str, last_name: str, when=None) -> str:
         if not User.objects.filter(username__iexact=test).exists():
             return test
         i += 1
+
+def is_suspended_now(user, today=None):
+    """
+    Return True if today's date is within the user's suspend window (inclusive).
+    If suspend_to is missing, treat it as the same day as suspend_from.
+    """
+    if not user.suspend_from:
+        return False
+    today = today or timezone.now().date()
+    end = user.suspend_to or user.suspend_from
+    return user.suspend_from <= today <= end
 
 class FlowTokenSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -96,6 +110,10 @@ class FlowTokenView(TokenObtainPairView):
             return Response({"detail": "Invalid credentials"}, status=400)
         if not user.is_active:
             return Response({"detail": "User is inactive/suspended"}, status=403)
+        
+        if is_suspended_now(user):
+            until = user.suspend_to or user.suspend_from
+            return Response({"detail": f"User is suspended until {until}."}, status=403)
 
         refresh = RefreshToken.for_user(user)
         access = str(refresh.access_token)
@@ -110,6 +128,7 @@ class FlowTokenView(TokenObtainPairView):
         return Response({"access": access, "refresh": str(refresh), "user": data_user}, status=200)
 
 class UserAdminViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdmin]
     queryset = User.objects.all().order_by("date_joined")
@@ -117,21 +136,19 @@ class UserAdminViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Up
 
     def get_serializer_class(self):
         return CreateUserSerializer if self.action == "create" else UserSerializer
-    
+
+    # allow PATCH /auth/users/:id/
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
         return super().update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-
-        # auto-generate username if not provided
         if not data.get("username"):
             data["username"] = build_username(
                 data.get("first_name", ""),
-                data.get("last_name", "")
+                data.get("last_name", ""),
             )
-
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -143,7 +160,7 @@ class UserAdminViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Up
         user.is_active = True
         user.suspend_from = None
         user.suspend_to = None
-        user.save(update_fields=["is_active","suspend_from","suspend_to"])
+        user.save(update_fields=["is_active", "suspend_from", "suspend_to"])
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
@@ -156,9 +173,41 @@ class UserAdminViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Up
     @action(detail=True, methods=["post"])
     def suspend(self, request, pk=None):
         user = self.get_object()
-        user.suspend_from = request.data.get("suspend_from")
-        user.suspend_to = request.data.get("suspend_to")
-        user.save(update_fields=["suspend_from","suspend_to"])
+
+        start_raw = (request.data.get("suspend_from") or "").strip()
+        end_raw   = (request.data.get("suspend_to") or "").strip()
+
+        if not start_raw or not end_raw:
+            user.suspend_from = None
+            user.suspend_to = None
+            user.is_active = True
+            user.save(update_fields=["suspend_from", "suspend_to", "is_active"])
+            return Response(UserSerializer(user).data)
+        
+        start = parse_date(start_raw) if start_raw else None
+        end = parse_date(end_raw) if end_raw else None
+
+        if (start_raw and not start) or (end_raw and not end):
+            return Response(
+                {"detail": "Provide suspend_from and suspend_to as YYYY-MM-DD."},
+                status=400
+            )
+        if start and end and start > end:
+            return Response(
+                {"detail": "suspend_from cannot be after suspend_to."},
+            )
+        user.suspend_from = start
+        user.suspend_to = end
+
+        today = timezone.localdate()
+        if start and end:
+            user.is_active = not (start <= today <= end)
+        elif start and not end:
+            user.is_active = not (start <= today)
+        elif end and not start:
+            user.is_active = not (today <= end)
+
+        user.save(update_fields=["suspend_from", "suspend_to", "is_active"])
         return Response(UserSerializer(user).data)
 
     @action(detail=False, methods=["get"])

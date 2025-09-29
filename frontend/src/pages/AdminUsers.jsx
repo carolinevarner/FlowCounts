@@ -219,24 +219,27 @@ async function toggleActive(u, toActive) {
 }
 
 async function suspendUser(u) {
-  const from = prompt("Suspend FROM date (YYYY-MM-DD)");
-  if (!from) return;
-  const to = prompt("Suspend TO date (YYYY-MM-DD)");
-  if (!to) return;
+  const from = prompt("Suspend FROM date (YYYY-MM-DD). Leave blank to CLEAR suspension.", u.suspend_from || "");
+  if (from === null) return; 
+
+  const to = prompt("Suspend TO date (YYYY-MM-DD). Leave blank to suspend single day / or CLEAR with both blank.", u.suspend_to || "");
+  if (to === null) return; 
 
   try {
     setBusyId(u.id);
-    await api.post(`/auth/users/${u.id}/suspend/`, {
-      suspend_from: from,
-      suspend_to: to,
-    });
-    await load();
+    const payload = {
+      suspend_from: (from || "").trim() || null,
+      suspend_to: (to || "").trim() || null,
+    };
+    await api.post(`/auth/users/${u.id}/suspend/`, payload);
+    await load(); 
   } catch (e) {
     alert(e?.response?.data?.detail || "Suspend failed. Check server.");
   } finally {
     setBusyId(null);
   }
 }
+
 
 
 
@@ -442,7 +445,7 @@ async function createUserQuick() {
                           <td>{displayMap.get(u.id) || "user"}</td>
                           <td>{u.email}</td>
                           <td>{u.role}</td>
-                          <td>{u.is_active ? "Yes" : "No"}</td>
+                          <td>{u.is_active && !u.suspended_now ? "Yes" : "No"}</td>
                           <td>
                             <button
                               className="auth-button secondary"
