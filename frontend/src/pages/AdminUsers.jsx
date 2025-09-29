@@ -68,11 +68,137 @@ function makeDisplayNameMap(users) {
   return out;
 }
 
+function EditUserModal({ user, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    first_name: user.first_name || "",
+    last_name: user.last_name || "",
+    email: user.email || "",
+    role: user.role || "ACCOUNTANT",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  function setField(key, val) {
+    setForm((f) => ({ ...f, [key]: val }));
+  }
+
+  function validate() {
+    if (!form.first_name.trim() || !form.last_name.trim()) {
+      return "First and last name are required.";
+    }
+    const okEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim());
+    if (!okEmail) return "Please enter a valid email address.";
+    if (!["ADMIN", "MANAGER", "ACCOUNTANT"].includes(form.role)) {
+      return "Role must be ADMIN, MANAGER, or ACCOUNTANT.";
+    }
+    return "";
+  }
+
+  async function onSave() {
+    setError("");
+    const msg = validate();
+    if (msg) {
+      setError(msg);
+      return;
+    }
+    try {
+      setSaving(true);
+      const payload = {
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        email: form.email.trim(),
+        role: form.role,
+      };
+      const { data } = await api.patch(`/auth/users/${user.id}/`, payload);
+      onSaved(data);
+    } catch (e) {
+      const apiMsg =
+        e?.response?.data?.detail ||
+        e?.response?.data?.email?.[0] ||
+        e?.response?.data?.role?.[0] ||
+        "Update failed. Check server.";
+      setError(apiMsg);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="modal-overlay" onMouseDown={onClose}>
+      <div className="modal-panel" onMouseDown={(e) => e.stopPropagation()}>
+        <h3 style={{ marginTop: 0 }}>Edit User</h3>
+
+        <div className="field">
+          <label>Username (read-only)</label>
+          <input value={user.username} disabled />
+        </div>
+
+        <div className="field">
+          <label>First name</label>
+          <input
+            value={form.first_name}
+            onChange={(e) => setField("first_name", e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label>Last name</label>
+          <input
+            value={form.last_name}
+            onChange={(e) => setField("last_name", e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label>Email</label>
+          <input
+            value={form.email}
+            onChange={(e) => setField("email", e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label>Role</label>
+          <select
+            value={form.role}
+            onChange={(e) => setField("role", e.target.value)}
+          >
+            <option value="ADMIN">ADMIN</option>
+            <option value="MANAGER">MANAGER</option>
+            <option value="ACCOUNTANT">ACCOUNTANT</option>
+          </select>
+        </div>
+
+        {error && <div className="error">{error}</div>}
+
+        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <button className="auth-button" disabled={saving} onClick={onSave}>
+            {saving ? "Saving…" : "Save"}
+          </button>
+          <button className="auth-button secondary" disabled={saving} onClick={onClose}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 export default function AdminUsers() {
   const [pending, setPending] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
+  const [editing, setEditing] = useState(null); 
+
+  
 
   // const [openMenuFor, setOpenMenuFor] = useState(null);
   // const menuRef = useClickAway(() => setOpenMenuFor(null));
@@ -247,6 +373,7 @@ async function createUserQuick() {
   const displayMap = makeDisplayNameMap(users);
 
   return (
+  <>
     <div className="page">
       {msg && <div style={{ color: "green", margin: "8px 0" }}>{msg}</div>}
 
@@ -299,7 +426,7 @@ async function createUserQuick() {
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <h2 style={{ margin: 0 }}>Current Users</h2>
               <button className="auth-button" onClick={createUserQuick}>+ Create User</button>
-             </div>
+            </div>
 
             {users.length === 0 ? (
               <div className="muted">No users.</div>
@@ -319,7 +446,7 @@ async function createUserQuick() {
                   </thead>
                   <tbody>
                     {users
-                      .slice() 
+                      .slice()
                       .sort((a, b) => (a.id || 0) - (b.id || 0))
                       .map((u) => (
                         <tr key={`u:${u.id}`}>
@@ -332,11 +459,10 @@ async function createUserQuick() {
                             <button
                               className="auth-button secondary"
                               disabled={busyId === u.id}
-                              onClick={() => editUser(u)}
-                             >
+                              onClick={() => setEditing(u)}
+                            >
                               {busyId === u.id ? "Saving..." : "Edit"}
                             </button>
-
                           </td>
                           <td>
                             <div className="row-flex" style={{ gap: 8 }}>
@@ -365,11 +491,9 @@ async function createUserQuick() {
                                 Suspend
                               </button>
 
-                              {/* keep your  menu for "Send Email" */}
                               <RowActions row={u} />
                             </div>
                           </td>
-
                         </tr>
                       ))}
                   </tbody>
@@ -380,5 +504,20 @@ async function createUserQuick() {
         </>
       )}
     </div>
-  );
+
+    {editing && (
+      <EditUserModal
+        user={editing}
+        onClose={() => setEditing(null)}
+        onSaved={(updated) => {
+          setUsers(prev =>
+            prev.map(x => (x.id === updated.id ? { ...x, ...updated } : x))
+          );
+          setEditing(null);
+          setMsg("User updated.");
+        }}
+      />
+    )}
+  </>
+);
 }
