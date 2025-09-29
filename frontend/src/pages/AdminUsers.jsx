@@ -209,48 +209,36 @@ const [busyId, setBusyId] = useState(null); // to disable buttons while a row is
 async function toggleActive(u, toActive) {
   try {
     setBusyId(u.id);
-    await api.post(`/auth/users/${u.id}/${toActive ? "activate" : "deactivate"}`);
+    await api.post(`/auth/users/${u.id}/${toActive ? "activate" : "deactivate"}/`);
     await load();
   } catch (e) {
-    alert("Failed to change status. Check server.");
+    alert(e?.response?.data?.detail || "Failed to change status. Check server.");
   } finally {
     setBusyId(null);
   }
 }
 
 async function suspendUser(u) {
-  const from = prompt('Suspend FROM date (YYYY-MM-DD)');
+  const from = prompt("Suspend FROM date (YYYY-MM-DD)");
   if (!from) return;
-  const to = prompt('Suspend TO date (YYYY-MM-DD)');
+  const to = prompt("Suspend TO date (YYYY-MM-DD)");
   if (!to) return;
 
   try {
     setBusyId(u.id);
-    await api.post(`/auth/users/${u.id}/suspend`, {
+    await api.post(`/auth/users/${u.id}/suspend/`, {
       suspend_from: from,
       suspend_to: to,
     });
     await load();
   } catch (e) {
-    alert("Suspend failed. Check server.");
+    alert(e?.response?.data?.detail || "Suspend failed. Check server.");
   } finally {
     setBusyId(null);
   }
 }
 
-async function editUser(u) {
-  const nextRole = prompt('Set role (ADMIN | MANAGER | ACCOUNTANT):', u.role || 'ACCOUNTANT');
-  if (!nextRole) return;
-  try {
-    setBusyId(u.id);
-    await api.patch(`/auth/users/${u.id}/`, { role: nextRole.toUpperCase() });
-    await load();
-  } catch (e) {
-    alert("Edit failed. Check server.");
-  } finally {
-    setBusyId(null);
-  }
-}
+
 
 async function createUserQuick() {
   const first = prompt("First name:");
