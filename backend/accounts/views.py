@@ -28,6 +28,7 @@ from .serializers import (
     UserSerializer,
     UserLiteSerializer,
     RegistrationRequestSerializer,
+    CreateUserSerializer,
 )
 from .permissions import IsAdmin 
 
@@ -108,7 +109,7 @@ class FlowTokenView(TokenObtainPairView):
         }
         return Response({"access": access, "refresh": str(refresh), "user": data_user}, status=200)
 
-class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class UserAdminViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdmin]
     queryset = User.objects.all().order_by("date_joined")
@@ -116,6 +117,25 @@ class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def get_serializer_class(self):
         return CreateUserSerializer if self.action == "create" else UserSerializer
+    
+    def update(self, request, *args, **kwargs):
+        kwargs["partial"] = True
+        return super().update(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+
+        # auto-generate username if not provided
+        if not data.get("username"):
+            data["username"] = build_username(
+                data.get("first_name", ""),
+                data.get("last_name", "")
+            )
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
@@ -149,6 +169,7 @@ class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def expired_passwords(self, request):
         qs = User.objects.filter(password_expires_at__lt=timezone.now())
         return Response(UserSerializer(qs, many=True).data)
+
 
 class RegistrationRequestViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
