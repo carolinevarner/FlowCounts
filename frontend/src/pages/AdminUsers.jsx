@@ -203,85 +203,6 @@ export default function AdminUsers() {
   // const [openMenuFor, setOpenMenuFor] = useState(null);
   // const menuRef = useClickAway(() => setOpenMenuFor(null));
 
-  // add right after: const [msg, setMsg] = useState("");
-const [busyId, setBusyId] = useState(null); // to disable buttons while a row is saving
-
-async function toggleActive(u, toActive) {
-  try {
-    setBusyId(u.id);
-    await api.post(`/auth/users/${u.id}/${toActive ? "activate" : "deactivate"}`);
-    await load();
-  } catch {
-    alert("Failed to change status. Check server.");
-  } finally {
-    setBusyId(null);
-  }
-}
-
-async function suspendUser(u) {
-  const from = prompt('Suspend FROM date (YYYY-MM-DD)');
-  if (!from) return;
-  const to = prompt('Suspend TO date (YYYY-MM-DD)');
-  if (!to) return;
-
-  try {
-    setBusyId(u.id);
-    await api.post(`/auth/users/${u.id}/suspend`, {
-      suspend_from: from,
-      suspend_to: to,
-    });
-    await load();
-  } catch {
-    alert("Suspend failed. Check server.");
-  } finally {
-    setBusyId(null);
-  }
-}
-
-// async function editUser(u) {
-//   const nextRole = prompt('Set role (ADMIN | MANAGER | ACCOUNTANT):', u.role || 'ACCOUNTANT');
-//   if (!nextRole) return;
-//   try {
-//     setBusyId(u.id);
-//     await api.patch(`/auth/users/${u.id}/`, { role: nextRole.toUpperCase() });
-//     await load();
-//   } catch {
-//     alert("Edit failed. Check server.");
-//   } finally {
-//     setBusyId(null);
-//   }
-// }
-
-async function createUserQuick() {
-  const first = prompt("First name:");
-  if (!first) return;
-  const last = prompt("Last name:");
-  if (!last) return;
-  const email = prompt("Email:");
-  if (!email) return;
-  const role = prompt("Role (ADMIN | MANAGER | ACCOUNTANT):", "ACCOUNTANT");
-  if (!role) return;
-  const tempPassword = prompt("Temp password (min 8 chars):", "TempPass!23");
-  if (!tempPassword) return;
-
-  try {
-    setMsg("");
-    await api.post("/auth/users/", {
-      first_name: first,
-      last_name: last,
-      email,
-      role: role.toUpperCase(),
-      password: tempPassword,
-      is_active: true,
-    });
-    setMsg("User created.");
-    await load();
-  } catch {
-    setMsg("Create failed. Check server.");
-  }
-}
-
-
   function RowActions({ row }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
@@ -454,7 +375,7 @@ async function createUserQuick() {
                           <td>{displayMap.get(u.id) || "user"}</td>
                           <td>{u.email}</td>
                           <td>{u.role}</td>
-                          <td>{u.is_active ? "Yes" : "No"}</td>
+                          <td>{u.is_active && !u.suspended_now ? "Yes" : "No"}</td>
                           <td>
                             <button
                               className="auth-button secondary"
