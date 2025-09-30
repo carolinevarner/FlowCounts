@@ -211,7 +211,7 @@ async function toggleActive(u, toActive) {
     setBusyId(u.id);
     await api.post(`/auth/users/${u.id}/${toActive ? "activate" : "deactivate"}`);
     await load();
-  } catch (e) {
+  } catch {
     alert("Failed to change status. Check server.");
   } finally {
     setBusyId(null);
@@ -231,26 +231,26 @@ async function suspendUser(u) {
       suspend_to: to,
     });
     await load();
-  } catch (e) {
+  } catch {
     alert("Suspend failed. Check server.");
   } finally {
     setBusyId(null);
   }
 }
 
-async function editUser(u) {
-  const nextRole = prompt('Set role (ADMIN | MANAGER | ACCOUNTANT):', u.role || 'ACCOUNTANT');
-  if (!nextRole) return;
-  try {
-    setBusyId(u.id);
-    await api.patch(`/auth/users/${u.id}/`, { role: nextRole.toUpperCase() });
-    await load();
-  } catch (e) {
-    alert("Edit failed. Check server.");
-  } finally {
-    setBusyId(null);
-  }
-}
+// async function editUser(u) {
+//   const nextRole = prompt('Set role (ADMIN | MANAGER | ACCOUNTANT):', u.role || 'ACCOUNTANT');
+//   if (!nextRole) return;
+//   try {
+//     setBusyId(u.id);
+//     await api.patch(`/auth/users/${u.id}/`, { role: nextRole.toUpperCase() });
+//     await load();
+//   } catch {
+//     alert("Edit failed. Check server.");
+//   } finally {
+//     setBusyId(null);
+//   }
+// }
 
 async function createUserQuick() {
   const first = prompt("First name:");
@@ -276,7 +276,7 @@ async function createUserQuick() {
     });
     setMsg("User created.");
     await load();
-  } catch (e) {
+  } catch {
     setMsg("Create failed. Check server.");
   }
 }
