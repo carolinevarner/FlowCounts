@@ -19,9 +19,7 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
-COPY backend/manage.py ./
-COPY backend/core ./core
-COPY backend/requirements.txt ./
+COPY backend/ ./
 
 # Copy built frontend into Django’s static directory
 COPY --from=frontend-build /app/frontend/dist ./frontend_build
