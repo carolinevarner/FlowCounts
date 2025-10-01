@@ -1,5 +1,5 @@
 # Stage 1: Build React frontend
-FROM node:18 AS frontend-build
+FROM node:20 AS frontend-build
 WORKDIR /app/frontend
 
 # Install frontend dependencies
@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 
 # Copy built frontend into Django’s static directory
-COPY --from=frontend-build /app/frontend/build ./frontend_build
+COPY --from=frontend-build /app/frontend/dist ./frontend_build
 
 # Environment variables for Django
 ENV PYTHONDONTWRITEBYTECODE=1
