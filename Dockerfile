@@ -11,7 +11,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Build Django backend
-FROM python:3.11-slim AS backend
+FROM public.ecr.aws/docker/library/python:3.11-slim AS backend
 WORKDIR /app
 
 # Install Python dependencies
