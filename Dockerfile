@@ -37,17 +37,16 @@ FROM node:20 as frontend
 
 WORKDIR /app/frontend
 
-# Copy frontend package.json and lock file
 COPY frontend/package*.json ./
-
-# Install dependencies
 RUN npm install --legacy-peer-deps
 
-# Copy frontend code
-COPY frontend/ .
+COPY frontend/ ./
 
-# Build React app
+# Build Vite app
 RUN npm run build
+
+# Verify the build folder
+RUN ls -la dist
 
 # ---------- Stage 3: Final Image ----------
 FROM python:3.11-slim
@@ -66,7 +65,7 @@ COPY --from=backend /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=backend /app/backend /app/backend
 
 # Copy frontend build into Django static files
-COPY --from=frontend /app/frontend/build /app/backend/static
+COPY --from=frontend /app/frontend/dist /app/backend/static
 
 EXPOSE 8000
 
