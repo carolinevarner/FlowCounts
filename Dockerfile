@@ -30,7 +30,7 @@ COPY backend/ .
 EXPOSE 8080
 
 # Command to run Django
-CMD ["gunicorn", "myproject.wsgi:application", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8080"]
 
 # ---------- Stage 2: React Frontend ----------
 FROM node:20 as frontend
