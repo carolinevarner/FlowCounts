@@ -19,7 +19,9 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
-COPY backend/ .
+COPY backend/manage.py ./
+COPY backend/core ./core
+COPY backend/requirements.txt ./
 
 # Copy built frontend into Django’s static directory
 COPY --from=frontend-build /app/frontend/dist ./frontend_build
@@ -27,7 +29,7 @@ COPY --from=frontend-build /app/frontend/dist ./frontend_build
 # Environment variables for Django
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV DJANGO_SETTINGS_MODULE=backend.settings
+ENV DJANGO_SETTINGS_MODULE=core.settings
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
@@ -36,4 +38,5 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # Start Django using gunicorn
-CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
+
