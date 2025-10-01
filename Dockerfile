@@ -27,10 +27,10 @@ COPY backend/ .
 # RUN python manage.py collectstatic --noinput
 
 # Expose Django port
-EXPOSE 8000
+EXPOSE 8080
 
 # Command to run Django
-CMD ["gunicorn", "myproject.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "myproject.wsgi:application", "--bind", "0.0.0.0:8080"]
 
 # ---------- Stage 2: React Frontend ----------
 FROM node:20 as frontend
@@ -65,7 +65,7 @@ COPY --from=backend /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=backend /app/backend /app/backend
 
 # Copy frontend build into Django static files
-COPY --from=frontend /app/frontend/dist /app/backend/static
+COPY --from=frontend /app/frontend/dist /app/backend/staticfiles
 
 EXPOSE 8000
 
