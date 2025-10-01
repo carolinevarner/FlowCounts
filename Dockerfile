@@ -1,40 +1,53 @@
+# -----------------------------
 # Stage 1: Build React frontend
+# -----------------------------
 FROM node:20 AS frontend-build
+
 WORKDIR /app/frontend
 
-# Install frontend dependencies
-COPY frontend/package.json frontend/package-lock.json ./
+# Copy React source files
+COPY frontend/package*.json ./
 RUN npm install
-
-# Copy the rest of the frontend code and build
 COPY frontend/ ./
 RUN npm run build
 
+# -----------------------------
 # Stage 2: Build Django backend
-FROM public.ecr.aws/docker/library/python:3.11-slim AS backend
+# -----------------------------
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
 WORKDIR /app
 
-# Install Python dependencies
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy backend code
+# Copy requirements and install
+COPY backend/requirements.txt ./
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Copy backend source
 COPY backend/ ./
 
-# Copy built frontend into Django’s static directory
-COPY --from=frontend-build /app/frontend/dist ./frontend_build
-
-# Environment variables for Django
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV DJANGO_SETTINGS_MODULE=core.settings
+# Set up static files
+RUN mkdir -p /app/staticfiles
+ENV STATIC_ROOT=/app/staticfiles
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Expose Django port
+# Copy React build output into Django static files
+COPY --from=frontend-build /app/frontend/build /app/staticfiles/frontend
+
+# Expose port for Django
 EXPOSE 8000
 
-# Start Django using gunicorn
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
-
+# Default command
+CMD ["gunicorn", "your_project.wsgi:application", "--bind", "0.0.0.0:8000"]
