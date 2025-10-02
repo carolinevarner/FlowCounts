@@ -204,5 +204,6 @@ ALLOWED_HOSTS = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  
-    ""https://FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
+    "https://FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
 ]
+
