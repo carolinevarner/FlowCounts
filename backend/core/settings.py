@@ -125,15 +125,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/build/static'),
-]
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -177,10 +168,8 @@ PASSWORD_MAX_AGE_DAYS = 90
 PASSWORD_EXPIRY_WARNING_DAYS = 3
 MAX_FAILED_LOGINS = 3   
 
-MEDIA_URL = "/media/"
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_ROOT = BASE_DIR / "media"
 PUBLIC_ORIGIN = "http://127.0.0.1:8000"
 
 AUTHENTICATION_BACKENDS = [
@@ -202,3 +191,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
 ]
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/build/static'),
+]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
