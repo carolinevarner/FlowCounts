@@ -20,7 +20,7 @@ RUN python manage.py migrate --noinput
 RUN python manage.py collectstatic --noinput
 
 # Expose the port Elastic Beanstalk will use
-EXPOSE 8080
+EXPOSE 8000
 
 # Run Gunicorn with environment port
 CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:$PORT"]
