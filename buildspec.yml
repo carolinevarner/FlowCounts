@@ -3,27 +3,20 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.11
-      nodejs: 20
+      python: 3.12
     commands:
-      - echo "Installing backend dependencies..."
+      - echo "Installing dependencies (for build/test)..."
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt
-      - echo "Installing frontend dependencies..."
-      - cd frontend
-      - npm install
-      - npm run build
-      - cd ..
 
   build:
     commands:
-      - echo "Collecting static files..."
+      - echo "Running tests (optional) and packaging application..."
       - cd backend
-      - python manage.py collectstatic --noinput || true
+      - python manage.py test || true
       - cd ..
-      - echo "Build phase completed."
+      - zip -r application.zip . -x "*.git*" "frontend/node_modules/*" "*.venv*" ".git/*"
 
 artifacts:
   files:
-    - '**/*'
-  base-directory: .
+    - application.zip
