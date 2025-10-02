@@ -26,12 +26,13 @@ import time
 from django.core.mail import send_mail
 import logging, secrets, string
 
-from .models import RegistrationRequest
+from .models import RegistrationRequest, EventLog
 from .serializers import (
     UserSerializer,
     UserLiteSerializer,
     RegistrationRequestSerializer,
     CreateUserSerializer,
+    EventLogSerializer,
 )
 from .permissions import IsAdmin 
 
@@ -103,11 +104,29 @@ class FlowTokenView(TokenObtainPairView):
             Q(display_handle__iexact=ident)
         ).first()
 
-        real_username = user_obj.username if user_obj else ident
-        user = authenticate(request, username=real_username, password=password)
+        # First, verify direct password match against the identified user
+        user = None
+        reason = None
+        if user_obj:
+            if user_obj.check_password(password):
+                user = user_obj
+            else:
+                reason = "password_mismatch"
+        else:
+            reason = "user_not_found"
+
         if not user:
-            logger.warning("Login failed for ident=%s (mapped=%s)", ident, real_username)
-            return Response({"detail": "Invalid credentials"}, status=400)
+            # Fall back to Django's authenticate using resolved username
+            real_username = user_obj.username if user_obj else ident
+            auth_user = authenticate(request, username=real_username, password=password)
+            if auth_user:
+                user = auth_user
+                reason = None
+
+        if not user:
+            mapped = user_obj.username if user_obj else ident
+            logger.warning("Login failed for ident=%s (mapped=%s) reason=%s", ident, mapped, reason)
+            return Response({"detail": "Invalid credentials", "_reason": reason, "_mapped": mapped}, status=400)
         if not user.is_active:
             return Response({"detail": "User is inactive/suspended"}, status=403)
         
@@ -127,7 +146,12 @@ class FlowTokenView(TokenObtainPairView):
         }
         return Response({"access": access, "refresh": str(refresh), "user": data_user}, status=200)
 
-class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class UserAdminViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdmin]
     queryset = User.objects.all().order_by("date_joined")
@@ -135,31 +159,13 @@ class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def get_serializer_class(self):
         return CreateUserSerializer if self.action == "create" else UserSerializer
-    
+
+    # Ensure PATCH is treated as partial update
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
         return super().update(request, *args, **kwargs)
 
-    def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-
-        # auto-generate username if not provided
-        if not data.get("username"):
-            data["username"] = build_username(
-                data.get("first_name", ""),
-                data.get("last_name", "")
-            )
-
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # allow PATCH /auth/users/:id/
-    def update(self, request, *args, **kwargs):
-        kwargs["partial"] = True
-        return super().update(request, *args, **kwargs)
-
+    # Allow POST create while auto-generating username when missing
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         if not data.get("username"):
@@ -167,10 +173,31 @@ class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 data.get("first_name", ""),
                 data.get("last_name", ""),
             )
+        # Ensure a unique display_handle
+        if not data.get("display_handle"):
+            base = f"{(data.get('first_name','') or '')[:1]}{(data.get('last_name','') or '')}".lower()
+            base = "".join(ch for ch in base if ch.isalnum()) or "user"
+            candidate = base
+            idx = 1
+            while User.objects.filter(display_handle__iexact=candidate).exists():
+                idx += 1
+                candidate = f"{base}{idx}"
+            data["display_handle"] = candidate
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Log event
+        try:
+            EventLog.objects.create(
+                action="USER_CREATED",
+                actor=request.user if request.user.is_authenticated else None,
+                target_user=User.objects.filter(username=serializer.data.get("username")).first(),
+                details=f"Created user {serializer.data.get('username')} ({serializer.data.get('email','')})",
+            )
+        except Exception:
+            logger.warning("Failed to log USER_CREATED event", exc_info=True)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
@@ -179,6 +206,9 @@ class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         user.suspend_from = None
         user.suspend_to = None
         user.save(update_fields=["is_active", "suspend_from", "suspend_to"])
+        EventLog.objects.create(
+            action="USER_ACTIVATED", actor=request.user, target_user=user, details="User activated"
+        )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
@@ -186,6 +216,9 @@ class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         user = self.get_object()
         user.is_active = False
         user.save(update_fields=["is_active"])
+        EventLog.objects.create(
+            action="USER_DEACTIVATED", actor=request.user, target_user=user, details="User deactivated"
+        )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
@@ -226,6 +259,10 @@ class UserAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             user.is_active = not (today <= end)
 
         user.save(update_fields=["suspend_from", "suspend_to", "is_active"])
+        EventLog.objects.create(
+            action="USER_SUSPENDED", actor=request.user, target_user=user,
+            details=f"suspend_from={user.suspend_from}, suspend_to={user.suspend_to}, is_active={user.is_active}"
+        )
         return Response(UserSerializer(user).data)
 
     @action(detail=False, methods=["get"])
@@ -260,6 +297,13 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset().filter(approved__isnull=True)
         ser = self.get_serializer(qs, many=True)
         return Response(ser.data)
+
+
+class EventLogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdmin]
+    queryset = EventLog.objects.all().order_by("-created_at")
+    serializer_class = EventLogSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -327,6 +371,14 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
                 "Please change your password after logging in."
             )
             send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
+
+        try:
+            EventLog.objects.create(
+                action="REQUEST_APPROVED", actor=request.user, target_user=user,
+                details=f"Approved registration for {req.email}; created username={user.username}"
+            )
+        except Exception:
+            logger.warning("Failed to log REQUEST_APPROVED event", exc_info=True)
 
         return Response({"detail": "Approved and user created", "user_id": user.id, "email_sent": True})
 

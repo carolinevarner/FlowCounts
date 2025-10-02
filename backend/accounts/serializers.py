@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import serializers
 from .models import RegistrationRequest, User
+from .models import EventLog
 
 User = get_user_model()
 
@@ -114,3 +115,27 @@ class CreateUserSerializer(serializers.ModelSerializer):
         user.set_password(pwd)
         user.save()
         return user
+
+
+class EventLogSerializer(serializers.ModelSerializer):
+    actor_username = serializers.SerializerMethodField()
+    target_username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EventLog
+        fields = [
+            "id",
+            "action",
+            "actor",
+            "actor_username",
+            "target_user",
+            "target_username",
+            "details",
+            "created_at",
+        ]
+
+    def get_actor_username(self, obj):
+        return getattr(obj.actor, "username", None)
+
+    def get_target_username(self, obj):
+        return getattr(obj.target_user, "username", None)

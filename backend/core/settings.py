@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-4e5u8tf)tap$o%!11w2q6jj&=(e$&t9z1$qqdk-**45o-ns^pj'
 
-DEBUG = False
+DEBUG = True
 
 SECURE_SSL_REDIRECT = False
 CSRF_COOKIE_SECURE = False
@@ -83,12 +83,8 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",  # Or mysql
-        "NAME": os.environ.get("DB_NAME", "postgres"),
-        "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -184,6 +180,7 @@ DEFAULT_FROM_EMAIL = "no-reply@flowcounts.local"
 ALLOWED_HOSTS = [
     'FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com',
     "localhost",
+    "127.0.0.1",
 ]
 
 CORS_ALLOWED_ORIGINS = [

@@ -197,6 +197,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
   const [editing, setEditing] = useState(null); 
+  const [busyId, setBusyId] = useState(null);
 
   
 
@@ -259,11 +260,19 @@ export default function AdminUsers() {
 
   async function load() {
     setLoading(true);
-    const pend = await api.get("/auth/registration-requests/pending/");
-    const us = await api.get("/auth/users/");
-    setPending((pend.data || []).map((p) => ({ ...p, __kind: "pending" })));
-    setUsers((us.data || []).map((u) => ({ ...u, __kind: "user" })));
-    setLoading(false);
+    try {
+      const pend = await api.get("/auth/registration-requests/pending/");
+      const us = await api.get("/auth/users/");
+      setPending((pend.data || []).map((p) => ({ ...p, __kind: "pending" })));
+      setUsers((us.data || []).map((u) => ({ ...u, __kind: "user" })));
+    } catch (e) {
+      const status = e?.response?.status;
+      if (status === 401) setMsg("Session expired. Log in again.");
+      else if (status === 403) setMsg("You do not have permission to view users.");
+      else setMsg("Failed to load users. See server logs.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); }, []);
@@ -292,6 +301,74 @@ export default function AdminUsers() {
   }
 
   const displayMap = makeDisplayNameMap(users);
+
+  async function toggleActive(user, makeActive) {
+    setMsg("");
+    setBusyId(user.id);
+    try {
+      const path = makeActive ? "activate" : "deactivate";
+      const { data } = await api.post(`/auth/users/${user.id}/${path}/`, {});
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, ...data } : u)));
+    } catch (e) {
+      setMsg(e?.response?.status === 401 ? "Session expired. Log in again." : "Update failed. See server logs.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function suspendUser(user) {
+    setMsg("");
+    const start = prompt("Suspend from (YYYY-MM-DD). Leave blank to clear.", "");
+    const end = start ? prompt("Suspend to (YYYY-MM-DD).", start) : "";
+    setBusyId(user.id);
+    try {
+      const payload = { suspend_from: (start || "").trim(), suspend_to: (end || "").trim() };
+      const { data } = await api.post(`/auth/users/${user.id}/suspend/`, payload);
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, ...data } : u)));
+    } catch (e) {
+      const detail = e?.response?.data?.detail || "Suspend failed. See server logs.";
+      setMsg(detail);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function createUserQuick() {
+    setMsg("");
+    const first = prompt("First name:", "");
+    if (first === null) return;
+    const last = prompt("Last name:", "");
+    if (last === null) return;
+    const email = prompt("Email:", "");
+    if (email === null) return;
+    const role = prompt("Role (ADMIN, MANAGER, ACCOUNTANT):", "ACCOUNTANT");
+    if (role === null) return;
+    const password = prompt("Temporary password (min 8 chars, will be required to change later):", "");
+    if (password === null) return;
+    if (!password || password.trim().length < 8) {
+      setMsg("Password must be at least 8 characters.");
+      return;
+    }
+    try {
+      await api.post("/auth/users/", {
+        first_name: (first || "").trim(),
+        last_name: (last || "").trim(),
+        email: (email || "").trim(),
+        role: (role || "ACCOUNTANT").trim(),
+        password: password.trim(),
+      });
+      await load();
+      setMsg("User created.");
+    } catch (e) {
+      const apiMsg =
+        e?.response?.data?.detail ||
+        e?.response?.data?.email?.[0] ||
+        e?.response?.data?.role?.[0] ||
+        e?.response?.data?.password?.[0] ||
+        "Create failed. See server logs.";
+      setMsg(apiMsg);
+    }
+  }
 
   return (
   <>
@@ -346,7 +423,13 @@ export default function AdminUsers() {
             <br />
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <h2 style={{ margin: 0 }}>Current Users</h2>
-              <button className="auth-button" onClick={createUserQuick}>+ Create User</button>
+              <button
+                className="auth-button"
+                style={{ padding: "6px 10px", fontSize: 12 }}
+                onClick={createUserQuick}
+              >
+                + Create User
+              </button>
             </div>
 
             {users.length === 0 ? (

@@ -7,6 +7,7 @@ from django.views.generic import TemplateView
 from accounts.views import (
     RegistrationRequestViewSet,
     UserAdminViewSet,
+    EventLogViewSet,
     FlowTokenView,
     me,
     upload_profile_photo,
@@ -15,6 +16,7 @@ from accounts.views import (
 router = DefaultRouter()
 router.register(r"auth/registration-requests", RegistrationRequestViewSet, basename="registration-requests")
 router.register(r"auth/users", UserAdminViewSet, basename="auth-users")
+router.register(r"auth/events", EventLogViewSet, basename="auth-events")
 
 urlpatterns = [
     path("api/", include(router.urls)),

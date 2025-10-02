@@ -100,6 +100,7 @@ import AdminShell from "./layout/AdminShell.jsx";
 import ManagerShell from "./layout/ManagerShell.jsx";
 import AccountantShell from "./layout/AccountantShell.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
+import AdminEvents from "./pages/AdminEvents.jsx";
 // import Page from "./layout/Page.jsx"; // if you actually have this component
 import Profile from "./pages/Profile.jsx";
 
@@ -145,7 +146,7 @@ export default function App() {
         <Route path="chart" element={<Blank title="Admin • Chart of Accounts" />} />
         <Route path="accounts" element={<Blank title="Admin • Accounts" />} />
         <Route path="users" element={<AdminUsers />} />
-        <Route path="events" element={<Blank title="Admin • Event Log" />} />
+        <Route path="events" element={<AdminEvents />} />
       </Route>
 
       {/* MANAGER */}
