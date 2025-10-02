@@ -8,15 +8,19 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /app
 
-# Copy requirements first and install dependencies (for Docker caching)
-COPY backend/requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# Copy the rest of the backend code
+# Copy backend code
 COPY backend/ /app/
 
-# Expose the port Gunicorn will run on
-EXPOSE 8000
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# Run Gunicorn with correct module path
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Run database migrations and collect static files
+RUN python manage.py migrate --noinput
+RUN python manage.py collectstatic --noinput
+
+# Expose the port Elastic Beanstalk will use
+EXPOSE 8080
+
+# Run Gunicorn with environment port
+CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:$PORT"]
