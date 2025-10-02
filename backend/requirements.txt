@@ -1,8 +1,12 @@
-﻿asgiref==3.9.1
 Django==5.2.6
-django-cors-headers==4.8.0
+asgiref==3.9.1
 djangorestframework==3.16.1
+django-cors-headers==4.8.0
 sqlparse==0.5.3
 tzdata==2025.2
 gunicorn==21.2.0
 whitenoise==6.5.0
+
+# Database drivers (choose what your DB is)
+psycopg2-binary==2.9.10   # For PostgreSQL
+# mysqlclient==2.1.1      # For MySQL / MariaDB
