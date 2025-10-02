@@ -259,9 +259,19 @@ class UserAdminViewSet(
             user.is_active = not (today <= end)
 
         user.save(update_fields=["suspend_from", "suspend_to", "is_active"])
+        # Format suspension details more readably
+        if user.suspend_from and user.suspend_to:
+            details = f"User suspended from {user.suspend_from} to {user.suspend_to}"
+        elif user.suspend_from:
+            details = f"User suspended from {user.suspend_from} (indefinite)"
+        elif user.suspend_to:
+            details = f"User suspended until {user.suspend_to}"
+        else:
+            details = "User suspension cleared"
+        
         EventLog.objects.create(
             action="USER_SUSPENDED", actor=request.user, target_user=user,
-            details=f"suspend_from={user.suspend_from}, suspend_to={user.suspend_to}, is_active={user.is_active}"
+            details=details
         )
         return Response(UserSerializer(user).data)
 
