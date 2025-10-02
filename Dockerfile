@@ -8,15 +8,15 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /app
 
-# Copy backend code
+# Copy requirements first and install dependencies (for Docker caching)
+COPY backend/requirements.txt /app/requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Copy the rest of the backend code
 COPY backend/ /app/
 
-# Install dependencies
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-# Expose the port that Gunicorn will run on
-EXPOSE 8080
+# Expose the port Gunicorn will run on
+EXPOSE 8000
 
 # Run Gunicorn with correct module path
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
