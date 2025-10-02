@@ -178,13 +178,15 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@flowcounts.local"
 
 ALLOWED_HOSTS = [
-    'FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com',
+    "flowcounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
+    "FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
     "localhost",
     "127.0.0.1",
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  
+    "http://localhost:5173",
+    "https://flowcounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
     "https://FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
 ]
 
