@@ -260,10 +260,11 @@ class UserAdminViewSet(
 
         user.save(update_fields=["suspend_from", "suspend_to", "is_active"])
         # Format suspension details more readably
+        today = timezone.localdate()
         if user.suspend_from and user.suspend_to:
-            details = f"User suspended from {user.suspend_from} to {user.suspend_to}"
+            details = f"User suspended from {today} to {user.suspend_to}"
         elif user.suspend_from:
-            details = f"User suspended from {user.suspend_from} (indefinite)"
+            details = f"User suspended from {today} (indefinite)"
         elif user.suspend_to:
             details = f"User suspended until {user.suspend_to}"
         else:
