@@ -6,18 +6,26 @@ phases:
       python: 3.11
       nodejs: 18
     commands:
+      - echo "Installing Python and Node dependencies..."
       - pip install -r requirements.txt
       - npm install --prefix frontend
+
   build:
     commands:
-      # Build React frontend
+      - echo "Building React frontend..."
       - npm run build --prefix frontend
-      # Collect Django static files (so EB can serve them)
+      - echo "Collecting Django static files..."
       - python manage.py collectstatic --noinput
-      # Package everything into a deployable directory
+      - echo "Packaging deployable files..."
       - mkdir -p deploy
-      - cp -r * deploy/ || true
+      # Copy only necessary files for deployment
+      - cp -r manage.py deploy/
+      - cp -r myapp deploy/myapp  # replace `myapp` with your Django app folder(s)
+      - cp -r frontend/build deploy/frontend_build
+      - cp -r requirements.txt deploy/
+
 artifacts:
   files:
     - '**/*'
   base-directory: deploy
+  name: BuildOutput
