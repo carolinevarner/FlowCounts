@@ -20,13 +20,14 @@ This project is collaboratively built by:
 
 1. Clone the repository
 2. Open 2 sepeate terminals and use these commands:
-bash
+
+Terminal 1:
 ```
 cd backend 
 .\venv\Scripts\Activate
 python.exe manage.py runserver 8000
 ```
-bash
+Terminal 2:
 ```
 cd frontnd 
 npm run dev
