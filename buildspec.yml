@@ -6,23 +6,34 @@ phases:
       python: 3.11
       nodejs: 18
     commands:
-      - echo "Installing Python and Node dependencies..."
-      - pip install -r requirements.txt
-      - npm install --prefix frontend
+      - echo "Installing Python dependencies..."
+      - pip install --upgrade pip
+      - pip install -r backend/requirements.txt
+      - echo "Installing Node.js dependencies..."
+      - npm ci --prefix frontend
 
   build:
     commands:
       - echo "Building React frontend..."
       - npm run build --prefix frontend
       - echo "Collecting Django static files..."
-      - python manage.py collectstatic --noinput
-      - echo "Packaging deployable files..."
+      - python backend/manage.py collectstatic --noinput
+      - echo "Preparing deploy directory..."
       - mkdir -p deploy
-      # Copy only necessary files for deployment
-      - cp -r manage.py deploy/
-      - cp -r myapp deploy/myapp  # replace `myapp` with your Django app folder(s)
+      # Copy backend (Django project)
+      - cp backend/manage.py deploy/
+      - cp -r backend/core deploy/core
+      # Copy frontend build output
       - cp -r frontend/build deploy/frontend_build
-      - cp -r requirements.txt deploy/
+      # Copy requirements
+      - cp backend/requirements.txt deploy/
+      # Copy Procfile
+      - cp Procfile deploy/
+      # Copy EB config if present
+      - if [ -d ".ebextensions" ]; then cp -r .ebextensions deploy/.ebextensions; fi
+      # Copy staticfiles if present
+      - mkdir -p deploy/staticfiles
+      - cp -r backend/staticfiles/* deploy/staticfiles/ || true
 
 artifacts:
   files:
