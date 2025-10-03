@@ -15,7 +15,8 @@ phases:
       - cd backend
       - python manage.py test || true
       - cd ..
-      - zip -r application.zip . -x "*.git*" "frontend/node_modules/*" "*.venv*" ".git/*"
+      # Create zip in root folder so CodeBuild can find it
+      - zip -r application.zip backend -x "*.git*" "frontend/node_modules/*" "*.venv*" ".git/*"
 
 artifacts:
   files:
