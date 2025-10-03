@@ -3,21 +3,21 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.12
+      python: 3.11
+      nodejs: 18
     commands:
-      - echo "Installing dependencies (for build/test)..."
-      - pip install --upgrade pip
-      - pip install -r backend/requirements.txt
-
+      - pip install -r requirements.txt
+      - npm install --prefix frontend
   build:
     commands:
-      - echo "Running tests (optional) and packaging application..."
-      - cd backend
-      - python manage.py test || true
-      - cd ..
-      # Create zip in root folder so CodeBuild can find it
-      - zip -r application.zip backend -x "*.git*" "frontend/node_modules/*" "*.venv*" ".git/*"
-
+      # Build React frontend
+      - npm run build --prefix frontend
+      # Collect Django static files (so EB can serve them)
+      - python manage.py collectstatic --noinput
+      # Package everything into a deployable directory
+      - mkdir -p deploy
+      - cp -r * deploy/ || true
 artifacts:
   files:
-    - application.zip
+    - '**/*'
+  base-directory: deploy
