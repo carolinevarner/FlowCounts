@@ -93,7 +93,7 @@ export default function AdminEvents() {
       <div className="card">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h2 style={{ margin: 0 }}>Event Log</h2>
-          <button className="auth-button" onClick={loadEvents} style={{ padding: "6px 10px", fontSize: 12 }}>
+          <button className="auth-button" onClick={loadEvents} style={{ padding: "6px 10px", fontSize: 12, width: "150px" }}>
             Refresh
           </button>
         </div>

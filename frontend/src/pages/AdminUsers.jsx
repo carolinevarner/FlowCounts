@@ -422,10 +422,10 @@ export default function AdminUsers() {
           <div className="card">
             <br />
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <h2 style={{ margin: 0 }}>Current Users</h2>
+              <h2 style={{ marginBottom: 10 }}>Current Users</h2>
               <button
-                className="auth-button"
-                style={{ padding: "6px 10px", fontSize: 12 }}
+                className="auth-create-user"
+                style={{ padding: "10px 10px", fontSize: 12, marginLeft: "565px", marginBottom: "3px"}}
                 onClick={createUserQuick}
               >
                 + Create User

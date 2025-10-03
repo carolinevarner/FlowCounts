@@ -69,6 +69,18 @@ h2{
   border-radius: 6px;
 }
 
+.auth-create-user {
+  font-family: sans-serif;
+  background-color: #1C302F;
+  color: #fff;
+  height: 36px;
+  border-radius: 6px;
+  width: 220px;
+  align-items: right;
+  align-content: right;
+  display: right;
+}
+
 .auth-input {
   width: 100%;
   background: #fafafa;
@@ -77,7 +89,7 @@ h2{
   outline: none;
   color: #1C302F;
   border-color: #a09f9f;
-
+  
 }
 
 .auth-button {
