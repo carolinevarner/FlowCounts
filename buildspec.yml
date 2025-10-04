@@ -39,4 +39,5 @@ artifacts:
   files:
     - '**/*'
   base-directory: deploy
-  name: BuildOutput
+  discard-paths: no
+  name: BuildOutput.zip
