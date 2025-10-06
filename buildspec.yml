@@ -6,32 +6,41 @@ phases:
       python: 3.11
       nodejs: 20
     commands:
-      - echo "Installing Python dependencies..."
+      - echo "Upgrading pip and installing backend dependencies..."
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt
-      - echo "Installing Node.js dependencies..."
-      - npm ci --prefix frontend
+      - echo "Installing frontend dependencies..."
+      - cd frontend
+      - npm ci
+      - cd ..
 
   build:
     commands:
       - echo "Building React frontend..."
-      - npm run build --prefix frontend
+      - cd frontend
+      - npm run build
+      - cd ..
       - echo "Collecting Django static files..."
       - python backend/manage.py collectstatic --noinput
       - echo "Preparing deploy directory..."
       - mkdir -p deploy
+
       # Copy backend (Django project)
       - cp backend/manage.py deploy/
       - cp -r backend/core deploy/core
-      # Copy frontend build output (Vite → dist)
-      - cp -r frontend/dist deploy/frontend_build
-      # Copy requirements
+
+      # Copy built frontend (React → build folder)
+      - mkdir -p deploy/frontend_build
+      - cp -r frontend/build/* deploy/frontend_build/
+
+      # Copy requirements and Procfile
       - cp backend/requirements.txt deploy/
-      # Copy Procfile
       - cp Procfile deploy/
-      # Copy EB config if present
+
+      # Copy EB configuration if exists
       - if [ -d ".ebextensions" ]; then cp -r .ebextensions deploy/.ebextensions; fi
-      # Copy staticfiles if present
+
+      # Copy static files if they exist
       - mkdir -p deploy/staticfiles
       - cp -r backend/staticfiles/* deploy/staticfiles/ || true
 
@@ -40,4 +49,3 @@ artifacts:
     - '**/*'
   base-directory: deploy
   name: BuildOutput
-
