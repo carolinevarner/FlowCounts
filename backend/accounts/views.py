@@ -560,13 +560,15 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
         req = self.get_object()
         role = request.data.get("role", "").strip().upper()
         
-        if role not in ["ADMIN", "MANAGER", "ACCOUNTANT"]:
+        # Allow clearing the role (empty string) or setting a valid role
+        if role and role not in ["ADMIN", "MANAGER", "ACCOUNTANT"]:
             return Response(
                 {"detail": "Invalid role. Must be ADMIN, MANAGER, or ACCOUNTANT."},
                 status=400
             )
         
-        req.assigned_role = role
+        # Set role to None if empty string, otherwise set to the provided role
+        req.assigned_role = role if role else None
         req.save(update_fields=["assigned_role"])
         
         serializer = self.get_serializer(req)

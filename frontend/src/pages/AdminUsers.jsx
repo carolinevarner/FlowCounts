@@ -282,7 +282,11 @@ export default function AdminUsers() {
     try {
       await api.post(`/auth/registration-requests/${id}/assign_role/`, { role });
       await load();
-      setMsg(`Role ${role} assigned.`);
+      if (role) {
+        setMsg(`Role ${role} assigned.`);
+      } else {
+        setMsg(`Role cleared.`);
+      }
     } catch (e) {
       setMsg(e.response?.status === 401 ? "Session expired. Log in again." : "Role assignment failed. See server logs.");
     }
