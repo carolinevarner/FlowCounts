@@ -25,12 +25,13 @@ class UserLiteSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile_image_url = serializers.SerializerMethodField()
+    suspended_now = serializers.SerializerMethodField()
 
     class Meta:
         model = User  
         fields = (
             "id", "username", "email", "first_name", "last_name", "role",
-            "is_active", "profile_image_url",
+            "is_active", "profile_image_url", "suspended_now",
         )
 
     def get_profile_image_url(self, obj):
@@ -45,6 +46,11 @@ class UserSerializer(serializers.ModelSerializer):
         return f"{base}{url}"
 
     def get_suspended_now(self, obj):
+        # Check if user is inactive due to failed login attempts
+        if not obj.is_active and not obj.suspend_from and not obj.suspend_to:
+            return True
+            
+        # Check date-based suspension
         today = timezone.localdate()
         start = obj.suspend_from
         end = obj.suspend_to
@@ -69,6 +75,7 @@ class RegistrationRequestSerializer(serializers.ModelSerializer):
             "address",
             "dob",
             "approved",
+            "assigned_role",
             "created_at",
         ]
     read_only_fields = ["approved", "created_at"]

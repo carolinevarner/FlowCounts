@@ -54,6 +54,12 @@ class PasswordHistory(models.Model):
         ordering = ["-created_at"]
 
 class RegistrationRequest(models.Model):
+    ROLE_CHOICES = [
+        ('ADMIN', 'Admin'),
+        ('MANAGER', 'Manager'),
+        ('ACCOUNTANT', 'Accountant'),
+    ]
+    
     first_name = models.CharField(max_length=150)
     last_name  = models.CharField(max_length=150)
     address    = models.CharField(max_length=255, blank=True)
@@ -61,6 +67,7 @@ class RegistrationRequest(models.Model):
     email      = models.EmailField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     approved   = models.BooleanField(null=True, blank=True)
+    assigned_role = models.CharField(max_length=20, choices=ROLE_CHOICES, null=True, blank=True)
     reviewed_by = models.ForeignKey("accounts.User", null=True, blank=True,
                                     on_delete=models.SET_NULL, related_name="reviewed_requests")
     review_note = models.TextField(blank=True)

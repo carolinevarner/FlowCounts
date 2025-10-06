@@ -36,23 +36,17 @@ export default function Login() {
     else if (role === "ACCOUNTANT") navigate("/accountant");
     else navigate("/login");
   } catch (err) {
-
     const detail = err?.response?.data?.detail || "Invalid credentials.";
     const attemptsLeft = err?.response?.data?.attempts_left;
-    const locked = err?.response?.data?.locked;
+    const suspended = err?.response?.data?.suspended;
 
-    if (locked) {
-      setError("Account suspended due to too many failed attempts.");
+    if (suspended) {
+      setError("Account suspended due to too many failed login attempts. Contact administrator.");
       return;
     }
 
     if (typeof attemptsLeft === "number") {
-      if (attemptsLeft === 1) {
-        setError(`Invalid credentials. Last login attempt allowed.`);
-      } else {
-        const used = (3 - attemptsLeft);
-        setError(`Invalid credentials. Attempt ${used} of 3.`);
-      }
+      setError(detail); // Use the backend message: "Incorrect Login, X attempts left"
     } else {
       setError(detail);
     }

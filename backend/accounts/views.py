@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from datetime import datetime
 from datetime import date
 from django.db import transaction
 from django.db.models import Q
@@ -38,6 +39,123 @@ from .permissions import IsAdmin
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
+
+def send_suspension_emails(user, max_attempts):
+    """Send suspension emails to user and admin"""
+    try:
+        admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+        
+        # Check if suspended user is also an admin
+        is_admin_user = user.email in admin_emails if user.email else False
+        
+        if is_admin_user:
+            # If suspended user is an admin, send a combined email
+            admin_subject = "FlowCounts: Your Admin Account Has Been Suspended"
+            admin_body = (
+                f"Hello {user.first_name or user.username},\n\n"
+                f"Your FlowCounts admin account has been suspended due to {max_attempts} failed login attempts.\n\n"
+                f"Account Details:\n"
+                f"User: {user.username} ({user.email})\n"
+                f"Name: {user.first_name} {user.last_name}\n"
+                f"Failed Attempts: {max_attempts}\n"
+                f"Time: {timezone.now()}\n\n"
+                "As an admin, you can reactivate your account by accessing the system through another admin account or contacting support.\n\n"
+                "FlowCounts Team"
+            )
+            send_mail(
+                admin_subject,
+                admin_body,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+            logger.info(f"Sent combined suspension email to admin user {user.email}")
+        else:
+            # Normal flow: send separate emails to user and admin
+            # Email to suspended user
+            if user.email:
+                user_subject = "FlowCounts Account Suspended"
+                user_body = (
+                    f"Hello {user.first_name or user.username},\n\n"
+                    f"Your FlowCounts account has been suspended due to {max_attempts} failed login attempts.\n\n"
+                    "Please contact your administrator to reactivate your account.\n\n"
+                    "FlowCounts Team"
+                )
+                send_mail(
+                    user_subject,
+                    user_body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+                logger.info(f"Sent suspension email to user {user.email}")
+            
+            # Email to admin
+            if admin_emails:
+                admin_subject = "FlowCounts: User Account Suspended"
+                admin_body = (
+                    f"A user account has been suspended due to failed login attempts:\n\n"
+                    f"User: {user.username} ({user.email})\n"
+                    f"Name: {user.first_name} {user.last_name}\n"
+                    f"Failed Attempts: {max_attempts}\n"
+                    f"Time: {timezone.now()}\n\n"
+                    "Please review and reactivate the account if needed."
+                )
+                send_mail(
+                    admin_subject,
+                    admin_body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    admin_emails,
+                    fail_silently=False,
+                )
+                logger.info(f"Sent admin notification email to {admin_emails}")
+            
+    except Exception as e:
+        logger.error(f"Failed to send suspension emails: {e}", exc_info=True)
+
+def send_scheduled_suspension_emails(user, start_date, end_date):
+    """Send emails when an admin schedules a suspension between dates."""
+    try:
+        start_str = start_date.isoformat() if start_date else ""
+        end_str = end_date.isoformat() if end_date else ""
+
+        # Notify user
+        if user.email and (start_str or end_str):
+            subject = "FlowCounts Account Suspended"
+            if start_str and end_str:
+                details_line = f"Your account has been suspended from {start_str} to {end_str}."
+            elif start_str and not end_str:
+                details_line = f"Your account has been suspended starting {start_str}."
+            else:
+                details_line = f"Your account has been suspended until {end_str}."
+            body = (
+                f"Hello {user.first_name or user.username},\n\n"
+                f"{details_line}\n\n"
+                "Please contact your administrator if you have questions.\n\n"
+                "FlowCounts Team"
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+
+        # Notify admins
+        admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+        if admin_emails:
+            subject = "FlowCounts: User Account Suspended"
+            if start_str and end_str:
+                details_line = f"Suspended from {start_str} to {end_str}."
+            elif start_str and not end_str:
+                details_line = f"Suspended starting {start_str}."
+            else:
+                details_line = f"Suspended until {end_str}."
+            body = (
+                "An administrator has suspended a user account.\n\n"
+                f"User: {user.username} ({user.email})\n"
+                f"Name: {user.first_name} {user.last_name}\n"
+                f"{details_line}\n\n"
+                "This action was performed via the admin Users page."
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, admin_emails, fail_silently=False)
+    except Exception as e:
+        logger.error(f"Failed to send scheduled suspension emails: {e}", exc_info=True)
 
 def build_username(first_name: str, last_name: str, when=None) -> str:
     when = when or timezone.now()
@@ -110,8 +228,33 @@ class FlowTokenView(TokenObtainPairView):
         if user_obj:
             if user_obj.check_password(password):
                 user = user_obj
+                # Reset failed attempts on successful login
+                if user_obj.failed_attempts > 0:
+                    user_obj.failed_attempts = 0
+                    user_obj.save(update_fields=["failed_attempts"])
             else:
                 reason = "password_mismatch"
+                # Increment failed attempts
+                user_obj.failed_attempts += 1
+                user_obj.save(update_fields=["failed_attempts"])
+                
+                # Check if user should be suspended
+                max_attempts = getattr(settings, "MAX_FAILED_LOGINS", 3)
+                if user_obj.failed_attempts >= max_attempts:
+                    # Suspend user
+                    user_obj.is_active = False
+                    user_obj.save(update_fields=["is_active"])
+                    
+                    # Log suspension event
+                    EventLog.objects.create(
+                        action="USER_SUSPENDED",
+                        actor=None,  # System action
+                        target_user=user_obj,
+                        details=f"User suspended due to {max_attempts} failed login attempts"
+                    )
+                    
+                    # Send emails
+                    send_suspension_emails(user_obj, max_attempts)
         else:
             reason = "user_not_found"
 
@@ -126,6 +269,24 @@ class FlowTokenView(TokenObtainPairView):
         if not user:
             mapped = user_obj.username if user_obj else ident
             logger.warning("Login failed for ident=%s (mapped=%s) reason=%s", ident, mapped, reason)
+            
+            # Calculate attempts left
+            attempts_left = None
+            if user_obj and reason == "password_mismatch":
+                max_attempts = getattr(settings, "MAX_FAILED_LOGINS", 3)
+                attempts_left = max_attempts - user_obj.failed_attempts
+                
+                if attempts_left <= 0:
+                    return Response({
+                        "detail": "Account suspended due to too many failed login attempts. Contact administrator.",
+                        "suspended": True
+                    }, status=403)
+                else:
+                    return Response({
+                        "detail": f"Incorrect Login, {attempts_left} attempts left",
+                        "attempts_left": attempts_left
+                    }, status=400)
+            
             return Response({"detail": "Invalid credentials", "_reason": reason, "_mapped": mapped}, status=400)
         if not user.is_active:
             return Response({"detail": "User is inactive/suspended"}, status=403)
@@ -186,16 +347,57 @@ class UserAdminViewSet(
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        
+        # Get the created user for email notifications
+        created_user = User.objects.filter(username=serializer.data.get("username")).first()
+        
         # Log event
         try:
             EventLog.objects.create(
                 action="USER_CREATED",
                 actor=request.user if request.user.is_authenticated else None,
-                target_user=User.objects.filter(username=serializer.data.get("username")).first(),
+                target_user=created_user,
                 details=f"Created user {serializer.data.get('username')} ({serializer.data.get('email','')})",
             )
         except Exception:
             logger.warning("Failed to log USER_CREATED event", exc_info=True)
+        
+        # Send email notifications
+        try:
+            if created_user and created_user.email:
+                # Email to new user
+                send_mail(
+                    "Welcome to FlowCounts",
+                    f"Hello {created_user.first_name or created_user.username},\n\n"
+                    f"Your FlowCounts account has been created by an administrator.\n\n"
+                    f"Username: {created_user.username}\n"
+                    f"Email: {created_user.email}\n"
+                    f"Role: {created_user.role}\n\n"
+                    "You can now log in to the system using your provided credentials.\n\n"
+                    "FlowCounts Team",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [created_user.email],
+                    fail_silently=False,
+                )
+                
+                # Email to admin
+                admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+                if admin_emails:
+                    send_mail(
+                        "FlowCounts: New User Created",
+                        f"A new user has been created in the system:\n\n"
+                        f"User: {created_user.username} ({created_user.email})\n"
+                        f"Name: {created_user.first_name} {created_user.last_name}\n"
+                        f"Role: {created_user.role}\n"
+                        f"Created by: {request.user.username if request.user.is_authenticated else 'System'}\n\n"
+                        "The user has been notified and can now access the system.",
+                        settings.DEFAULT_FROM_EMAIL,
+                        admin_emails,
+                        fail_silently=False,
+                    )
+        except Exception as e:
+            logger.error(f"Failed to send user creation emails: {e}", exc_info=True)
+            
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -229,18 +431,59 @@ class UserAdminViewSet(
         end_raw   = (request.data.get("suspend_to") or "").strip()
 
         if not start_raw or not end_raw:
+            # Treat as UNSUSPEND action
             user.suspend_from = None
             user.suspend_to = None
             user.is_active = True
-            user.save(update_fields=["suspend_from", "suspend_to", "is_active"])
+            user.failed_attempts = 0
+            user.save(update_fields=["suspend_from", "suspend_to", "is_active", "failed_attempts"])
+
+            EventLog.objects.create(
+                action="USER_UNSUSPENDED", actor=request.user, target_user=user,
+                details="User unsuspended"
+            )
+
+            # Notify user of unsuspension
+            try:
+                if user.email:
+                    send_mail(
+                        "FlowCounts Account Unsuspended",
+                        (
+                            f"Hello {user.first_name or user.username},\n\n"
+                            "Your FlowCounts account has been reactivated by an administrator.\n\n"
+                            "You can log in now.\n\n"
+                            "FlowCounts Team"
+                        ),
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user.email],
+                        fail_silently=False,
+                    )
+            except Exception as e:
+                logger.error(f"Failed to send unsuspension email: {e}")
+
             return Response(UserSerializer(user).data)
         
-        start = parse_date(start_raw) if start_raw else None
-        end = parse_date(end_raw) if end_raw else None
+        def parse_date_loose(value: str):
+            if not value:
+                return None
+            # Try ISO first
+            d = parse_date(value)
+            if d:
+                return d
+            # Try common US formats
+            for fmt in ("%m/%d/%Y", "%m-%d-%Y", "%Y/%m/%d", "%Y.%m.%d"):
+                try:
+                    return datetime.strptime(value, fmt).date()
+                except Exception:
+                    pass
+            return None
+
+        start = parse_date_loose(start_raw)
+        end = parse_date_loose(end_raw)
 
         if (start_raw and not start) or (end_raw and not end):
             return Response(
-                {"detail": "Provide suspend_from and suspend_to as YYYY-MM-DD."},
+                {"detail": "Invalid date format. Use YYYY-MM-DD or MM/DD/YYYY."},
                 status=400
             )
         if start and end and start > end:
@@ -274,6 +517,9 @@ class UserAdminViewSet(
             action="USER_SUSPENDED", actor=request.user, target_user=user,
             details=details
         )
+
+        # Send user/admin emails for date-based suspension
+        send_scheduled_suspension_emails(user, user.suspend_from, user.suspend_to)
         return Response(UserSerializer(user).data)
 
     @action(detail=False, methods=["get"])
@@ -308,6 +554,125 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset().filter(approved__isnull=True)
         ser = self.get_serializer(qs, many=True)
         return Response(ser.data)
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
+    def assign_role(self, request, pk=None):
+        req = self.get_object()
+        role = request.data.get("role", "").strip().upper()
+        
+        if role not in ["ADMIN", "MANAGER", "ACCOUNTANT"]:
+            return Response(
+                {"detail": "Invalid role. Must be ADMIN, MANAGER, or ACCOUNTANT."},
+                status=400
+            )
+        
+        req.assigned_role = role
+        req.save(update_fields=["assigned_role"])
+        
+        serializer = self.get_serializer(req)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
+    def approve(self, request, pk=None):
+        req = self.get_object()
+        
+        # Check if role is assigned
+        if not req.assigned_role:
+            return Response(
+                {"detail": "Role must be assigned before approving the request."},
+                status=400
+            )
+
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*()"
+        temp = ''.join(secrets.choice(alphabet) for _ in range(12))
+
+        with transaction.atomic():
+            req.approved = True
+            req.reviewed_by = request.user
+            req.save(update_fields=["approved", "reviewed_by"])
+
+            username = build_username(req.first_name, req.last_name, when=timezone.now())
+            # Generate unique display_handle
+            base = f"{(req.first_name or '')[:1]}{(req.last_name or '')}".lower()
+            base = "".join(ch for ch in base if ch.isalnum()) or "user"
+            candidate = base
+            idx = 1
+            while User.objects.filter(display_handle__iexact=candidate).exists():
+                idx += 1
+                candidate = f"{base}{idx}"
+            
+            user = User.objects.create_user(
+                username=username,
+                display_handle=candidate,
+                first_name=req.first_name,
+                last_name=req.last_name,
+                email=req.email,
+                role=req.assigned_role,  
+                address=req.address,
+                dob=req.dob,
+                is_active=True,
+            )
+            user.set_password(temp)
+            user.save()
+
+            subject = "FlowCounts Access Approved"
+            body = (
+                f"Hello {req.first_name},\n\n"
+                f"Your access request to FlowCounts has been approved.\n\n"
+                f"Username: {user.username}\n"
+                f"Role: {user.role}\n"
+                f"Temporary password: {temp}\n"
+                "Login: http://localhost:5173/login\n\n"
+                "Please change your password after logging in.\n\n"
+                "FlowCounts Team"
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
+            
+            # Notify admin
+            admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+            if admin_emails:
+                send_mail(
+                    "FlowCounts: Registration Request Approved",
+                    f"A registration request has been approved:\n\n"
+                    f"User: {user.username} ({user.email})\n"
+                    f"Name: {user.first_name} {user.last_name}\n"
+                    f"Role: {user.role}\n"
+                    f"Approved by: {request.user.username}\n\n"
+                    "The user has been notified and can now access the system.",
+                    settings.DEFAULT_FROM_EMAIL,
+                    admin_emails,
+                    fail_silently=False,
+                )
+
+        try:
+            EventLog.objects.create(
+                action="REQUEST_APPROVED", actor=request.user, target_user=user,
+                details=f"Approved registration for {req.email}; created username={user.username}"
+            )
+        except Exception:
+            logger.warning("Failed to log REQUEST_APPROVED event", exc_info=True)
+
+        return Response({"detail": "Approved and user created", "user_id": user.id, "email_sent": True})
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
+    def reject(self, request, pk=None):
+        req = self.get_object()
+        note = request.data.get("note", "")
+        with transaction.atomic():
+            req.approved = False
+            req.reviewed_by = request.user
+            req.review_note = note
+            req.save(update_fields=["approved", "reviewed_by", "review_note"])
+
+            subject = "FlowCounts access decision"
+            body = (
+                f"Hello {req.first_name},\n\n"
+                "Your request for access to FlowCounts was not approved."
+                + (f"\nReason: {note}" if note else "")
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
+
+        return Response({"detail": "Request rejected", "email_sent": True})
 
 
 class EventLogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -346,72 +711,7 @@ class EventLogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=self.get_success_headers(serializer.data))
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
-    def approve(self, request, pk=None):
-        req = self.get_object()
 
-        alphabet = string.ascii_letters + string.digits + "!@#$%^&*()"
-        temp = ''.join(secrets.choice(alphabet) for _ in range(12))
-
-        with transaction.atomic():
-            req.approved = True
-            req.reviewed_by = request.user
-            req.save(update_fields=["approved", "reviewed_by"])
-
-            username = build_username(req.first_name, req.last_name, when=timezone.now())
-            user = User.objects.create_user(
-                username=username,
-                first_name=req.first_name,
-                last_name=req.last_name,
-                email=req.email,
-                role="ACCOUNTANT",  
-                address=req.address,
-                dob=req.dob,
-                is_active=True,
-            )
-            user.set_password(temp)
-            user.save()
-
-            subject = "FlowCounts Access Approved"
-            body = (
-                f"Hello {req.first_name},\n\n"
-                "Your access request to FlowCounts has been approved.\n\n"
-                f"Username: {user.username}\n"
-                f"Temporary password: {temp}\n"
-                "Login: http://localhost:5173/login\n\n"
-                "Please change your password after logging in."
-            )
-            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
-
-        try:
-            EventLog.objects.create(
-                action="REQUEST_APPROVED", actor=request.user, target_user=user,
-                details=f"Approved registration for {req.email}; created username={user.username}"
-            )
-        except Exception:
-            logger.warning("Failed to log REQUEST_APPROVED event", exc_info=True)
-
-        return Response({"detail": "Approved and user created", "user_id": user.id, "email_sent": True})
-
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdmin])
-    def reject(self, request, pk=None):
-        req = self.get_object()
-        note = request.data.get("note", "")
-        with transaction.atomic():
-            req.approved = False
-            req.reviewed_by = request.user
-            req.review_note = note
-            req.save(update_fields=["approved", "reviewed_by", "review_note"])
-
-            subject = "FlowCounts access decision"
-            body = (
-                f"Hello {req.first_name},\n\n"
-                "Your request for access to FlowCounts was not approved."
-                + (f"\nReason: {note}" if note else "")
-            )
-            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
-
-        return Response({"detail": "Request rejected", "email_sent": True})  
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

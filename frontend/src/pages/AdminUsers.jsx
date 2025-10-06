@@ -277,6 +277,17 @@ export default function AdminUsers() {
 
   useEffect(() => { load(); }, []);
 
+  async function assignRole(id, role) {
+    setMsg("");
+    try {
+      await api.post(`/auth/registration-requests/${id}/assign_role/`, { role });
+      await load();
+      setMsg(`Role ${role} assigned.`);
+    } catch (e) {
+      setMsg(e.response?.status === 401 ? "Session expired. Log in again." : "Role assignment failed. See server logs.");
+    }
+  }
+
   async function approve(id) {
     setMsg("");
     try {
@@ -284,7 +295,8 @@ export default function AdminUsers() {
       setMsg(data.email_sent ? "Approved. Email sent to user." : "Approved.");
       await load();
     } catch (e) {
-      setMsg(e.response?.status === 401 ? "Session expired. Log in again." : "Approve failed. See server logs.");
+      const detail = e?.response?.data?.detail || "Approve failed. See server logs.";
+      setMsg(e.response?.status === 401 ? "Session expired. Log in again." : detail);
     }
   }
 
@@ -318,7 +330,25 @@ export default function AdminUsers() {
 
   async function suspendUser(user) {
     setMsg("");
-    const start = prompt("Suspend from (YYYY-MM-DD). Leave blank to clear.", "");
+    // If currently suspended, offer to unsuspend
+    if (user.suspended_now === true || (user.is_active === false && (user.suspend_from || user.suspend_to))) {
+      const ok = window.confirm(`Unsuspend ${user.first_name} ${user.last_name}?`);
+      if (!ok) return;
+      setBusyId(user.id);
+      try {
+        const payload = { suspend_from: "", suspend_to: "" };
+        const { data } = await api.post(`/auth/users/${user.id}/suspend/`, payload);
+        setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, ...data } : u)));
+      } catch (e) {
+        const detail = e?.response?.data?.detail || "Unsuspend failed. See server logs.";
+        setMsg(detail);
+      } finally {
+        setBusyId(null);
+      }
+      return;
+    }
+
+    const start = prompt("Suspend from (YYYY-MM-DD). Leave blank to cancel.", "");
     const end = start ? prompt("Suspend to (YYYY-MM-DD).", start) : "";
     setBusyId(user.id);
     try {
@@ -402,11 +432,36 @@ export default function AdminUsers() {
                         <td>{p.first_name} {p.last_name}</td>
                         <td>—</td>
                         <td>{p.email}</td>
-                        <td>Pending</td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <select 
+                              value={p.assigned_role || ""} 
+                              onChange={(e) => assignRole(p.id, e.target.value)}
+                              style={{ padding: "4px 8px", fontSize: 12 }}
+                            >
+                              <option value="">Select Role</option>
+                              <option value="ADMIN">Admin</option>
+                              <option value="MANAGER">Manager</option>
+                              <option value="ACCOUNTANT">Accountant</option>
+                            </select>
+                            {p.assigned_role && (
+                              <span style={{ fontSize: 12, color: "green" }}>
+                                ✓ {p.assigned_role}
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td>No</td>
                         <td>
                           <div className="row-flex">
-                            <button className="auth-button" onClick={() => approve(p.id)}>Allow</button>
+                            <button 
+                              className="auth-button" 
+                              onClick={() => approve(p.id)}
+                              disabled={!p.assigned_role}
+                              style={{ opacity: p.assigned_role ? 1 : 0.5 }}
+                            >
+                              Allow
+                            </button>
                             <button className="auth-button secondary" onClick={() => reject(p.id)}>Deny</button>
                             <RowActions row={p} />
                           </div>
@@ -492,7 +547,7 @@ export default function AdminUsers() {
                                 disabled={busyId === u.id}
                                 onClick={() => suspendUser(u)}
                               >
-                                Suspend
+                                {busyId === u.id ? "…" : (u.suspended_now ? "Unsuspend" : "Suspend")}
                               </button>
 
                               <RowActions row={u} />

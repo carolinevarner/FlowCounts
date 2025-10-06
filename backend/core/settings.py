@@ -173,9 +173,15 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-# Dev email so approve/reject doesn't crash
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "no-reply@flowcounts.local"
+# Email configuration for production
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = "varner4262@gmail.com"
+EMAIL_HOST_PASSWORD = "fokfddazweldxgpx"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ALLOWED_HOSTS = [
     "flowcounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
