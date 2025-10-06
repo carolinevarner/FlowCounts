@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+import traceback
 
 class Role(models.TextChoices):
     ADMIN = "ADMIN", "Administrator"
@@ -108,4 +109,77 @@ class EventLog(models.Model):
 class SecurityQuestion(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="security_questions")
     question = models.CharField(max_length=255)
-    answer_hash = models.CharField(max_length=255)  
+    answer_hash = models.CharField(max_length=255)
+
+
+class ErrorMessage(models.Model):
+    """Stores all error messages that can be displayed to users."""
+    ERROR_TYPES = [
+        ('AUTH', 'Authentication'),
+        ('VALIDATION', 'Validation'),
+        ('PERMISSION', 'Permission'),
+        ('SYSTEM', 'System'),
+        ('USER_ACTION', 'User Action'),
+    ]
+    
+    code = models.CharField(max_length=50, unique=True, help_text="Unique error code identifier")
+    error_type = models.CharField(max_length=20, choices=ERROR_TYPES, default='SYSTEM')
+    title = models.CharField(max_length=200, help_text="Short error title")
+    message = models.TextField(help_text="Detailed error message for users")
+    technical_details = models.TextField(blank=True, help_text="Technical details for debugging")
+    is_active = models.BooleanField(default=True, help_text="Whether this error message is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['error_type', 'code']
+    
+    def __str__(self):
+        return f"{self.code}: {self.title}"
+
+
+class ErrorLog(models.Model):
+    """Logs all errors that occur in the system."""
+    ERROR_LEVELS = [
+        ('DEBUG', 'Debug'),
+        ('INFO', 'Info'),
+        ('WARNING', 'Warning'),
+        ('ERROR', 'Error'),
+        ('CRITICAL', 'Critical'),
+    ]
+    
+    error_code = models.CharField(max_length=50, help_text="Error code from ErrorMessage")
+    level = models.CharField(max_length=10, choices=ERROR_LEVELS, default='ERROR')
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="User who triggered the error (if applicable)"
+    )
+    request_path = models.CharField(max_length=500, blank=True, help_text="HTTP request path")
+    request_method = models.CharField(max_length=10, blank=True, help_text="HTTP request method")
+    user_agent = models.TextField(blank=True, help_text="User agent string")
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="Client IP address")
+    error_message = models.TextField(help_text="Error message shown to user")
+    technical_details = models.TextField(help_text="Full technical error details")
+    stack_trace = models.TextField(blank=True, help_text="Python stack trace")
+    resolved = models.BooleanField(default=False, help_text="Whether this error has been resolved")
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='resolved_errors',
+        help_text="Admin who resolved this error"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.level}: {self.error_code} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def resolve(self, resolved_by_user=None):
+        """Mark this error as resolved."""
+        self.resolved = True
+        self.resolved_at = timezone.now()
+        if resolved_by_user:
+            self.resolved_by = resolved_by_user
+        self.save()  

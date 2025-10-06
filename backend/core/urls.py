@@ -17,11 +17,14 @@ from accounts.views import (
     check_password_expiration,
     get_expired_passwords_report,
 )
+from accounts.error_views import ErrorMessageViewSet, ErrorLogViewSet
 
 router = DefaultRouter()
 router.register(r"auth/registration-requests", RegistrationRequestViewSet, basename="registration-requests")
 router.register(r"auth/users", UserAdminViewSet, basename="auth-users")
 router.register(r"auth/events", EventLogViewSet, basename="auth-events")
+router.register(r"auth/error-messages", ErrorMessageViewSet, basename="error-messages")
+router.register(r"auth/error-logs", ErrorLogViewSet, basename="error-logs")
 
 urlpatterns = [
     path("api/", include(router.urls)),

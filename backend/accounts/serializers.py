@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import serializers
-from .models import RegistrationRequest, User
-from .models import EventLog
+from .models import RegistrationRequest, User, EventLog, ErrorMessage, ErrorLog
 
 User = get_user_model()
 
@@ -162,3 +161,54 @@ class EventLogSerializer(serializers.ModelSerializer):
 
     def get_target_username(self, obj):
         return getattr(obj.target_user, "username", None)
+
+
+class ErrorMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ErrorMessage
+        fields = [
+            'id',
+            'code',
+            'error_type',
+            'title',
+            'message',
+            'technical_details',
+            'is_active',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class ErrorLogSerializer(serializers.ModelSerializer):
+    user_username = serializers.SerializerMethodField()
+    resolved_by_username = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ErrorLog
+        fields = [
+            'id',
+            'error_code',
+            'level',
+            'user',
+            'user_username',
+            'request_path',
+            'request_method',
+            'user_agent',
+            'ip_address',
+            'error_message',
+            'technical_details',
+            'stack_trace',
+            'resolved',
+            'resolved_at',
+            'resolved_by',
+            'resolved_by_username',
+            'created_at',
+        ]
+        read_only_fields = ['created_at', 'resolved_at']
+    
+    def get_user_username(self, obj):
+        return getattr(obj.user, "username", None) if obj.user else None
+    
+    def get_resolved_by_username(self, obj):
+        return getattr(obj.resolved_by, "username", None) if obj.resolved_by else None

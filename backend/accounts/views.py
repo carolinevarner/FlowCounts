@@ -28,6 +28,7 @@ from django.core.mail import send_mail
 import logging, secrets, string
 
 from .models import RegistrationRequest, EventLog
+from .error_utils import log_error, DatabaseErrorResponse, get_error_message
 from .serializers import (
     UserSerializer,
     UserLiteSerializer,
@@ -277,17 +278,42 @@ class FlowTokenView(TokenObtainPairView):
                 attempts_left = max_attempts - user_obj.failed_attempts
                 
                 if attempts_left <= 0:
-                    return Response({
-                        "detail": "Account suspended due to too many failed login attempts. Contact administrator.",
-                        "suspended": True
-                    }, status=403)
+                    # Log the suspension error
+                    log_error(
+                        'AUTH_ACCOUNT_SUSPENDED',
+                        level='CRITICAL',
+                        user=user_obj,
+                        request=request,
+                        additional_details=f"Failed login attempts: {user_obj.failed_attempts}"
+                    )
+                    return DatabaseErrorResponse.create_response(
+                        'AUTH_ACCOUNT_SUSPENDED',
+                        status=403,
+                        suspended=True
+                    )
                 else:
+                    # Log the failed login attempt
+                    log_error(
+                        'AUTH_INVALID_CREDENTIALS',
+                        level='WARNING',
+                        user=user_obj,
+                        request=request,
+                        additional_details=f"Failed login attempts: {user_obj.failed_attempts}, Attempts left: {attempts_left}"
+                    )
+                    error_data = get_error_message('AUTH_INVALID_CREDENTIALS')
                     return Response({
-                        "detail": f"Incorrect Login, {attempts_left} attempts left",
+                        "detail": f"{error_data['message']} {attempts_left} attempts left",
                         "attempts_left": attempts_left
                     }, status=400)
             
-            return Response({"detail": "Invalid credentials", "_reason": reason, "_mapped": mapped}, status=400)
+            # Log the invalid credentials error
+            log_error(
+                'AUTH_INVALID_CREDENTIALS',
+                level='WARNING',
+                request=request,
+                additional_details=f"Reason: {reason}, Mapped: {mapped}"
+            )
+            return DatabaseErrorResponse.create_response('AUTH_INVALID_CREDENTIALS', status=400)
         if not user.is_active:
             return Response({"detail": "User is inactive/suspended"}, status=403)
         
