@@ -30,6 +30,18 @@ export default function Login() {
     const me = await api.get("/auth/me/");
     localStorage.setItem("user", JSON.stringify(me.data));
 
+    // Check for password expiration warning
+    try {
+      const expirationCheck = await api.get("/auth/check-password-expiration/");
+      if (expirationCheck.data.expires && !expirationCheck.data.expired) {
+        // Show warning but don't block login
+        alert(`Warning: Your password will expire in ${expirationCheck.data.days_until_expiry} day(s) on ${expirationCheck.data.expiry_date}. Please change your password soon.`);
+      }
+    } catch (err) {
+      // Ignore expiration check errors - don't block login
+      console.log("Could not check password expiration:", err);
+    }
+
     const role = me.data.role;
     if (role === "ADMIN") navigate("/admin");
     else if (role === "MANAGER") navigate("/manager");

@@ -826,6 +826,118 @@ def get_username_by_email(request):
             status=404
         )
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_expired_passwords_report(request):
+    """Admin report of users with expired or soon-to-expire passwords."""
+    from django.utils import timezone
+    from datetime import timedelta
+    from django.conf import settings
+    
+    # Check if user is admin
+    if not hasattr(request.user, 'role') or request.user.role != 'ADMIN':
+        return Response({"detail": "Admin access required"}, status=403)
+    
+    now = timezone.now()
+    warning_days = getattr(settings, "PASSWORD_EXPIRY_WARNING_DAYS", 3)
+    warning_date = now + timedelta(days=warning_days)
+    
+    # Get users with expired passwords
+    expired_users = User.objects.filter(
+        password_expires_at__lt=now,
+        is_active=True
+    ).values('id', 'username', 'email', 'first_name', 'last_name', 'password_expires_at')
+    
+    # Get users with passwords expiring soon (within warning period)
+    expiring_soon_users = User.objects.filter(
+        password_expires_at__lte=warning_date,
+        password_expires_at__gt=now,
+        is_active=True
+    ).values('id', 'username', 'email', 'first_name', 'last_name', 'password_expires_at')
+    
+    # Convert to lists and add computed fields
+    expired_list = []
+    for user in expired_users:
+        expired_list.append({
+            **user,
+            'password_expires_at': user['password_expires_at'].strftime('%Y-%m-%d %H:%M'),
+            'status': 'expired',
+            'days_overdue': (now.date() - user['password_expires_at'].date()).days
+        })
+    
+    expiring_list = []
+    for user in expiring_soon_users:
+        days_until = (user['password_expires_at'].date() - now.date()).days
+        expiring_list.append({
+            **user,
+            'password_expires_at': user['password_expires_at'].strftime('%Y-%m-%d %H:%M'),
+            'status': 'expiring_soon',
+            'days_until_expiry': days_until
+        })
+    
+    return Response({
+        'expired_passwords': expired_list,
+        'expiring_soon_passwords': expiring_list,
+        'total_expired': len(expired_list),
+        'total_expiring_soon': len(expiring_list),
+        'warning_period_days': warning_days
+    })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def check_password_expiration(request):
+    """Check if user's password is about to expire and send warning if needed."""
+    user = request.user
+    from django.utils import timezone
+    from datetime import timedelta
+    from django.conf import settings
+    from django.core.mail import send_mail
+    
+    if not user.password_expires_at:
+        return Response({"expires": False, "message": "Password expiration not set"})
+    
+    now = timezone.now()
+    warning_days = getattr(settings, "PASSWORD_EXPIRY_WARNING_DAYS", 3)
+    warning_date = user.password_expires_at - timedelta(days=warning_days)
+    
+    # Check if we're within the warning period and haven't sent a warning recently
+    if now >= warning_date and now < user.password_expires_at:
+        days_until_expiry = (user.password_expires_at - now).days + 1
+        
+        # Send email warning
+        try:
+            subject = "FlowCounts - Password Expiration Warning"
+            body = (
+                f"Dear {user.first_name},\n\n"
+                f"Your password will expire in {days_until_expiry} day(s) on {user.password_expires_at.strftime('%Y-%m-%d')}.\n\n"
+                f"Please change your password soon to avoid account lockout.\n\n"
+                f"You can change your password by:\n"
+                f"1. Going to your profile settings\n"
+                f"2. Using the 'Forgot Password' feature on the login page\n\n"
+                f"Best regards,\nFlowCounts Team"
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+        except Exception as e:
+            logger.error(f"Failed to send password expiration warning to {user.email}: {e}")
+        
+        return Response({
+            "expires": True,
+            "days_until_expiry": days_until_expiry,
+            "expiry_date": user.password_expires_at.strftime('%Y-%m-%d'),
+            "warning_sent": True
+        })
+    
+    # Check if password is already expired
+    if now >= user.password_expires_at:
+        return Response({
+            "expires": True,
+            "expired": True,
+            "expiry_date": user.password_expires_at.strftime('%Y-%m-%d'),
+            "message": "Password has expired"
+        })
+    
+    return Response({"expires": False, "message": "Password is not expiring soon"})
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def forgot_password(request):
