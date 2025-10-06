@@ -4,7 +4,7 @@ phases:
   install:
     runtime-versions:
       python: 3.11
-      nodejs: 18
+      nodejs: 20
     commands:
       - echo "Installing Python dependencies..."
       - pip install --upgrade pip
@@ -23,8 +23,8 @@ phases:
       # Copy backend (Django project)
       - cp backend/manage.py deploy/
       - cp -r backend/core deploy/core
-      # Copy frontend build output
-      - cp -r frontend/build deploy/frontend_build
+      # Copy frontend build output (Vite → dist)
+      - cp -r frontend/dist deploy/frontend_build
       # Copy requirements
       - cp backend/requirements.txt deploy/
       # Copy Procfile
@@ -40,3 +40,4 @@ artifacts:
     - '**/*'
   base-directory: deploy
   name: BuildOutput
+
