@@ -77,6 +77,12 @@ class RegistrationRequestSerializer(serializers.ModelSerializer):
             "approved",
             "assigned_role",
             "created_at",
+            "security_question_1",
+            "security_answer_1",
+            "security_question_2",
+            "security_answer_2",
+            "security_question_3",
+            "security_answer_3",
         ]
     read_only_fields = ["approved", "created_at"]
 

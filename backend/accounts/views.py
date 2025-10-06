@@ -324,7 +324,46 @@ class UserAdminViewSet(
     # Ensure PATCH is treated as partial update
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
-        return super().update(request, *args, **kwargs)
+        
+        # Get the user being updated
+        user = self.get_object()
+        old_role = user.role
+        
+        # Perform the update
+        response = super().update(request, *args, **kwargs)
+        
+        # Get the updated user data
+        updated_user = User.objects.get(id=user.id)
+        
+        # Log the update event
+        try:
+            changes = []
+            if old_role != updated_user.role:
+                changes.append(f"role changed from {old_role} to {updated_user.role}")
+            
+            # Check for other common changes
+            if request.data.get('first_name') and user.first_name != updated_user.first_name:
+                changes.append(f"first name changed from '{user.first_name}' to '{updated_user.first_name}'")
+            if request.data.get('last_name') and user.last_name != updated_user.last_name:
+                changes.append(f"last name changed from '{user.last_name}' to '{updated_user.last_name}'")
+            if request.data.get('email') and user.email != updated_user.email:
+                changes.append(f"email changed from '{user.email}' to '{updated_user.email}'")
+            if request.data.get('is_active') is not None and user.is_active != updated_user.is_active:
+                status = "activated" if updated_user.is_active else "deactivated"
+                changes.append(f"user {status}")
+            
+            if changes:
+                details = f"User updated: {', '.join(changes)}"
+                EventLog.objects.create(
+                    action="USER_UPDATED",
+                    actor=request.user,
+                    target_user=updated_user,
+                    details=details
+                )
+        except Exception:
+            logger.warning("Failed to log USER_UPDATED event", exc_info=True)
+        
+        return response
 
     # Allow POST create while auto-generating username when missing
     def create(self, request, *args, **kwargs):
@@ -613,6 +652,13 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
                 address=req.address,
                 dob=req.dob,
                 is_active=True,
+                # Copy security questions from registration request
+                security_question_1=req.security_question_1,
+                security_answer_1=req.security_answer_1,
+                security_question_2=req.security_question_2,
+                security_answer_2=req.security_answer_2,
+                security_question_3=req.security_question_3,
+                security_answer_3=req.security_answer_3,
             )
             user.set_password(temp)
             user.save()
@@ -743,6 +789,91 @@ def upload_profile_photo(request):
     ser = UserSerializer(request.user, context={"request": request})
     return Response({"profile_image_url": ser.data.get("profile_image_url")}, status=200)
 
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def get_username_by_email(request):
+    """Get username for a given email address."""
+    email = request.data.get("email", "").strip().lower()
+    
+    if not email:
+        return Response(
+            {"detail": "Email is required."},
+            status=400
+        )
+    
+    try:
+        user = User.objects.get(email__iexact=email)
+        return Response({"username": user.username})
+    except User.DoesNotExist:
+        return Response(
+            {"detail": "No user found with this email address."},
+            status=404
+        )
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    """Handle forgot password requests with security questions."""
+    email = request.data.get("email", "").strip().lower()
+    username = request.data.get("username", "").strip()
+    answers = request.data.get("answers", [])
+    new_password = request.data.get("new_password", "")
+    
+    if not all([email, username, answers, new_password]):
+        return Response(
+            {"detail": "Email, username, answers, and new password are required."},
+            status=400
+        )
+    
+    # Find user by email and username
+    try:
+        user = User.objects.get(email__iexact=email, username__iexact=username)
+    except User.DoesNotExist:
+        return Response(
+            {"detail": "User not found with provided email and username."},
+            status=404
+        )
+    
+    # Check if user has security questions set
+    if not all([user.security_question_1, user.security_question_2, user.security_question_3]):
+        return Response(
+            {"detail": "Security questions not set for this user."},
+            status=400
+        )
+    
+    # Verify answers (case-insensitive)
+    expected_answers = [
+        user.security_answer_1.lower().strip(),
+        user.security_answer_2.lower().strip(),
+        user.security_answer_3.lower().strip(),
+    ]
+    provided_answers = [answer.lower().strip() for answer in answers]
+    
+    if expected_answers != provided_answers:
+        return Response(
+            {"detail": "Security answers do not match."},
+            status=400
+        )
+    
+    # Update password
+    user.set_password(new_password)
+    user.failed_attempts = 0  # Reset failed attempts
+    user.last_password_change = timezone.now()
+    user.save()
+    
+    # Log the password reset event
+    try:
+        EventLog.objects.create(
+            action="PASSWORD_RESET",
+            actor=user,  # User resetting their own password
+            target_user=user,
+            details=f"Password reset via security questions"
+        )
+    except Exception:
+        logger.warning("Failed to log PASSWORD_RESET event", exc_info=True)
+    
+    return Response({"detail": "Password reset successfully."})
 
 @api_view(["GET"])
 def me(request):

@@ -12,6 +12,8 @@ from accounts.views import (
     FlowTokenView,
     me,
     upload_profile_photo,
+    forgot_password,
+    get_username_by_email,
 )
 
 router = DefaultRouter()
@@ -24,6 +26,8 @@ urlpatterns = [
     path("api/auth/token/", FlowTokenView.as_view()),
     path("api/auth/me/", me),
     path("api/auth/me/photo/", upload_profile_photo, name="upload-profile-photo"),
+    path("api/auth/get-username/", get_username_by_email, name="get-username"),
+    path("api/auth/forgot-password/", forgot_password, name="forgot-password"),
     re_path(r'^(?!api/).*$', never_cache(TemplateView.as_view(template_name='index.html'))),
 ]
 

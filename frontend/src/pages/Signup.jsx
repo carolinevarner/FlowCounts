@@ -1,9 +1,30 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
-import api from "../api"; 
+import api from "../api";
+
+const ALL_QUESTIONS = [
+  "What is your favorite color?",
+  "What was the name of your first pet?",
+  "What city were you born in?",
+  "What is your mother's maiden name?",
+  "What was your high school mascot?",
+  "What is your favorite teacher's last name?",
+  "What was the make of your first car?",
+];
+
+function pickThreeRandom(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, 3);
+} 
 
 export default function Signup() {
+  const questions = useMemo(() => pickThreeRandom(ALL_QUESTIONS), []);
+  
   const [form, setForm] = useState({
     first: "",
     last: "",
@@ -12,6 +33,9 @@ export default function Signup() {
     dob: "",
     password: "",
     confirm: "",
+    q0: "",
+    q1: "",
+    q2: "",
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -25,6 +49,9 @@ export default function Signup() {
       dob: "",
       password: "",
       confirm: "",
+      q0: "",
+      q1: "",
+      q2: "",
     });
     setError("");
   }
@@ -45,6 +72,12 @@ export default function Signup() {
         address: form.address,
         dob: form.dob,
         email: form.email,
+        security_question_1: questions[0],
+        security_answer_1: form.q0,
+        security_question_2: questions[1],
+        security_answer_2: form.q1,
+        security_question_3: questions[2],
+        security_answer_3: form.q2,
       });
 
       navigate("/login");
@@ -134,6 +167,43 @@ export default function Signup() {
           onChange={(e) => setForm({ ...form, confirm: e.target.value })}
           required
         />
+
+        <div className="auth-row">
+          <label>Security Questions (for password recovery):</label>
+        </div>
+
+        <div className="auth-row">
+          <label>{questions[0]}</label>
+          <input
+            className="auth-input"
+            placeholder="Answer"
+            value={form.q0}
+            onChange={(e) => setForm({ ...form, q0: e.target.value })}
+            required
+          />
+        </div>
+
+        <div className="auth-row">
+          <label>{questions[1]}</label>
+          <input
+            className="auth-input"
+            placeholder="Answer"
+            value={form.q1}
+            onChange={(e) => setForm({ ...form, q1: e.target.value })}
+            required
+          />
+        </div>
+
+        <div className="auth-row">
+          <label>{questions[2]}</label>
+          <input
+            className="auth-input"
+            placeholder="Answer"
+            value={form.q2}
+            onChange={(e) => setForm({ ...form, q2: e.target.value })}
+            required
+          />
+        </div>
 
         <div className="auth-actions">
           <button className="auth-button" type="submit">Request</button>

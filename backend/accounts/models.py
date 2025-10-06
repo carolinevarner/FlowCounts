@@ -28,12 +28,13 @@ class User(AbstractUser):
     address = models.CharField(max_length=255, blank=True)
     dob = models.DateField(blank=True, null=True)
 
-    role = models.CharField(max_length=20, choices=[
-        ('ADMIN', 'Admin'),
-        ('MANAGER', 'Manager'),
-        ('ACCOUNTANT', 'Accountant'),
-    ])
-    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    # Security questions for password reset
+    security_question_1 = models.CharField(max_length=255, blank=True)
+    security_answer_1 = models.CharField(max_length=255, blank=True)
+    security_question_2 = models.CharField(max_length=255, blank=True)
+    security_answer_2 = models.CharField(max_length=255, blank=True)
+    security_question_3 = models.CharField(max_length=255, blank=True)
+    security_answer_3 = models.CharField(max_length=255, blank=True)
 
     def is_currently_suspended(self) -> bool:
         today = timezone.localdate()
@@ -71,6 +72,14 @@ class RegistrationRequest(models.Model):
     reviewed_by = models.ForeignKey("accounts.User", null=True, blank=True,
                                     on_delete=models.SET_NULL, related_name="reviewed_requests")
     review_note = models.TextField(blank=True)
+    
+    # Security questions for password reset
+    security_question_1 = models.CharField(max_length=255, blank=True)
+    security_answer_1 = models.CharField(max_length=255, blank=True)
+    security_question_2 = models.CharField(max_length=255, blank=True)
+    security_answer_2 = models.CharField(max_length=255, blank=True)
+    security_question_3 = models.CharField(max_length=255, blank=True)
+    security_answer_3 = models.CharField(max_length=255, blank=True)
 
 
 class EventLog(models.Model):
