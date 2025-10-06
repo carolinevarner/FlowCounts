@@ -38,12 +38,18 @@ class PasswordNotInHistoryValidator:
     
 class PreventPasswordReuseValidator:
     """
-    Placeholder validator so Django can import it.
-    Later, wire this into PasswordHistory like PasswordNotInHistoryValidator.
+    Validator to prevent password reuse using PasswordHistory model.
     """
+    def __init__(self, last_n=5):
+        self.last_n = last_n
+
     def validate(self, password, user=None):
-        # TODO: enforce "no reuse" properly
-        return
+        if not user or not user.pk:
+            return
+        recent = user.password_history.order_by("-created_at")[:self.last_n]
+        for h in recent:
+            if check_password(password, h.password):
+                raise ValidationError("You cannot reuse a recent password.", code="password_in_history")
 
     def get_help_text(self):
         return "You cannot reuse a previous password."

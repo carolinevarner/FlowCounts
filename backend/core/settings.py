@@ -158,7 +158,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
     {"NAME": "accounts.validators.StartsWithLetterValidator"},
     {"NAME": "accounts.validators.ContainsLetterNumberSpecialValidator"},
-    {"NAME": "accounts.validators.PreventPasswordReuseValidator"},
+    {"NAME": "accounts.validators.PreventPasswordReuseValidator", "OPTIONS": {"last_n": 5}},
 ]
 PASSWORD_MAX_AGE_DAYS = 90
 PASSWORD_EXPIRY_WARNING_DAYS = 3

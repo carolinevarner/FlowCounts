@@ -124,7 +124,17 @@ class CreateUserSerializer(serializers.ModelSerializer):
         pwd = validated_data.pop("password")
         if "is_active" not in validated_data:
             validated_data["is_active"] = True
+        
+        # Validate password using Django validators
+        from django.core.exceptions import ValidationError
+        from django.contrib.auth.password_validation import validate_password
+        
         user = User(**validated_data)
+        try:
+            validate_password(pwd, user)
+        except ValidationError as e:
+            raise serializers.ValidationError({"password": e.messages})
+        
         user.set_password(pwd)
         user.save()
         return user

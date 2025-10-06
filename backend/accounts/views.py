@@ -320,7 +320,7 @@ class UserAdminViewSet(
 
     def get_serializer_class(self):
         return CreateUserSerializer if self.action == "create" else UserSerializer
-
+    
     # Ensure PATCH is treated as partial update
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
@@ -793,7 +793,7 @@ def upload_profile_photo(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def get_username_by_email(request):
-    """Get username for a given email address."""
+    """Get username and security questions for a given email address."""
     email = request.data.get("email", "").strip().lower()
     
     if not email:
@@ -804,7 +804,22 @@ def get_username_by_email(request):
     
     try:
         user = User.objects.get(email__iexact=email)
-        return Response({"username": user.username})
+        
+        # Check if user has security questions set
+        if not all([user.security_question_1, user.security_question_2, user.security_question_3]):
+            return Response(
+                {"detail": "Security questions not set for this user."},
+                status=400
+            )
+        
+        return Response({
+            "username": user.username,
+            "security_questions": [
+                user.security_question_1,
+                user.security_question_2,
+                user.security_question_3
+            ]
+        })
     except User.DoesNotExist:
         return Response(
             {"detail": "No user found with this email address."},
@@ -853,6 +868,18 @@ def forgot_password(request):
     if expected_answers != provided_answers:
         return Response(
             {"detail": "Security answers do not match."},
+            status=400
+        )
+    
+    # Validate new password using Django validators
+    from django.core.exceptions import ValidationError
+    from django.contrib.auth.password_validation import validate_password
+    
+    try:
+        validate_password(new_password, user)
+    except ValidationError as e:
+        return Response(
+            {"detail": "Password validation failed.", "errors": e.messages},
             status=400
         )
     

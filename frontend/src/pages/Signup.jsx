@@ -1,29 +1,43 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api from "../api";
 
-const ALL_QUESTIONS = [
+// Use the same security questions as the forgot password page
+const SECURITY_QUESTIONS = [
   "What is your favorite color?",
   "What was the name of your first pet?",
   "What city were you born in?",
-  "What is your mother's maiden name?",
-  "What was your high school mascot?",
-  "What is your favorite teacher's last name?",
-  "What was the make of your first car?",
 ];
 
-function pickThreeRandom(arr) {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+function validatePassword(password) {
+  const errors = [];
+  
+  if (password.length < 8) {
+    errors.push("Password must be at least 8 characters long");
   }
-  return copy.slice(0, 3);
-} 
+  
+  if (!password[0] || !password[0].match(/[a-zA-Z]/)) {
+    errors.push("Password must start with a letter");
+  }
+  
+  if (!password.match(/[a-zA-Z]/)) {
+    errors.push("Password must contain at least one letter");
+  }
+  
+  if (!password.match(/\d/)) {
+    errors.push("Password must contain at least one number");
+  }
+  
+  if (!password.match(/[^a-zA-Z0-9]/)) {
+    errors.push("Password must contain at least one special character");
+  }
+  
+  return errors;
+}
 
 export default function Signup() {
-  const questions = useMemo(() => pickThreeRandom(ALL_QUESTIONS), []);
+  const questions = SECURITY_QUESTIONS;
   
   const [form, setForm] = useState({
     first: "",
@@ -59,6 +73,13 @@ export default function Signup() {
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
+
+    // Validate password requirements
+    const passwordErrors = validatePassword(form.password);
+    if (passwordErrors.length > 0) {
+      setError(passwordErrors.join(". ") + ".");
+      return;
+    }
 
     if (form.password !== form.confirm) {
       setError("Passwords do not match.");

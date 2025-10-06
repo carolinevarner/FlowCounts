@@ -3,6 +3,32 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api from "../api";
 
+function validatePassword(password) {
+  const errors = [];
+  
+  if (password.length < 8) {
+    errors.push("Password must be at least 8 characters long");
+  }
+  
+  if (!password[0] || !password[0].match(/[a-zA-Z]/)) {
+    errors.push("Password must start with a letter");
+  }
+  
+  if (!password.match(/[a-zA-Z]/)) {
+    errors.push("Password must contain at least one letter");
+  }
+  
+  if (!password.match(/\d/)) {
+    errors.push("Password must contain at least one number");
+  }
+  
+  if (!password.match(/[^a-zA-Z0-9]/)) {
+    errors.push("Password must contain at least one special character");
+  }
+  
+  return errors;
+}
+
 export default function ForgotPassword() {
   const navigate = useNavigate();
 
@@ -36,13 +62,13 @@ export default function ForgotPassword() {
     setQuestions([]);
   }
 
-  async function fetchUsername(e) {
+  async function verifyIdentity(e) {
     e.preventDefault();
     setError("");
     setOk("");
 
-    if (!form.email) {
-      setError("Please enter your email address.");
+    if (!form.email || !form.userId) {
+      setError("Please enter both your email address and username.");
       return;
     }
 
@@ -51,21 +77,23 @@ export default function ForgotPassword() {
         email: form.email,
       });
       
-      // Username found, auto-fill it and proceed to step 2
-      setForm({ ...form, userId: response.data.username });
+      // Verify that the provided username matches the email
+      if (response.data.username.toLowerCase() !== form.userId.toLowerCase()) {
+        setError("Username does not match the email address. Please check both fields.");
+        return;
+      }
+      
+      // Identity verified, proceed to step 2
       setStep(2);
-      // For now, use placeholder questions - in a real implementation, 
-      // you'd want to get the actual questions from the backend
-      setQuestions([
-        "What is your favorite color?",
-        "What was the name of your first pet?",
-        "What city were you born in?"
-      ]);
+      // Use the actual security questions from the backend
+      setQuestions(response.data.security_questions);
     } catch (err) {
       if (err.response?.status === 404) {
         setError("No user found with this email address.");
+      } else if (err.response?.status === 400 && err.response?.data?.detail?.includes("Security questions not set")) {
+        setError("Security questions not set for this user. Please contact your administrator.");
       } else {
-        setError("We could not verify your email address. Please try again.");
+        setError("We could not verify your identity. Please check your email and username.");
       }
     }
   }
@@ -74,6 +102,13 @@ export default function ForgotPassword() {
     e.preventDefault();
     setError("");
     setOk("");
+
+    // Validate password requirements
+    const passwordErrors = validatePassword(form.newPassword);
+    if (passwordErrors.length > 0) {
+      setError(passwordErrors.join(". ") + ".");
+      return;
+    }
 
     if (form.newPassword !== form.confirmPassword) {
       setError("New password and confirmation do not match.");
@@ -101,14 +136,14 @@ export default function ForgotPassword() {
 
   return (
     <AuthLayout title="FlowCounts" subtitle="Forgot Your Password? No Worries!">
-      <form onSubmit={step === 1 ? fetchUsername : onSubmit} className="auth-row">
+      <form onSubmit={step === 1 ? verifyIdentity : onSubmit} className="auth-row">
         {error && <div style={{ color: "crimson" }}>{error}</div>}
         {ok && <div style={{ color: "green" }}>{ok}</div>}
 
         {step === 1 ? (
           <>
             <div className="auth-row">
-              <label>Step 1: Enter your email address</label>
+              <label>Step 1: Verify your identity</label>
             </div>
 
             <input
@@ -120,8 +155,17 @@ export default function ForgotPassword() {
               required
             />
 
+            <input
+              className="auth-input"
+              placeholder="Username"
+              type="text"
+              value={form.userId}
+              onChange={(e) => setForm({ ...form, userId: e.target.value })}
+              required
+            />
+
             <div className="auth-actions">
-              <button className="auth-button" type="submit">Continue</button>
+              <button className="auth-button" type="submit">Verify Identity</button>
               <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
             </div>
           </>
