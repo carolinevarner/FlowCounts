@@ -3,21 +3,49 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.12
+      python: 3.11
+      nodejs: 20
     commands:
-      - echo "Installing dependencies (for build/test)..."
+      - echo "Upgrading pip and installing backend dependencies..."
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt
+      - echo "Installing frontend dependencies..."
+      - cd frontend
+      - npm ci
+      - cd ..
 
   build:
     commands:
-      - echo "Running tests (optional) and packaging application..."
-      - cd backend
-      - python manage.py test || true
+      - echo "Building React frontend..."
+      - cd frontend
+      - npm run build
       - cd ..
-      # Create zip in root folder so CodeBuild can find it
-      - zip -r application.zip backend -x "*.git*" "frontend/node_modules/*" "*.venv*" ".git/*"
+      - echo "Collecting Django static files..."
+      - python backend/manage.py collectstatic --noinput
+      - echo "Preparing deploy directory..."
+      - mkdir -p deploy
+
+      # Copy backend (Django project)
+      - cp backend/manage.py deploy/
+      - cp -r backend/core deploy/core
+
+      # Copy built frontend (React → build folder)
+      - mkdir -p deploy/frontend_build
+      - cp -r frontend/build/* deploy/frontend_build/
+
+      # Copy requirements and Procfile
+      - cp backend/requirements.txt deploy/
+      - cp Procfile deploy/
+
+      # Copy EB configuration if exists
+      - if [ -d ".ebextensions" ]; then cp -r .ebextensions deploy/.ebextensions; fi
+
+      # Copy static files if they exist
+      - mkdir -p deploy/staticfiles
+      - cp -r backend/staticfiles/* deploy/staticfiles/ || true
 
 artifacts:
   files:
-    - application.zip
+    - '**/*'
+  base-directory: deploy
+  name: BuildOutput

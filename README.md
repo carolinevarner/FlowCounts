@@ -16,9 +16,19 @@ This project is collaboratively built by:
 *   [Brenden Horne](https://github.com/BrendenHorne)
 *   [Ali Dabdoub](https://github.com/alid03)
 
+## How to Run:
+
+1. Clone the repository
+2. Open 2 sepeate terminals and use these commands:
+
+Terminal 1:
+```
 cd backend 
 .\venv\Scripts\Activate
 python.exe manage.py runserver 8000
-
+```
+Terminal 2:
+```
 cd frontnd 
 npm run dev
+```
