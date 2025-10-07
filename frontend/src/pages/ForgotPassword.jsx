@@ -75,13 +75,8 @@ export default function ForgotPassword() {
     try {
       const response = await api.post("/auth/get-username/", {
         email: form.email,
+        username: form.userId,  // Send what user entered for verification
       });
-      
-      // Verify that the provided username matches the email
-      if (response.data.username.toLowerCase() !== form.userId.toLowerCase()) {
-        setError("Username does not match the email address. Please check both fields.");
-        return;
-      }
       
       // Identity verified, proceed to step 2
       setStep(2);

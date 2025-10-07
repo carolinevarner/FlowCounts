@@ -821,10 +821,17 @@ def upload_profile_photo(request):
 def get_username_by_email(request):
     """Get username and security questions for a given email address."""
     email = request.data.get("email", "").strip().lower()
+    provided_username = request.data.get("username", "").strip()
     
     if not email:
         return Response(
             {"detail": "Email is required."},
+            status=400
+        )
+    
+    if not provided_username:
+        return Response(
+            {"detail": "Username is required."},
             status=400
         )
     
@@ -835,6 +842,19 @@ def get_username_by_email(request):
         if not all([user.security_question_1, user.security_question_2, user.security_question_3]):
             return Response(
                 {"detail": "Security questions not set for this user."},
+                status=400
+            )
+        
+        # Verify the provided username matches (check username, display_handle, or email)
+        username_matches = (
+            user.username.lower() == provided_username.lower() or
+            user.display_handle.lower() == provided_username.lower() or
+            user.email.lower() == provided_username.lower()
+        )
+        
+        if not username_matches:
+            return Response(
+                {"detail": "Username does not match the email address. Please check both fields."},
                 status=400
             )
         
