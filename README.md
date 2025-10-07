@@ -37,7 +37,7 @@ npm run dev
 
 3. Access the application at `http://localhost:5173`
 
-**That's it!** The frontend automatically proxies API requests to the backend. Works on any computer without configuration.
+The frontend automatically proxies API and media requests to the backend. Works on any computer without configuration
 
 ## Troubleshooting
 

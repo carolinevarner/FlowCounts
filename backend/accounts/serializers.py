@@ -36,13 +36,8 @@ class UserSerializer(serializers.ModelSerializer):
     def get_profile_image_url(self, obj):
         if not obj.profile_image:
             return None
-        request = self.context.get("request")
-        url = obj.profile_image.url  
-        if request is not None:
-            return request.build_absolute_uri(url) 
-        from django.conf import settings
-        base = getattr(settings, "PUBLIC_ORIGIN", "http://127.0.0.1:8000")
-        return f"{base}{url}"
+        # Return relative URL so Vite proxy can handle it on any computer
+        return obj.profile_image.url
 
     def get_suspended_now(self, obj):
         # Check if user is inactive due to failed login attempts

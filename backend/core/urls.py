@@ -35,8 +35,13 @@ urlpatterns = [
     path("api/auth/forgot-password/", forgot_password, name="forgot-password"),
     path("api/auth/check-password-expiration/", check_password_expiration, name="check-password-expiration"),
     path("api/auth/expired-passwords-report/", get_expired_passwords_report, name="expired-passwords-report"),
-    re_path(r'^(?!api/).*$', never_cache(TemplateView.as_view(template_name='index.html'))),
 ]
 
+# Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Catch-all for frontend routes - MUST be last!
+urlpatterns += [
+    re_path(r'^(?!api/|media/).*$', never_cache(TemplateView.as_view(template_name='index.html'))),
+]
