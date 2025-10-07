@@ -113,6 +113,20 @@ class CreateUserSerializer(serializers.ModelSerializer):
             "suspend_from",
             "suspend_to",
         ]
+    
+    def validate_email(self, value):
+        """Ensure email is unique across all users"""
+        value = (value or "").strip().lower()
+        # Check if updating existing user
+        if self.instance:
+            # Allow same email if it's the current user's email
+            if User.objects.filter(email__iexact=value).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError("A user with this email already exists.")
+        else:
+            # Creating new user - check for any existing user with this email
+            if User.objects.filter(email__iexact=value).exists():
+                raise serializers.ValidationError("A user with this email already exists.")
+        return value
 
     def create(self, validated_data):
         pwd = validated_data.pop("password")

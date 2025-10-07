@@ -836,16 +836,10 @@ def get_username_by_email(request):
         )
     
     try:
+        # Find user by email (emails are now unique)
         user = User.objects.get(email__iexact=email)
         
-        # Check if user has security questions set
-        if not all([user.security_question_1, user.security_question_2, user.security_question_3]):
-            return Response(
-                {"detail": "Security questions not set for this user."},
-                status=400
-            )
-        
-        # Verify the provided username matches (check username, display_handle, or email)
+        # Verify the provided username matches (can be username, display_handle, or email)
         username_matches = (
             user.username.lower() == provided_username.lower() or
             user.display_handle.lower() == provided_username.lower() or
@@ -855,6 +849,13 @@ def get_username_by_email(request):
         if not username_matches:
             return Response(
                 {"detail": "Username does not match the email address. Please check both fields."},
+                status=400
+            )
+        
+        # Check if user has security questions set
+        if not all([user.security_question_1, user.security_question_2, user.security_question_3]):
+            return Response(
+                {"detail": "Security questions not set for this user."},
                 status=400
             )
         
