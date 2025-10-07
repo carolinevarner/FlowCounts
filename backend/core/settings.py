@@ -214,7 +214,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Extra static files (like your frontend build)
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/dist/static'),
+    os.path.join(BASE_DIR, 'frontend/dist'),
 ]
 
 # WhiteNoise for production
