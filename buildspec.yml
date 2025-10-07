@@ -9,6 +9,7 @@ phases:
       - echo "Upgrading pip and installing backend dependencies..."
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt
+
       - echo "Installing frontend dependencies..."
       - cd frontend
       - npm ci
@@ -20,28 +21,29 @@ phases:
       - cd frontend
       - npm run build
       - cd ..
+
       - echo "Collecting Django static files..."
       - python backend/manage.py collectstatic --noinput
-      - echo "Preparing deploy directory..."
-      - mkdir -p deploy
 
-      # Copy backend (Django project)
+      - echo "Preparing deploy directory..."
+      - mkdir -p deploy/frontend_build
+      - mkdir -p deploy/staticfiles
+
+      - echo "Copying backend files..."
       - cp backend/manage.py deploy/
       - cp -r backend/core deploy/core
 
-      # Copy built frontend (React → build folder)
-      - mkdir -p deploy/frontend_build
-      - cp -r frontend/build/* deploy/frontend_build/
+      - echo "Copying built frontend files..."
+      - cp -r frontend/dist/* deploy/frontend_build/
 
-      # Copy requirements and Procfile
+      - echo "Copying requirements and Procfile..."
       - cp backend/requirements.txt deploy/
       - cp Procfile deploy/
 
-      # Copy EB configuration if exists
+      - echo "Copying .ebextensions (if exists)..."
       - if [ -d ".ebextensions" ]; then cp -r .ebextensions deploy/.ebextensions; fi
 
-      # Copy static files if they exist
-      - mkdir -p deploy/staticfiles
+      - echo "Copying static files (if exist)..."
       - cp -r backend/staticfiles/* deploy/staticfiles/ || true
 
 artifacts:

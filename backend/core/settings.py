@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": BASE_DIR / "backend" / "db.sqlite3",
     }
 }
 
@@ -209,7 +209,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend_build/static'),
+    os.path.join(BASE_DIR, 'frontend/dist/static'),
 ]
 
 MEDIA_URL = "/media/"
