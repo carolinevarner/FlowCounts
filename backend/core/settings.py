@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -49,7 +50,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
+# AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]  # Removed duplicate
 
 ROOT_URLCONF = 'core.urls'
 
@@ -139,6 +140,8 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
 ADMIN_NOTIFICATION_EMAILS = ["varner4262@gmail.com"]
@@ -188,13 +191,20 @@ ALLOWED_HOSTS = [
     "FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
     "localhost",
     "127.0.0.1",
+    "*",  # Allow all hosts for development (remove this in production)
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
     "https://flowcounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
     "https://FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
 ]
+
+# Allow all origins for development (remove this in production)
+CORS_ALLOW_ALL_ORIGINS = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

@@ -1,7 +1,9 @@
 import axios from "axios";
 
+// Use relative URL for API calls - Vite proxy will handle routing to backend
+// This works automatically on everyone's computer without configuration
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/", 
+  baseURL: "/api/",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -23,7 +25,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem("refresh");
         if (refreshToken) {
-          const response = await axios.post("http://127.0.0.1:8000/api/auth/token/refresh/", {
+          const response = await axios.post("/api/auth/token/refresh/", {
             refresh: refreshToken
           });
           
