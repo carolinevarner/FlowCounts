@@ -5,4 +5,5 @@ class AccountsConfig(AppConfig):
     name = "accounts"
 
     def ready(self):
-        from . import signals  
+        from . import signals
+        from . import password_expiration  # noqa - Auto password expiration  

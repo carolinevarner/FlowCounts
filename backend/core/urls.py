@@ -14,8 +14,6 @@ from accounts.views import (
     upload_profile_photo,
     forgot_password,
     get_username_by_email,
-    check_password_expiration,
-    get_expired_passwords_report,
 )
 from accounts.error_views import ErrorMessageViewSet, ErrorLogViewSet
 
@@ -33,8 +31,6 @@ urlpatterns = [
     path("api/auth/me/photo/", upload_profile_photo, name="upload-profile-photo"),
     path("api/auth/get-username/", get_username_by_email, name="get-username"),
     path("api/auth/forgot-password/", forgot_password, name="forgot-password"),
-    path("api/auth/check-password-expiration/", check_password_expiration, name="check-password-expiration"),
-    path("api/auth/expired-passwords-report/", get_expired_passwords_report, name="expired-passwords-report"),
 ]
 
 # Serve media files in development

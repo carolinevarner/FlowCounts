@@ -8,7 +8,6 @@ const LINKS = [
   { to: "/admin/accounts", label: "Accounts" },
   { to: "/admin/users", label: "Users" },
   { to: "/admin/events", label: "Event Log" },
-  { to: "/admin/password-report", label: "Password Report" },
 ];
 
 function doLogout() {

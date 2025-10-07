@@ -44,6 +44,7 @@ The frontend automatically proxies API and media requests to the backend. Works 
 ### "Invalid Credentials" Error
 - Verify username/email and password are correct
 - Account may be suspended after 3 failed login attempts
+- Password may have expired - check email for expiration notice
 - Check if account is active in Django admin panel
 
 ### Cannot Connect to Backend
