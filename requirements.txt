@@ -1,1 +1,2 @@
--r backend/requirements.txt
+# Root requirements file for AWS Elastic Beanstalk
+-r ./backend/requirements.txt
