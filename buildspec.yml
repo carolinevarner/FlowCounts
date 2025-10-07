@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.11
+      python: 3.13
       nodejs: 20
     commands:
       - echo "Upgrading pip and installing backend dependencies..."
@@ -22,10 +22,8 @@ phases:
       - npm run build
       - cd ..
 
-      - echo "Collecting Django static files..."
-      - python backend/manage.py collectstatic --noinput
-
       - echo "Preparing deploy directory..."
+      - mkdir -p deploy/core
       - mkdir -p deploy/frontend_build
       - mkdir -p deploy/staticfiles
 
@@ -42,9 +40,6 @@ phases:
 
       - echo "Copying .ebextensions (if exists)..."
       - if [ -d ".ebextensions" ]; then cp -r .ebextensions deploy/.ebextensions; fi
-
-      - echo "Copying static files (if exist)..."
-      - cp -r backend/staticfiles/* deploy/staticfiles/ || true
 
 artifacts:
   files:
