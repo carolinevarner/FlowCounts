@@ -34,7 +34,7 @@ phases:
       - cp -r backend/core deploy/core
 
       - echo "Copying built frontend files..."
-      - cp -r frontend/build/* deploy/frontend_build/
+      - cp -r frontend/dist/* deploy/frontend_build/
 
       - echo "Copying requirements and Procfile..."
       - cp backend/requirements.txt deploy/
