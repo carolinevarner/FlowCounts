@@ -39,7 +39,7 @@ npm run dev
 
 **That's it!** The frontend automatically proxies API requests to the backend. Works on any computer without configuration.
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### "Invalid Credentials" Error
 - Verify username/email and password are correct
