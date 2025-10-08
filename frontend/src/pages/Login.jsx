@@ -39,9 +39,15 @@ export default function Login() {
     const detail = err?.response?.data?.detail || "Invalid credentials.";
     const attemptsLeft = err?.response?.data?.attempts_left;
     const suspended = err?.response?.data?.suspended;
+    const passwordExpired = err?.response?.data?.password_expired;
 
     if (suspended) {
       setError("Account suspended due to too many failed login attempts. Contact administrator.");
+      return;
+    }
+
+    if (passwordExpired) {
+      setError(detail + " Click 'Forgot Password' to reset your password.");
       return;
     }
 

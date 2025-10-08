@@ -23,6 +23,11 @@ class User(AbstractUser):
     failed_attempts = models.PositiveIntegerField(default=0)
     last_password_change = models.DateTimeField(blank=True, null=True)
     password_expires_at = models.DateTimeField(blank=True, null=True)
+    
+    # Temporary password tracking
+    is_temporary_password = models.BooleanField(default=False)
+    password_must_change_by = models.DateTimeField(blank=True, null=True)
+    last_expiration_reminder_sent = models.DateTimeField(blank=True, null=True)
 
     profile_image = models.ImageField(upload_to="profiles/", null=True, blank=True)
 
@@ -89,8 +94,12 @@ class EventLog(models.Model):
         ("USER_ACTIVATED", "User Activated"),
         ("USER_DEACTIVATED", "User Deactivated"),
         ("USER_SUSPENDED", "User Suspended"),
+        ("USER_UNSUSPENDED", "User Unsuspended"),
+        ("USER_UPDATED", "User Updated"),
         ("REQUEST_APPROVED", "Access Approved"),
         ("REQUEST_REJECTED", "Access Rejected"),
+        ("PASSWORD_CHANGED", "Password Changed"),
+        ("PASSWORD_RESET", "Password Reset"),
     ]
 
     action = models.CharField(max_length=32, choices=ACTION_CHOICES)

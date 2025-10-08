@@ -27,7 +27,7 @@ import time
 from django.core.mail import send_mail
 import logging, secrets, string
 
-from .models import RegistrationRequest, EventLog
+from .models import RegistrationRequest, EventLog, PasswordHistory
 from .error_utils import log_error, DatabaseErrorResponse, get_error_message
 from .serializers import (
     UserSerializer,
@@ -36,7 +36,13 @@ from .serializers import (
     CreateUserSerializer,
     EventLogSerializer,
 )
-from .permissions import IsAdmin 
+from .permissions import IsAdmin
+from .password_utils import (
+    save_password_to_history,
+    set_password_expiration,
+    check_password_expired,
+    check_and_send_expiration_reminder,
+) 
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -320,6 +326,14 @@ class FlowTokenView(TokenObtainPairView):
         if is_suspended_now(user):
             until = user.suspend_to or user.suspend_from
             return Response({"detail": f"User is suspended until {until}."}, status=403)
+        
+        # Check if password has expired
+        is_expired, expiry_reason = check_password_expired(user)
+        if is_expired:
+            return Response({
+                "detail": expiry_reason,
+                "password_expired": True
+            }, status=403)
 
         refresh = RefreshToken.for_user(user)
         access = str(refresh.access_token)
@@ -413,8 +427,15 @@ class UserAdminViewSet(
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         
-        # Get the created user for email notifications
+        # Get the created user for email notifications and password setup
         created_user = User.objects.filter(username=serializer.data.get("username")).first()
+        
+        # Set up temporary password expiration (3 days)
+        if created_user:
+            set_password_expiration(created_user, is_temporary=True)
+            # Save the initial password to history
+            save_password_to_history(created_user, created_user.password)
+            created_user.save()
         
         # Log event
         try:
@@ -430,15 +451,22 @@ class UserAdminViewSet(
         # Send email notifications
         try:
             if created_user and created_user.email:
-                # Email to new user
+                # Email to new user with temporary password warning
                 send_mail(
-                    "Welcome to FlowCounts",
+                    "Welcome to FlowCounts - Action Required",
                     f"Hello {created_user.first_name or created_user.username},\n\n"
                     f"Your FlowCounts account has been created by an administrator.\n\n"
                     f"Username: {created_user.username}\n"
                     f"Email: {created_user.email}\n"
                     f"Role: {created_user.role}\n\n"
-                    "You can now log in to the system using your provided credentials.\n\n"
+                    f"⚠️ IMPORTANT: Your password is temporary and must be changed within 3 days.\n"
+                    f"Deadline: {created_user.password_must_change_by.strftime('%Y-%m-%d %H:%M')}\n\n"
+                    f"You will receive daily reminder emails until you change your password.\n"
+                    f"If you don't change it within 3 days, you will need to use the 'Forgot Password' feature.\n\n"
+                    "To change your password after logging in:\n"
+                    "1. Log in to FlowCounts\n"
+                    "2. Go to your profile settings\n"
+                    "3. Change your password immediately\n\n"
                     "FlowCounts Team",
                     settings.DEFAULT_FROM_EMAIL,
                     [created_user.email],
@@ -607,6 +635,65 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAuthenticated(), IsAdmin()]
 
+    def create(self, request, *args, **kwargs):
+        """Create a new registration request and send notification emails."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        data = serializer.data
+
+        # Send email to the user who requested access
+        try:
+            user_subject = "FlowCounts: Access Request Received"
+            user_body = (
+                f"Hello {data.get('first_name', '')},\n\n"
+                f"Thank you for requesting access to FlowCounts.\n\n"
+                f"Your request has been received and is currently under review by an administrator.\n"
+                f"You will receive an email notification once your request has been reviewed.\n\n"
+                f"Request Details:\n"
+                f"Name: {data.get('first_name', '')} {data.get('last_name', '')}\n"
+                f"Email: {data.get('email', '')}\n\n"
+                f"If you did not submit this request, please disregard this email.\n\n"
+                f"FlowCounts Team"
+            )
+            send_mail(
+                user_subject,
+                user_body,
+                settings.DEFAULT_FROM_EMAIL,
+                [data.get('email', '')],
+                fail_silently=False,
+            )
+            logger.info(f"Sent registration confirmation to {data.get('email', '')}")
+        except Exception as e:
+            logger.error(f"Failed to send user registration confirmation: {e}", exc_info=True)
+
+        # Send email to admin(s)
+        admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+        if admin_emails:
+            try:
+                admin_subject = "FlowCounts: New Registration Request"
+                admin_body = (
+                    "A new registration request was submitted.\n\n"
+                    f"Name: {data.get('first_name', '')} {data.get('last_name', '')}\n"
+                    f"Email: {data.get('email', '')}\n"
+                    f"DOB: {data.get('dob', '')}\n"
+                    f"Address: {data.get('address', '')}\n\n"
+                    "Please review it on the Admin → Users page."
+                )
+                send_mail(
+                    admin_subject,
+                    admin_body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    admin_emails,
+                    fail_silently=False,
+                )
+                logger.info(f"Sent admin registration email to {admin_emails}")
+            except Exception as e:
+                logger.error(f"Admin notify email failed: {e}", exc_info=True)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
         if getattr(request.user, "role", "") != "ADMIN":
@@ -687,17 +774,30 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
                 security_answer_3=req.security_answer_3,
             )
             user.set_password(temp)
+            
+            # Set up temporary password expiration (3 days)
+            set_password_expiration(user, is_temporary=True)
+            # Save the initial password to history
+            save_password_to_history(user, user.password)
+            
             user.save()
 
-            subject = "FlowCounts Access Approved"
+            subject = "FlowCounts Access Approved - Action Required"
             body = (
                 f"Hello {req.first_name},\n\n"
-                f"Your access request to FlowCounts has been approved.\n\n"
+                f"Your access request to FlowCounts has been approved!\n\n"
                 f"Username: {user.username}\n"
                 f"Role: {user.role}\n"
                 f"Temporary password: {temp}\n"
                 "Login: http://localhost:5173/login\n\n"
-                "Please change your password after logging in.\n\n"
+                f"⚠️ IMPORTANT: Your password is temporary and must be changed within 3 days.\n"
+                f"Deadline: {user.password_must_change_by.strftime('%Y-%m-%d %H:%M')}\n\n"
+                f"You will receive daily reminder emails until you change your password.\n"
+                f"If you don't change it within 3 days, you will need to use the 'Forgot Password' feature.\n\n"
+                "To change your password after logging in:\n"
+                "1. Log in using the credentials above\n"
+                "2. Go to your profile settings\n"
+                "3. Change your password immediately\n\n"
                 "FlowCounts Team"
             )
             send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
@@ -754,36 +854,6 @@ class EventLogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated, IsAdmin]
     queryset = EventLog.objects.all().order_by("-created_at")
     serializer_class = EventLogSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        data = serializer.data
-
-        admins = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
-        if admins:
-            try:
-                sent = send_mail(
-                    "FlowCounts: New Registration Request",
-                    (
-                        "A new registration request was submitted.\n\n"
-                        f"Name: {data.get('first_name','')} {data.get('last_name','')}\n"
-                        f"Email: {data.get('email','')}\n"
-                        f"DOB: {data.get('dob','')}\n"
-                        f"Address: {data.get('address','')}\n\n"
-                        "Please review it on the Admin → Users page."
-                    ),
-                    settings.DEFAULT_FROM_EMAIL,
-                    admins,
-                    fail_silently=False,
-                )
-                logger.info("Sent admin registration email to %s (sent=%s)", admins, sent)
-            except Exception as e:
-                logger.error("Admin notify email failed: %s", e, exc_info=True)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED,
-                        headers=self.get_success_headers(serializer.data))
 
 
 
@@ -1042,11 +1112,20 @@ def forgot_password(request):
             status=400
         )
     
+    # Save old password to history before changing
+    save_password_to_history(user, user.password)
+    
     # Update password
     user.set_password(new_password)
     user.failed_attempts = 0  # Reset failed attempts
-    user.last_password_change = timezone.now()
+    
+    # Set regular password expiration (90 days, not temporary)
+    set_password_expiration(user, is_temporary=False)
+    
     user.save()
+    
+    # Save new password to history
+    save_password_to_history(user, user.password)
     
     # Log the password reset event
     try:
@@ -1060,6 +1139,85 @@ def forgot_password(request):
         logger.warning("Failed to log PASSWORD_RESET event", exc_info=True)
     
     return Response({"detail": "Password reset successfully."})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """Allow authenticated users to change their password."""
+    user = request.user
+    old_password = request.data.get("old_password", "")
+    new_password = request.data.get("new_password", "")
+    
+    if not old_password or not new_password:
+        return Response(
+            {"detail": "Both old and new passwords are required."},
+            status=400
+        )
+    
+    # Verify old password
+    if not user.check_password(old_password):
+        return Response(
+            {"detail": "Current password is incorrect."},
+            status=400
+        )
+    
+    # Validate new password using Django validators
+    from django.core.exceptions import ValidationError
+    from django.contrib.auth.password_validation import validate_password
+    
+    try:
+        validate_password(new_password, user)
+    except ValidationError as e:
+        return Response(
+            {"detail": "Password validation failed.", "errors": e.messages},
+            status=400
+        )
+    
+    # Save old password to history before changing
+    save_password_to_history(user, user.password)
+    
+    # Update password
+    user.set_password(new_password)
+    
+    # Set regular password expiration (90 days, not temporary)
+    set_password_expiration(user, is_temporary=False)
+    
+    user.save()
+    
+    # Save new password to history
+    save_password_to_history(user, user.password)
+    
+    # Log the password change event
+    try:
+        EventLog.objects.create(
+            action="PASSWORD_CHANGED",
+            actor=user,
+            target_user=user,
+            details="User changed their password"
+        )
+    except Exception:
+        logger.warning("Failed to log PASSWORD_CHANGED event", exc_info=True)
+    
+    # Send confirmation email
+    try:
+        if user.email:
+            send_mail(
+                "FlowCounts: Password Changed Successfully",
+                f"Hello {user.first_name or user.username},\n\n"
+                f"Your password has been changed successfully.\n\n"
+                f"Your password will expire in 90 days on {user.password_expires_at.strftime('%Y-%m-%d')}.\n"
+                f"You will receive reminder emails 30 days and 60 days before expiration.\n\n"
+                "If you did not make this change, please contact your administrator immediately.\n\n"
+                "FlowCounts Team",
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+    except Exception as e:
+        logger.error(f"Failed to send password change confirmation email: {e}")
+    
+    return Response({"detail": "Password changed successfully."})
+
 
 @api_view(["GET"])
 def me(request):

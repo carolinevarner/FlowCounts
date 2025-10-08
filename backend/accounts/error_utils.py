@@ -152,6 +152,26 @@ def create_default_error_messages():
          'Password must be at least 8 characters, start with a letter, and contain at least one letter, one number, and one special character.',
          'Password validation failed against security requirements.'),
         
+        ('VALIDATION_PASSWORD_MIN_LENGTH', 'VALIDATION', 'Password Too Short',
+         'Password must be at least 8 characters long.',
+         'Password does not meet minimum length requirement.'),
+        
+        ('VALIDATION_PASSWORD_START_LETTER', 'VALIDATION', 'Password Must Start with Letter',
+         'Password must start with a letter (A-Z or a-z).',
+         'Password does not start with a letter.'),
+        
+        ('VALIDATION_PASSWORD_MISSING_LETTER', 'VALIDATION', 'Password Missing Letter',
+         'Password must contain at least one letter (A-Z or a-z).',
+         'Password does not contain any letters.'),
+        
+        ('VALIDATION_PASSWORD_MISSING_NUMBER', 'VALIDATION', 'Password Missing Number',
+         'Password must contain at least one number (0-9).',
+         'Password does not contain any numbers.'),
+        
+        ('VALIDATION_PASSWORD_MISSING_SPECIAL', 'VALIDATION', 'Password Missing Special Character',
+         'Password must contain at least one special character (e.g., !@#$%^&*).',
+         'Password does not contain any special characters.'),
+        
         ('VALIDATION_EMAIL_EXISTS', 'VALIDATION', 'Email Already Exists',
          'An account with this email address already exists.',
          'Email address is already registered in the system.'),

@@ -14,6 +14,7 @@ from accounts.views import (
     upload_profile_photo,
     forgot_password,
     get_username_by_email,
+    change_password,
 )
 from accounts.error_views import ErrorMessageViewSet, ErrorLogViewSet
 
@@ -29,6 +30,7 @@ urlpatterns = [
     path("api/auth/token/", FlowTokenView.as_view()),
     path("api/auth/me/", me),
     path("api/auth/me/photo/", upload_profile_photo, name="upload-profile-photo"),
+    path("api/auth/change-password/", change_password, name="change-password"),
     path("api/auth/get-username/", get_username_by_email, name="get-username"),
     path("api/auth/forgot-password/", forgot_password, name="forgot-password"),
 ]
