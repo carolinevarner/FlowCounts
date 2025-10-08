@@ -92,7 +92,6 @@ function CreateUserModal({ onClose, onCreated }) {
       password: "",
     });
     setError("");
-    onClose();
   }
 
   function validate() {
@@ -249,8 +248,11 @@ function SuspendUserModal({ user, onClose, onSuspended }) {
   }
 
   function onCancel() {
+    setForm({
+      suspend_from: user.suspend_from || "",
+      suspend_to: user.suspend_to || "",
+    });
     setError("");
-    onClose();
   }
 
   function validate() {
