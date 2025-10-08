@@ -159,10 +159,8 @@ export default function ForgotPassword() {
               required
             />
 
-            <div className="auth-actions">
-              <button className="auth-button" type="submit">Verify Identity</button>
-              <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
-            </div>
+            <button className="auth-button" type="submit">Verify Identity</button>
+            <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
           </>
         ) : (
           <>
@@ -229,10 +227,8 @@ export default function ForgotPassword() {
               required
             />
 
-            <div className="auth-actions">
-              <button className="auth-button" type="submit">Reset Password</button>
-              <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
-            </div>
+            <button className="auth-button" type="submit">Reset Password</button>
+            <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
           </>
         )}
 

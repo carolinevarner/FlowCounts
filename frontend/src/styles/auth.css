@@ -159,13 +159,25 @@ h2{
 }
 
 .auth-button.secondary, .auth-linkbtn.secondary {
-  background: #1C302F;
-  border-color: #1C302F;
+  background: #c1121f;
+  border-color: #c1121f;
   color: #FFFFFF;
   border: 2px solid var(--border);
 }
 
-.auth-button:hover,
-.auth-linkbtn:hover {
+.auth-button:not(.secondary):hover,
+.auth-linkbtn:not(.secondary):hover {
   background: #1C5C59;
+}
+
+.auth-button.secondary:hover {
+  background: #a00d18;
+}
+
+.login-button {
+  background: #1C5C59 !important;
+}
+
+.login-button:hover {
+  background: #165048 !important;
 }

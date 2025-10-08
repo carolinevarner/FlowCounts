@@ -13,13 +13,6 @@ const LINKS = [
   { to: "/accountant/retained", label: "Statement of Retained Earnings" },
 ];
 
-function doLogout() {
-  localStorage.removeItem("access");
-  localStorage.removeItem("refresh");
-  localStorage.removeItem("user");
-  window.location.href = "/login";
-}
-
 export default function AccountantShell() {
   return (
     <div className="shell">
@@ -37,10 +30,6 @@ export default function AccountantShell() {
             </NavLink>
           ))}
         </nav>
-        <div className="side-footer">
-            <button className="side-logout" onClick={doLogout}>Log out</button>
-        </div>
-
       </aside>
       <main className="main">
         <header className="main-top">

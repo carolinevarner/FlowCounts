@@ -162,6 +162,10 @@ export default function Signup() {
           required
         />
 
+        <div className="auth-row">
+          <label>Date of Birth (MM/DD/YYYY):</label>
+        </div>
+
         <input
           className="auth-input"
           placeholder="Date of birth"
@@ -226,10 +230,8 @@ export default function Signup() {
           />
         </div>
 
-        <div className="auth-actions">
-          <button className="auth-button" type="submit">Request</button>
-          <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
-        </div>
+        <button className="auth-button" type="submit">Request</button>
+        <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
 
         <div className="auth-footer">
           <span>Already have an account?</span>

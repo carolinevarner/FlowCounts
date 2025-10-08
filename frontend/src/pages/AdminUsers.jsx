@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api";
 
 // function useClickAway(close) {
@@ -68,6 +68,333 @@ function makeDisplayNameMap(users) {
   return out;
 }
 
+function CreateUserModal({ onClose, onCreated }) {
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    role: "ACCOUNTANT",
+    password: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  function setField(key, val) {
+    setForm((f) => ({ ...f, [key]: val }));
+  }
+
+  function onCancel() {
+    setForm({
+      first_name: "",
+      last_name: "",
+      email: "",
+      role: "ACCOUNTANT",
+      password: "",
+    });
+    setError("");
+    onClose();
+  }
+
+  function validate() {
+    if (!form.first_name.trim() || !form.last_name.trim()) {
+      return "First and last name are required.";
+    }
+    const okEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim());
+    if (!okEmail) return "Please enter a valid email address.";
+    if (!["ADMIN", "MANAGER", "ACCOUNTANT"].includes(form.role)) {
+      return "Role must be ADMIN, MANAGER, or ACCOUNTANT.";
+    }
+    if (!form.password || form.password.trim().length < 8) {
+      return "Password must be at least 8 characters.";
+    }
+    return "";
+  }
+
+  async function onCreate() {
+    setError("");
+    const msg = validate();
+    if (msg) {
+      setError(msg);
+      return;
+    }
+    try {
+      setSaving(true);
+      const payload = {
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        email: form.email.trim(),
+        role: form.role,
+        password: form.password.trim(),
+      };
+      await api.post("/auth/users/", payload);
+      onCreated();
+    } catch (e) {
+      const apiMsg =
+        e?.response?.data?.detail ||
+        e?.response?.data?.email?.[0] ||
+        e?.response?.data?.role?.[0] ||
+        e?.response?.data?.password?.[0] ||
+        "Create failed. Check server.";
+      setError(apiMsg);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="modal-overlay" onMouseDown={onClose}>
+      <div className="modal-panel" onMouseDown={(e) => e.stopPropagation()}>
+        <button 
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '15px',
+            right: '15px',
+            background: 'none',
+            border: 'none',
+            fontSize: '35px',
+            cursor: 'pointer',
+            color: '#000000',
+            lineHeight: '1',
+            padding: '0',
+            width: '60px',
+            height: '60px'
+          }}
+          aria-label="Close"
+        >
+          ×
+        </button>
+        <h3 style={{ marginTop: 0 }}>Create User</h3>
+
+        <div className="field">
+          <label>First name</label>
+          <input
+            value={form.first_name}
+            onChange={(e) => setField("first_name", e.target.value)}
+            placeholder="Enter first name"
+          />
+        </div>
+
+        <div className="field">
+          <label>Last name</label>
+          <input
+            value={form.last_name}
+            onChange={(e) => setField("last_name", e.target.value)}
+            placeholder="Enter last name"
+          />
+        </div>
+
+        <div className="field">
+          <label>Email</label>
+          <input
+            value={form.email}
+            onChange={(e) => setField("email", e.target.value)}
+            placeholder="Enter email address"
+          />
+        </div>
+
+        <div className="field">
+          <label>Role</label>
+          <select
+            value={form.role}
+            onChange={(e) => setField("role", e.target.value)}
+          >
+            <option value="ADMIN">ADMIN</option>
+            <option value="MANAGER">MANAGER</option>
+            <option value="ACCOUNTANT">ACCOUNTANT</option>
+          </select>
+        </div>
+
+        <div className="field">
+          <label>Temporary Password (min 8 characters)</label>
+          <input
+            type="password"
+            value={form.password}
+            onChange={(e) => setField("password", e.target.value)}
+            placeholder="Enter temporary password"
+          />
+        </div>
+
+        {error && <div className="error">{error}</div>}
+
+        <button className="auth-button" disabled={saving} onClick={onCreate} style={{ marginTop: 6, backgroundColor: '#1C5C59' }}>
+          {saving ? "Creating…" : "Create User"}
+        </button>
+        <button className="auth-button secondary" disabled={saving} onClick={onCancel} style={{ marginTop: 10 }}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SuspendUserModal({ user, onClose, onSuspended }) {
+  const isSuspended = user.suspended_now === true || (user.is_active === false && (user.suspend_from || user.suspend_to));
+  
+  const [form, setForm] = useState({
+    suspend_from: user.suspend_from || "",
+    suspend_to: user.suspend_to || "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  function setField(key, val) {
+    setForm((f) => ({ ...f, [key]: val }));
+  }
+
+  function onCancel() {
+    setError("");
+    onClose();
+  }
+
+  function validate() {
+    if (isSuspended) {
+      // For unsuspend, no validation needed
+      return "";
+    }
+    
+    if (!form.suspend_from || !form.suspend_to) {
+      return "Both start and end dates are required.";
+    }
+    
+    const startDate = new Date(form.suspend_from);
+    const endDate = new Date(form.suspend_to);
+    
+    if (startDate > endDate) {
+      return "End date must be after start date.";
+    }
+    
+    return "";
+  }
+
+  async function onSubmit() {
+    setError("");
+    const msg = validate();
+    if (msg) {
+      setError(msg);
+      return;
+    }
+    try {
+      setSaving(true);
+      const payload = isSuspended 
+        ? { suspend_from: "", suspend_to: "" }
+        : {
+            suspend_from: form.suspend_from.trim(),
+            suspend_to: form.suspend_to.trim(),
+          };
+      const { data } = await api.post(`/auth/users/${user.id}/suspend/`, payload);
+      onSuspended(data);
+    } catch (e) {
+      const apiMsg =
+        e?.response?.data?.detail ||
+        e?.response?.data?.suspend_from?.[0] ||
+        e?.response?.data?.suspend_to?.[0] ||
+        `${isSuspended ? "Unsuspend" : "Suspend"} failed. Check server.`;
+      setError(apiMsg);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="modal-overlay" onMouseDown={onClose}>
+      <div className="modal-panel" onMouseDown={(e) => e.stopPropagation()}>
+        <button 
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '15px',
+            right: '15px',
+            background: 'none',
+            border: 'none',
+            fontSize: '35px',
+            cursor: 'pointer',
+            color: '#666',
+            lineHeight: '1',
+            padding: '0',
+            width: '60px',
+            height: '60px'
+          }}
+          aria-label="Close"
+        >
+          ×
+        </button>
+        <h3 style={{ marginTop: 0 }}>
+          {isSuspended ? "Unsuspend User" : "Suspend User"}
+        </h3>
+
+        <div className="field">
+          <label>User</label>
+          <input value={`${user.first_name} ${user.last_name} (${user.email})`} disabled />
+        </div>
+
+        {isSuspended ? (
+          <div style={{ padding: '12px', backgroundColor: '#fff3cd', borderRadius: '6px', marginBottom: '12px' }}>
+            <p style={{ margin: 0, fontSize: '14px' }}>
+              This user is currently suspended.
+              {user.suspend_from && user.suspend_to && (
+                <><br />From: <strong>{user.suspend_from}</strong> to <strong>{user.suspend_to}</strong></>
+              )}
+            </p>
+            <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+              Click "Unsuspend" to restore their access.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="field">
+              <label>Suspend From</label>
+              <input
+                type="date"
+                value={form.suspend_from}
+                onChange={(e) => setField("suspend_from", e.target.value)}
+              />
+            </div>
+
+            <div className="field">
+              <label>Suspend To</label>
+              <input
+                type="date"
+                value={form.suspend_to}
+                onChange={(e) => setField("suspend_to", e.target.value)}
+              />
+            </div>
+          </>
+        )}
+
+        {error && <div className="error">{error}</div>}
+
+        <button 
+          className="auth-button" 
+          disabled={saving} 
+          onClick={onSubmit} 
+          style={{ 
+            marginTop: 6, 
+            backgroundColor: isSuspended ? '#4f772d' : '#f08f00' 
+          }}
+        >
+          {saving ? (isSuspended ? "Unsuspending…" : "Suspending…") : (isSuspended ? "Unsuspend" : "Suspend User")}
+        </button>
+        <button className="auth-button secondary" disabled={saving} onClick={onCancel} style={{ marginTop: 10 }}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function EditUserModal({ user, onClose, onSaved }) {
   const [form, setForm] = useState({
     first_name: user.first_name || "",
@@ -80,6 +407,16 @@ function EditUserModal({ user, onClose, onSaved }) {
 
   function setField(key, val) {
     setForm((f) => ({ ...f, [key]: val }));
+  }
+
+  function onCancel() {
+    setForm({
+      first_name: user.first_name || "",
+      last_name: user.last_name || "",
+      email: user.email || "",
+      role: user.role || "ACCOUNTANT",
+    });
+    setError("");
   }
 
   function validate() {
@@ -132,6 +469,26 @@ function EditUserModal({ user, onClose, onSaved }) {
   return (
     <div className="modal-overlay" onMouseDown={onClose}>
       <div className="modal-panel" onMouseDown={(e) => e.stopPropagation()}>
+        <button 
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '15px',
+            right: '15px',
+            background: 'none',
+            border: 'none',
+            fontSize: '35px',
+            cursor: 'pointer',
+            color: '#666',
+            lineHeight: '1',
+            padding: '0',
+            width: '60px',
+            height: '60px'
+          }}
+          aria-label="Close"
+        >
+          ×
+        </button>
         <h3 style={{ marginTop: 0 }}>Edit User</h3>
 
         <div className="field">
@@ -177,14 +534,12 @@ function EditUserModal({ user, onClose, onSaved }) {
 
         {error && <div className="error">{error}</div>}
 
-        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <button className="auth-button" disabled={saving} onClick={onSave}>
-            {saving ? "Saving…" : "Save"}
-          </button>
-          <button className="auth-button secondary" disabled={saving} onClick={onClose}>
-            Cancel
-          </button>
-        </div>
+        <button className="auth-button" disabled={saving} onClick={onSave} style={{ marginTop: 6, backgroundColor: '#1C5C59' }}>
+          {saving ? "Saving…" : "Save"}
+        </button>
+        <button className="auth-button secondary" disabled={saving} onClick={onCancel} style={{ marginTop: 10 }}>
+          Cancel
+        </button>
       </div>
     </div>
   );
@@ -197,6 +552,8 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
   const [editing, setEditing] = useState(null); 
+  const [creating, setCreating] = useState(false);
+  const [suspending, setSuspending] = useState(null);
   const [busyId, setBusyId] = useState(null);
 
   
@@ -205,17 +562,6 @@ export default function AdminUsers() {
   // const menuRef = useClickAway(() => setOpenMenuFor(null));
 
   function RowActions({ row }) {
-    const [open, setOpen] = useState(false);
-    const ref = useRef(null);
-
-    useEffect(() => {
-      const onDown = (e) => {
-        if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-      };
-      document.addEventListener("mousedown", onDown);
-      return () => document.removeEventListener("mousedown", onDown);
-    }, []);
-
     const onSend = () => {
       const to = normalizedEmailFromRow(row);
       const clean = to.replace(/\s+/g, "");
@@ -231,31 +577,20 @@ export default function AdminUsers() {
         `This is a message from a FlowCounts administrator.\n\n— Admin`;
 
       openGmailCompose({ to: clean, subject, body });
-      setOpen(false);
     };
 
-    return (
-      <div className="row-actions" ref={ref}>
-        <button
-          type="button"
-          className="kebab"
-          aria-label="User actions"
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen((v) => !v);
-          }}
-        >
-          ⋮
-        </button>
-        {open && (
-          <div className="row-menu">
-            <button type="button" className="row-menu-item" onClick={onSend}>
-              Send Email
-            </button>
-          </div>
-        )}
-      </div>
-    );
+  return (
+    <div className="row-actions">
+      <button
+        type="button"
+        className="auth-button secondary"
+        onClick={onSend}
+        style={{ fontSize: 12, padding: '6px 12px', backgroundColor: '#1C5C59', color: 'white', border: 'none' }}
+      >
+        Email
+      </button>
+    </div>
+  );
   }
 
   async function load() {
@@ -332,77 +667,7 @@ export default function AdminUsers() {
     }
   }
 
-  async function suspendUser(user) {
-    setMsg("");
-    // If currently suspended, offer to unsuspend
-    if (user.suspended_now === true || (user.is_active === false && (user.suspend_from || user.suspend_to))) {
-      const ok = window.confirm(`Unsuspend ${user.first_name} ${user.last_name}?`);
-      if (!ok) return;
-      setBusyId(user.id);
-      try {
-        const payload = { suspend_from: "", suspend_to: "" };
-        const { data } = await api.post(`/auth/users/${user.id}/suspend/`, payload);
-        setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, ...data } : u)));
-      } catch (e) {
-        const detail = e?.response?.data?.detail || "Unsuspend failed. See server logs.";
-        setMsg(detail);
-      } finally {
-        setBusyId(null);
-      }
-      return;
-    }
 
-    const start = prompt("Suspend from (YYYY-MM-DD). Leave blank to cancel.", "");
-    const end = start ? prompt("Suspend to (YYYY-MM-DD).", start) : "";
-    setBusyId(user.id);
-    try {
-      const payload = { suspend_from: (start || "").trim(), suspend_to: (end || "").trim() };
-      const { data } = await api.post(`/auth/users/${user.id}/suspend/`, payload);
-      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, ...data } : u)));
-    } catch (e) {
-      const detail = e?.response?.data?.detail || "Suspend failed. See server logs.";
-      setMsg(detail);
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function createUserQuick() {
-    setMsg("");
-    const first = prompt("First name:", "");
-    if (first === null) return;
-    const last = prompt("Last name:", "");
-    if (last === null) return;
-    const email = prompt("Email:", "");
-    if (email === null) return;
-    const role = prompt("Role (ADMIN, MANAGER, ACCOUNTANT):", "ACCOUNTANT");
-    if (role === null) return;
-    const password = prompt("Temporary password (min 8 chars, will be required to change later):", "");
-    if (password === null) return;
-    if (!password || password.trim().length < 8) {
-      setMsg("Password must be at least 8 characters.");
-      return;
-    }
-    try {
-      await api.post("/auth/users/", {
-        first_name: (first || "").trim(),
-        last_name: (last || "").trim(),
-        email: (email || "").trim(),
-        role: (role || "ACCOUNTANT").trim(),
-        password: password.trim(),
-      });
-      await load();
-      setMsg("User created.");
-    } catch (e) {
-      const apiMsg =
-        e?.response?.data?.detail ||
-        e?.response?.data?.email?.[0] ||
-        e?.response?.data?.role?.[0] ||
-        e?.response?.data?.password?.[0] ||
-        "Create failed. See server logs.";
-      setMsg(apiMsg);
-    }
-  }
 
   return (
   <>
@@ -441,7 +706,16 @@ export default function AdminUsers() {
                             <select 
                               value={p.assigned_role || ""} 
                               onChange={(e) => assignRole(p.id, e.target.value)}
-                              style={{ padding: "4px 8px", fontSize: 12 }}
+                              style={{ 
+                                padding: "6px 12px", 
+                                fontSize: 13, 
+                                borderRadius: "6px",
+                                border: "1px solid #b8b6b6",
+                                backgroundColor: "#fff",
+                                cursor: "pointer",
+                                outline: "none",
+                                fontFamily: "sans-serif"
+                              }}
                             >
                               <option value="">Select Role</option>
                               <option value="ADMIN">Admin</option>
@@ -462,11 +736,11 @@ export default function AdminUsers() {
                               className="auth-button" 
                               onClick={() => approve(p.id)}
                               disabled={!p.assigned_role}
-                              style={{ opacity: p.assigned_role ? 1 : 0.5 }}
+                              style={{ backgroundColor: '#4f772d', color: 'white', border: 'none', opacity: p.assigned_role ? 1 : 0.5 }}
                             >
                               Allow
                             </button>
-                            <button className="auth-button secondary" onClick={() => reject(p.id)}>Deny</button>
+                            <button className="auth-button secondary" onClick={() => reject(p.id)} style={{ backgroundColor: '#c1121f', color: 'white', border: 'none' }}>Deny</button>
                             <RowActions row={p} />
                           </div>
                         </td>
@@ -480,12 +754,12 @@ export default function AdminUsers() {
 
           <div className="card">
             <br />
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <h2 style={{ marginBottom: 10 }}>Current Users</h2>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <h2 style={{ margin: 0 }}>Current Users</h2>
               <button
-                className="auth-create-user"
-                style={{ padding: "10px 10px", fontSize: 12, marginLeft: "565px", marginBottom: "3px"}}
-                onClick={createUserQuick}
+                className="auth-button secondary"
+                style={{ fontSize: 12, padding: '6px 12px', backgroundColor: '#1C5C59', color: 'white', border: 'none', width: '28%' }}
+                onClick={() => setCreating(true)}
               >
                 + Create User
               </button>
@@ -523,6 +797,7 @@ export default function AdminUsers() {
                               className="auth-button secondary"
                               disabled={busyId === u.id}
                               onClick={() => setEditing(u)}
+                              style={{ backgroundColor: '#4f772d', color: 'white', border: 'none' }}
                             >
                               {busyId === u.id ? "Saving..." : "Edit"}
                             </button>
@@ -534,6 +809,7 @@ export default function AdminUsers() {
                                   className="auth-button secondary"
                                   disabled={busyId === u.id}
                                   onClick={() => toggleActive(u, false)}
+                                  style={{ backgroundColor: '#c1121f', color: 'white', border: 'none' }}
                                 >
                                   {busyId === u.id ? "…" : "Deactivate"}
                                 </button>
@@ -542,6 +818,7 @@ export default function AdminUsers() {
                                   className="auth-button"
                                   disabled={busyId === u.id}
                                   onClick={() => toggleActive(u, true)}
+                                  style={{ backgroundColor: '#c1121f', color: 'white', border: 'none' }}
                                 >
                                   {busyId === u.id ? "…" : "Activate"}
                                 </button>
@@ -549,7 +826,8 @@ export default function AdminUsers() {
                               <button
                                 className="auth-button secondary"
                                 disabled={busyId === u.id}
-                                onClick={() => suspendUser(u)}
+                                onClick={() => setSuspending(u)}
+                                style={{ backgroundColor: '#f08f00', color: 'white', border: 'none' }}
                               >
                                 {busyId === u.id ? "…" : (u.suspended_now ? "Unsuspend" : "Suspend")}
                               </button>
@@ -568,6 +846,17 @@ export default function AdminUsers() {
       )}
     </div>
 
+    {creating && (
+      <CreateUserModal
+        onClose={() => setCreating(false)}
+        onCreated={async () => {
+          await load();
+          setCreating(false);
+          setMsg("User created.");
+        }}
+      />
+    )}
+
     {editing && (
       <EditUserModal
         user={editing}
@@ -578,6 +867,21 @@ export default function AdminUsers() {
           );
           setEditing(null);
           setMsg("User updated.");
+        }}
+      />
+    )}
+
+    {suspending && (
+      <SuspendUserModal
+        user={suspending}
+        onClose={() => setSuspending(null)}
+        onSuspended={(updated) => {
+          setUsers(prev =>
+            prev.map(x => (x.id === updated.id ? { ...x, ...updated } : x))
+          );
+          setSuspending(null);
+          const action = updated.suspended_now ? "suspended" : "unsuspended";
+          setMsg(`User ${action}.`);
         }}
       />
     )}

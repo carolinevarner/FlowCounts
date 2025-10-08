@@ -28,6 +28,13 @@ export default function UserAvatarMenu() {
   function toggle() { setOpen(v => !v); }
   function pickFile() { pickerRef.current?.click(); }
 
+  function logout() {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("user");
+    navigate("/login");
+  }
+
   async function onPick(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -74,7 +81,8 @@ export default function UserAvatarMenu() {
             <div className="ua-sub">{user?.role}</div>
           </div>
           <button className="ua-item" onClick={() => navigate("/profile")}>View Profile</button>
-          <button className="ua-item" onClick={pickFile}>Upload Photo</button>          
+          <button className="ua-item" onClick={pickFile}>Upload Photo</button>
+          <button className="ua-item" onClick={logout}>Logout</button>
           <input
             ref={pickerRef}
             type="file"

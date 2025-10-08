@@ -76,23 +76,22 @@ export default function Login() {
           required
         />
 
-        <div className="auth-actions">
-          <button className="auth-button" type="submit">Login</button>
-          <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
-        </div>
+        <button className="auth-button login-button" type="submit">Login</button>
 
-        <div className="auth-footer">
+        <div className="auth-actions">
+          <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
           <button
             type="button"
-            className="auth-linkbtn"
+            className="auth-button"
             onClick={() => navigate("/forgot")}
           >
             Forgot Password
           </button>
-          </div>
-          <div className="auth-footer">
-            <span>Don't have an account?</span>
-            <Link to="/signup"><button type="button" className="auth-linkbtn">Request Access</button></Link>
+        </div>
+
+        <div className="auth-footer">
+          <span>Don't have an account?</span>
+          <Link to="/signup"><button type="button" className="auth-linkbtn">Request Access</button></Link>
         </div>
       </form>
     </AuthLayout>

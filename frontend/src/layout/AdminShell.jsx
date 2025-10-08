@@ -10,13 +10,6 @@ const LINKS = [
   { to: "/admin/events", label: "Event Log" },
 ];
 
-function doLogout() {
-  localStorage.removeItem("access");
-  localStorage.removeItem("refresh");
-  localStorage.removeItem("user");
-  window.location.href = "/login";
-}
-
 export default function AdminShell() {
   return (
     <div className="shell">
@@ -34,10 +27,6 @@ export default function AdminShell() {
             </NavLink>
           ))}
         </nav>
-        <div className="side-footer">
-            <button className="side-logout" onClick={doLogout}>Log out</button>
-        </div>
-
       </aside>
 
       <main className="main">
