@@ -708,6 +708,77 @@ export default function Accounts() {
     return sortConfig.direction === 'asc' ? ' ⌃' : ' ⌄';
   };
 
+  const getLiquidityOrder = (account) => {
+    const categoryOrder = {
+      'ASSET': 1,
+      'LIABILITY': 2,
+      'EQUITY': 3,
+      'REVENUE': 4,
+      'EXPENSE': 5,
+    };
+
+    const assetSubcategoryOrder = {
+      'cash': 1,
+      'current assets': 2,
+      'current': 2,
+      'accounts receivable': 3,
+      'receivable': 3,
+      'inventory': 4,
+      'prepaid': 5,
+      'short-term': 6,
+      'investments': 7,
+      'property': 8,
+      'plant': 8,
+      'equipment': 8,
+      'fixed assets': 8,
+      'long-term': 9,
+      'intangible': 10,
+      'other': 11,
+    };
+
+    const liabilitySubcategoryOrder = {
+      'current liabilities': 1,
+      'current': 1,
+      'accounts payable': 2,
+      'payable': 2,
+      'short-term': 3,
+      'notes payable': 4,
+      'long-term': 5,
+      'long-term liabilities': 5,
+      'bonds': 6,
+      'mortgage': 7,
+      'other': 8,
+    };
+
+    const category = account.account_category;
+    const subcategory = (account.account_subcategory || '').toLowerCase();
+    
+    let subcategoryOrder = 999;
+    
+    if (category === 'ASSET') {
+      for (const [key, order] of Object.entries(assetSubcategoryOrder)) {
+        if (subcategory.includes(key)) {
+          subcategoryOrder = order;
+          break;
+        }
+      }
+    } else if (category === 'LIABILITY') {
+      for (const [key, order] of Object.entries(liabilitySubcategoryOrder)) {
+        if (subcategory.includes(key)) {
+          subcategoryOrder = order;
+          break;
+        }
+      }
+    }
+
+    return {
+      categoryOrder: categoryOrder[category] || 999,
+      subcategoryOrder: subcategoryOrder,
+      accountNumber: parseInt(account.account_number) || 0,
+      order: account.order || 0,
+    };
+  };
+
   const filteredAccounts = useMemo(() => {
     let filtered = accounts;
 
@@ -781,6 +852,25 @@ export default function Accounts() {
           return sortConfig.direction === 'asc' ? 1 : -1;
         }
         return 0;
+      });
+    } else {
+      filtered = [...filtered].sort((a, b) => {
+        const orderA = getLiquidityOrder(a);
+        const orderB = getLiquidityOrder(b);
+
+        if (orderA.categoryOrder !== orderB.categoryOrder) {
+          return orderA.categoryOrder - orderB.categoryOrder;
+        }
+
+        if (orderA.subcategoryOrder !== orderB.subcategoryOrder) {
+          return orderA.subcategoryOrder - orderB.subcategoryOrder;
+        }
+
+        if (orderA.order !== orderB.order) {
+          return orderA.order - orderB.order;
+        }
+
+        return orderA.accountNumber - orderB.accountNumber;
       });
     }
 

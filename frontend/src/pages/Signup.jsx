@@ -232,7 +232,7 @@ export default function Signup() {
 
         <button className="auth-button" type="submit">Request Access</button>
         
-        <button className="auth-button cancel" type="button" onClick={onCancel}>Cancel</button>
+        <button className="auth-button cancel" type="button" onClick={onCancel} style={{ maxWidth: '200px', margin: '0 auto' }}>Cancel</button>
 
         <div className="auth-footer">
           <span>Already have an account?</span>

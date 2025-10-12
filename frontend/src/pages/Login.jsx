@@ -92,7 +92,7 @@ export default function Login() {
           Forgot Password
         </button>
 
-        <button className="auth-button cancel" type="button" onClick={onCancel}>Cancel</button>
+        <button className="auth-button cancel" type="button" onClick={onCancel} style={{ maxWidth: '200px', margin: '0 auto' }}>Cancel</button>
 
         <div className="auth-footer">
           <span>Don't have an account?</span>
