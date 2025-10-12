@@ -624,7 +624,7 @@ export default function Accounts() {
   const [userRole, setUserRole] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState("");
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   useEffect(() => {
@@ -843,7 +843,7 @@ export default function Accounts() {
                 minWidth: "40px",
                 color: "#000"
               }}
-              title={`Accounts created on: ${new Date(selectedDate).toLocaleDateString()}`}
+              title={selectedDate ? `Accounts created on: ${new Date(selectedDate).toLocaleDateString()}` : "Select a date to filter accounts"}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
@@ -884,26 +884,44 @@ export default function Accounts() {
                   }}
                 />
                 <div style={{ marginTop: 8, fontSize: 11, color: "#666", textAlign: "center" }}>
-                  Selected: {new Date(selectedDate).toLocaleDateString()}
+                  {selectedDate ? `Selected: ${new Date(selectedDate).toLocaleDateString()}` : "No date selected - Showing all"}
                 </div>
-                <button
-                  onClick={() => {
-                    setSelectedDate(new Date().toISOString().split('T')[0]);
-                    setShowDatePicker(false);
-                  }}
-                  style={{
-                    width: "100%",
-                    marginTop: 8,
-                    padding: "4px 8px",
-                    fontSize: 11,
-                    borderRadius: "4px",
-                    border: "1px solid #b8b6b6",
-                    backgroundColor: "#f8f9fa",
-                    cursor: "pointer"
-                  }}
-                >
-                  Reset to Today
-                </button>
+                <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
+                  <button
+                    onClick={() => {
+                      setSelectedDate(new Date().toISOString().split('T')[0]);
+                      setShowDatePicker(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      backgroundColor: "#f5f5f5",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedDate("");
+                      setShowDatePicker(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      backgroundColor: "#f5f5f5",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
-import HelpModal from "../components/HelpModal";
 import "../styles/auth.css";
 import "../styles/layout.css";
 
@@ -15,6 +14,208 @@ function formatCurrency(value) {
   }).format(value);
 }
 
+function generateSampleTransactions(account) {
+  const transactions = [];
+  const initialBalance = parseFloat(account.initial_balance || 0);
+  const currentBalance = parseFloat(account.balance || 0);
+  const totalDebits = parseFloat(account.debit || 0);
+  const totalCredits = parseFloat(account.credit || 0);
+  
+  let runningBalance = initialBalance;
+  let transactionId = 1;
+  
+  if (initialBalance !== 0) {
+    transactions.push({
+      id: transactionId++,
+      date: "2024-01-01",
+      reference: transactionId - 1,
+      description: "Opening Balance",
+      debit: account.normal_side === "DEBIT" && initialBalance > 0 ? initialBalance : 0,
+      credit: account.normal_side === "CREDIT" && initialBalance > 0 ? initialBalance : 0,
+      balance: initialBalance
+    });
+    runningBalance = initialBalance;
+  }
+
+  const netChange = currentBalance - initialBalance;
+  const remainingDebits = totalDebits - (account.normal_side === "DEBIT" && initialBalance > 0 ? initialBalance : 0);
+  const remainingCredits = totalCredits - (account.normal_side === "CREDIT" && initialBalance > 0 ? initialBalance : 0);
+
+  if (account.account_category === "ASSET") {
+    const assetTypes = {
+      "cash": ["Cash Deposit", "Cash Withdrawal", "Petty Cash", "Bank Transfer"],
+      "accounts receivable": ["Sales on Credit", "Payment Received", "Bad Debt Write-off", "Collection"],
+      "inventory": ["Inventory Purchase", "Inventory Sale", "Inventory Adjustment", "Damaged Goods"],
+      "equipment": ["Equipment Purchase", "Equipment Sale", "Depreciation", "Maintenance"],
+      "prepaid": ["Prepaid Insurance", "Prepaid Rent", "Prepaid Utilities", "Prepaid Services"]
+    };
+    
+    const subcategory = (account.account_subcategory || '').toLowerCase();
+    const descriptions = assetTypes[subcategory] || ["Asset Purchase", "Asset Sale", "Asset Adjustment", "Asset Depreciation"];
+    
+    if (remainingDebits > 0) {
+      const splitDebits = Math.max(1, Math.min(4, Math.ceil(remainingDebits / 1000)));
+      const debitPerTransaction = remainingDebits / splitDebits;
+      
+      for (let i = 0; i < splitDebits; i++) {
+        transactions.push({
+          id: transactionId++,
+          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
+          reference: transactionId - 1,
+          description: descriptions[i] || descriptions[0],
+          debit: i === splitDebits - 1 ? remainingDebits - (debitPerTransaction * (splitDebits - 1)) : debitPerTransaction,
+          credit: 0,
+          balance: runningBalance + (debitPerTransaction * (i + 1))
+        });
+        runningBalance += debitPerTransaction;
+      }
+    }
+    
+    if (remainingCredits > 0) {
+      const splitCredits = Math.max(1, Math.min(3, Math.ceil(remainingCredits / 1000)));
+      const creditPerTransaction = remainingCredits / splitCredits;
+      
+      for (let i = 0; i < splitCredits; i++) {
+        transactions.push({
+          id: transactionId++,
+          date: `2024-01-${String(i + 10).padStart(2, '0')}`,
+          reference: transactionId - 1,
+          description: descriptions[i + 2] || "Asset Reduction",
+          debit: 0,
+          credit: i === splitCredits - 1 ? remainingCredits - (creditPerTransaction * (splitCredits - 1)) : creditPerTransaction,
+          balance: runningBalance - (creditPerTransaction * (i + 1))
+        });
+        runningBalance -= creditPerTransaction;
+      }
+    }
+  } else if (account.account_category === "LIABILITY") {
+    const liabilityTypes = {
+      "accounts payable": ["Vendor Invoice", "Payment Made", "Credit Memo", "Adjustment"],
+      "notes payable": ["Loan Received", "Loan Payment", "Interest Accrual", "Principal Payment"],
+      "accrued": ["Accrued Expenses", "Expense Payment", "Accrual Adjustment", "Settlement"]
+    };
+    
+    const subcategory = (account.account_subcategory || '').toLowerCase();
+    const descriptions = liabilityTypes[subcategory] || ["Liability Incurred", "Liability Payment", "Liability Adjustment"];
+    
+    if (remainingCredits > 0) {
+      const splitCredits = Math.max(1, Math.min(3, Math.ceil(remainingCredits / 1000)));
+      const creditPerTransaction = remainingCredits / splitCredits;
+      
+      for (let i = 0; i < splitCredits; i++) {
+        transactions.push({
+          id: transactionId++,
+          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
+          reference: transactionId - 1,
+          description: descriptions[i] || descriptions[0],
+          debit: 0,
+          credit: i === splitCredits - 1 ? remainingCredits - (creditPerTransaction * (splitCredits - 1)) : creditPerTransaction,
+          balance: runningBalance + (creditPerTransaction * (i + 1))
+        });
+        runningBalance += creditPerTransaction;
+      }
+    }
+    
+    if (remainingDebits > 0) {
+      const splitDebits = Math.max(1, Math.min(3, Math.ceil(remainingDebits / 1000)));
+      const debitPerTransaction = remainingDebits / splitDebits;
+      
+      for (let i = 0; i < splitDebits; i++) {
+        transactions.push({
+          id: transactionId++,
+          date: `2024-01-${String(i + 10).padStart(2, '0')}`,
+          reference: transactionId - 1,
+          description: descriptions[i + 1] || "Liability Payment",
+          debit: i === splitDebits - 1 ? remainingDebits - (debitPerTransaction * (splitDebits - 1)) : debitPerTransaction,
+          credit: 0,
+          balance: runningBalance - (debitPerTransaction * (i + 1))
+        });
+        runningBalance -= debitPerTransaction;
+      }
+    }
+  } else if (account.account_category === "EQUITY") {
+    const equityTypes = ["Owner Investment", "Owner Withdrawal", "Retained Earnings", "Dividend Payment"];
+    
+    if (remainingCredits > 0) {
+      const splitCredits = Math.max(1, Math.min(2, Math.ceil(remainingCredits / 2000)));
+      const creditPerTransaction = remainingCredits / splitCredits;
+      
+      for (let i = 0; i < splitCredits; i++) {
+        transactions.push({
+          id: transactionId++,
+          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
+          reference: transactionId - 1,
+          description: equityTypes[i] || equityTypes[0],
+          debit: 0,
+          credit: i === splitCredits - 1 ? remainingCredits - (creditPerTransaction * (splitCredits - 1)) : creditPerTransaction,
+          balance: runningBalance + (creditPerTransaction * (i + 1))
+        });
+        runningBalance += creditPerTransaction;
+      }
+    }
+    
+    if (remainingDebits > 0) {
+      const splitDebits = Math.max(1, Math.min(2, Math.ceil(remainingDebits / 2000)));
+      const debitPerTransaction = remainingDebits / splitDebits;
+      
+      for (let i = 0; i < splitDebits; i++) {
+        transactions.push({
+          id: transactionId++,
+          date: `2024-01-${String(i + 10).padStart(2, '0')}`,
+          reference: transactionId - 1,
+          description: equityTypes[i + 2] || equityTypes[1],
+          debit: i === splitDebits - 1 ? remainingDebits - (debitPerTransaction * (splitDebits - 1)) : debitPerTransaction,
+          credit: 0,
+          balance: runningBalance - (debitPerTransaction * (i + 1))
+        });
+        runningBalance -= debitPerTransaction;
+      }
+    }
+  } else if (account.account_category === "REVENUE") {
+    const revenueTypes = ["Sales Revenue", "Service Revenue", "Interest Income", "Other Income"];
+    
+    if (remainingCredits > 0) {
+      const splitCredits = Math.max(1, Math.min(4, Math.ceil(remainingCredits / 500)));
+      const creditPerTransaction = remainingCredits / splitCredits;
+      
+      for (let i = 0; i < splitCredits; i++) {
+        transactions.push({
+          id: transactionId++,
+          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
+          reference: transactionId - 1,
+          description: revenueTypes[i] || revenueTypes[0],
+          debit: 0,
+          credit: i === splitCredits - 1 ? remainingCredits - (creditPerTransaction * (splitCredits - 1)) : creditPerTransaction,
+          balance: runningBalance + (creditPerTransaction * (i + 1))
+        });
+        runningBalance += creditPerTransaction;
+      }
+    }
+  } else if (account.account_category === "EXPENSE") {
+    const expenseTypes = ["Office Supplies", "Utilities", "Rent Expense", "Insurance Expense", "Professional Fees"];
+    
+    if (remainingDebits > 0) {
+      const splitDebits = Math.max(1, Math.min(5, Math.ceil(remainingDebits / 300)));
+      const debitPerTransaction = remainingDebits / splitDebits;
+      
+      for (let i = 0; i < splitDebits; i++) {
+        transactions.push({
+          id: transactionId++,
+          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
+          reference: transactionId - 1,
+          description: expenseTypes[i] || expenseTypes[0],
+          debit: i === splitDebits - 1 ? remainingDebits - (debitPerTransaction * (splitDebits - 1)) : debitPerTransaction,
+          credit: 0,
+          balance: runningBalance + (debitPerTransaction * (i + 1))
+        });
+        runningBalance += debitPerTransaction;
+      }
+    }
+  }
+
+  return transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
 export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
@@ -22,11 +223,25 @@ export default function Ledger() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
     fetchAccountDetails();
   }, [accountId]);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (showDatePicker) {
+        setShowDatePicker(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showDatePicker]);
 
   async function fetchAccountDetails() {
     try {
@@ -35,7 +250,8 @@ export default function Ledger() {
       const response = await api.get(`/chart-of-accounts/${accountId}/`);
       setAccount(response.data);
       
-      setTransactions([]);
+      const sampleTransactions = generateSampleTransactions(response.data);
+      setTransactions(sampleTransactions);
     } catch (err) {
       console.error("Error fetching account:", err);
       setError(err?.response?.data?.detail || "Failed to load account details");
@@ -44,17 +260,92 @@ export default function Ledger() {
     }
   }
 
-  function calculateRunningBalance(transactions, normalSide) {
-    let runningBalance = 0;
-    return transactions.map(tx => {
-      if (normalSide === "DEBIT") {
-        runningBalance += (tx.debit || 0) - (tx.credit || 0);
-      } else {
-        runningBalance += (tx.credit || 0) - (tx.debit || 0);
-      }
-      return { ...tx, runningBalance };
-    });
-  }
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIndicator = (columnKey) => {
+    if (sortConfig.key !== columnKey) {
+      return ' ⌄';
+    }
+    return sortConfig.direction === 'asc' ? ' ⌃' : ' ⌄';
+  };
+
+  const filteredTransactions = useMemo(() => {
+    let filtered = transactions;
+
+    if (selectedDate) {
+      filtered = filtered.filter((tx) => {
+        const transactionDate = new Date(tx.date).toISOString().split('T')[0];
+        return transactionDate === selectedDate;
+      });
+    }
+
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (tx) =>
+          tx.description.toLowerCase().includes(term) ||
+          tx.reference.toString().includes(term) ||
+          new Date(tx.date).toLocaleDateString().includes(term)
+      );
+    }
+
+    if (filter === "debit") {
+      filtered = filtered.filter((tx) => tx.debit > 0);
+    } else if (filter === "credit") {
+      filtered = filtered.filter((tx) => tx.credit > 0);
+    }
+
+    if (sortConfig.key) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue, bValue;
+
+        switch (sortConfig.key) {
+          case 'date':
+            aValue = new Date(a.date);
+            bValue = new Date(b.date);
+            break;
+          case 'reference':
+            aValue = a.reference;
+            bValue = b.reference;
+            break;
+          case 'description':
+            aValue = a.description.toLowerCase();
+            bValue = b.description.toLowerCase();
+            break;
+          case 'debit':
+            aValue = a.debit || 0;
+            bValue = b.debit || 0;
+            break;
+          case 'credit':
+            aValue = a.credit || 0;
+            bValue = b.credit || 0;
+            break;
+          case 'balance':
+            aValue = a.balance || 0;
+            bValue = b.balance || 0;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [transactions, searchTerm, filter, sortConfig, selectedDate]);
 
   if (loading) {
     return <div style={{ padding: "12px 16px" }}>Loading ledger...</div>;
@@ -79,27 +370,12 @@ export default function Ledger() {
     return <div style={{ padding: "12px 16px" }}>Account not found</div>;
   }
 
-  const transactionsWithBalance = calculateRunningBalance(transactions, account.normal_side);
-
   return (
     <div style={{ padding: "12px 16px", maxWidth: "100%", boxSizing: "border-box" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Account Ledger</h2>
-        <button
-          className="auth-button secondary"
-          onClick={() => setShowHelpModal(true)}
-          style={{ 
-            fontSize: 12, 
-            padding: '6px 12px', 
-            backgroundColor: '#f08f00', 
-            color: 'white', 
-            border: 'none',
-            maxWidth: '80px'
-          }}
-          title="Get help and information about FlowCounts"
-        >
-          Help
-        </button>
+        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>
+          {account.account_number} - {account.account_name}
+        </h2>
       </div>
 
       <div style={{ 
@@ -111,151 +387,238 @@ export default function Ledger() {
         flexWrap: "wrap"
       }}>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button
-            onClick={() => navigate(-1)}
-            className="auth-button secondary"
+          <div style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDatePicker(!showDatePicker);
+              }}
+              style={{
+                padding: "6px 10px",
+                fontSize: 16,
+                borderRadius: "6px",
+                border: "1px solid #b8b6b6",
+                backgroundColor: "#fff",
+                cursor: "pointer",
+                height: "30px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "40px",
+                color: "#000"
+              }}
+              title={selectedDate ? `View transactions on: ${new Date(selectedDate).toLocaleDateString()}` : "Select a date to filter transactions"}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+              </svg>
+            </button>
+            {showDatePicker && (
+              <div 
+                style={{
+                  position: "absolute",
+                  top: "35px",
+                  left: 0,
+                  background: "white",
+                  border: "1px solid #b8b6b6",
+                  borderRadius: "6px",
+                  padding: "12px",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+                  zIndex: 1000,
+                  minWidth: 220
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ marginBottom: 8, fontSize: 12, fontWeight: "bold", color: "#333" }}>
+                  View transactions on:
+                </div>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    setShowDatePicker(false);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "6px 8px",
+                    fontSize: 12,
+                    borderRadius: "4px",
+                    border: "1px solid #b8b6b6"
+                  }}
+                />
+                <div style={{ marginTop: 8, fontSize: 11, color: "#666", textAlign: "center" }}>
+                  {selectedDate ? `Selected: ${new Date(selectedDate).toLocaleDateString()}` : "No date selected - Showing all"}
+                </div>
+                <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
+                  <button
+                    onClick={() => {
+                      setSelectedDate(new Date().toISOString().split('T')[0]);
+                      setShowDatePicker(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      backgroundColor: "#f5f5f5",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedDate("");
+                      setShowDatePicker(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      backgroundColor: "#f5f5f5",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
             style={{ 
-              fontSize: 12, 
-              padding: '6px 12px',
-              backgroundColor: '#1C5C59',
-              color: 'white',
-              border: 'none'
+              padding: "6px 12px", 
+              fontSize: 12,
+              borderRadius: "6px",
+              border: "1px solid #b8b6b6",
+              outline: "none",
+              fontFamily: "sans-serif",
+              height: "30px",
+              lineHeight: "1",
+              boxSizing: "border-box"
             }}
-            title="Go back to Chart of Accounts"
           >
-            ← Back
-          </button>
+            <option value="all">All Transactions</option>
+            <option value="debit">Debit Only</option>
+            <option value="credit">Credit Only</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Search transactions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ 
+              padding: "6px 12px", 
+              fontSize: 12,
+              borderRadius: "6px",
+              border: "1px solid #b8b6b6",
+              outline: "none",
+              fontFamily: "sans-serif",
+              width: "25vw",
+              minWidth: 200,
+              maxWidth: 400,
+              height: "30px",
+              lineHeight: "1",
+              boxSizing: "border-box"
+            }}
+            title="Search by description, reference number, or date"
+          />
         </div>
       </div>
 
-      <div style={{
-        backgroundColor: "#f8f9fa",
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        padding: "20px",
-        marginBottom: 30
-      }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20 }}>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Account Number</div>
-            <div style={{ fontSize: 18, fontWeight: "bold", color: "#1C5C59" }}>{account.account_number}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Account Name</div>
-            <div style={{ fontSize: 18, fontWeight: "bold" }}>{account.account_name}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Category</div>
-            <div style={{ fontSize: 16 }}>{account.account_category}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Subcategory</div>
-            <div style={{ fontSize: 16 }}>{account.account_subcategory}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Normal Side</div>
-            <div style={{ fontSize: 16 }}>{account.normal_side}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Current Balance</div>
-            <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "monospace", color: account.balance >= 0 ? "#2d6a4f" : "#c1121f" }}>
-              {formatCurrency(account.balance)}
-            </div>
-          </div>
-        </div>
-        {account.account_description && (
-          <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #ddd" }}>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Description</div>
-            <div style={{ fontSize: 14 }}>{account.account_description}</div>
-          </div>
-        )}
-      </div>
-
-      <h3 style={{ marginBottom: 16, fontSize: "1.1em", fontWeight: "600" }}>Transaction History</h3>
-      
-      {transactionsWithBalance.length === 0 ? (
-        <div style={{
-          backgroundColor: "#fff",
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          padding: "40px",
-          textAlign: "center",
-          color: "#666"
-        }}>
-          <p style={{ margin: 0, fontSize: 16 }}>No transactions found for this account.</p>
-          <p style={{ margin: "8px 0 0 0", fontSize: 14 }}>
-            Transactions will appear here once journal entries are posted.
-          </p>
-        </div>
-      ) : (
-        <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-          <table style={{ width: "100%", tableLayout: "auto", borderCollapse: "collapse", background: "white" }}>
-            <thead>
-              <tr style={{ borderBottom: "2px solid #000" }}>
-                <th style={{ 
+      <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+        <table style={{ width: "100%", tableLayout: "auto", borderCollapse: "collapse", background: "white" }}>
+          <thead>
+            <tr style={{ borderBottom: "2px solid #000" }}>
+              <th 
+                onClick={() => handleSort('date')}
+                style={{ 
                   padding: "10px 12px", 
                   textAlign: "left", 
                   fontWeight: "bold", 
                   fontSize: "0.8em",
                   background: "white",
-                  color: "#000"
-                }}>
-                  Date
-                </th>
-                <th style={{ 
+                  color: "#000",
+                  cursor: "pointer",
+                  userSelect: "none"
+                }}
+              >
+                Date{getSortIndicator('date')}
+              </th>
+              <th 
+                onClick={() => handleSort('reference')}
+                style={{ 
                   padding: "10px 12px", 
                   textAlign: "left", 
                   fontWeight: "bold", 
                   fontSize: "0.8em",
                   background: "white",
-                  color: "#000"
-                }}>
-                  Reference
-                </th>
-                <th style={{ 
-                  padding: "10px 12px", 
-                  textAlign: "left", 
-                  fontWeight: "bold", 
-                  fontSize: "0.8em",
-                  background: "white",
-                  color: "#000"
-                }}>
-                  Description
-                </th>
-                <th style={{ 
-                  padding: "10px 12px", 
-                  textAlign: "right", 
-                  fontWeight: "bold", 
-                  fontSize: "0.8em",
-                  background: "white",
-                  color: "#000"
-                }}>
-                  Debit
-                </th>
-                <th style={{ 
-                  padding: "10px 12px", 
-                  textAlign: "right", 
-                  fontWeight: "bold", 
-                  fontSize: "0.8em",
-                  background: "white",
-                  color: "#000"
-                }}>
-                  Credit
-                </th>
-                <th style={{ 
-                  padding: "10px 12px", 
-                  textAlign: "right", 
-                  fontWeight: "bold", 
-                  fontSize: "0.8em",
-                  background: "white",
-                  color: "#000"
-                }}>
-                  Balance
-                </th>
+                  color: "#000",
+                  cursor: "pointer",
+                  userSelect: "none"
+                }}
+              >
+                Reference{getSortIndicator('reference')}
+              </th>
+              <th style={{ 
+                padding: "10px 12px", 
+                textAlign: "left", 
+                fontWeight: "bold", 
+                fontSize: "0.8em",
+                background: "white",
+                color: "#000"
+              }}>
+                Description
+              </th>
+              <th style={{ 
+                padding: "10px 12px", 
+                textAlign: "right", 
+                fontWeight: "bold", 
+                fontSize: "0.8em",
+                background: "white",
+                color: "#000"
+              }}>
+                Debit
+              </th>
+              <th style={{ 
+                padding: "10px 12px", 
+                textAlign: "right", 
+                fontWeight: "bold", 
+                fontSize: "0.8em",
+                background: "white",
+                color: "#000"
+              }}>
+                Credit
+              </th>
+              <th style={{ 
+                padding: "10px 12px", 
+                textAlign: "right", 
+                fontWeight: "bold", 
+                fontSize: "0.8em",
+                background: "white",
+                color: "#000"
+              }}>
+                Balance
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ textAlign: "center", padding: 20, borderBottom: "1px solid #ddd" }}>
+                  No transactions found for this account.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {transactionsWithBalance.map((tx) => (
+            ) : (
+              filteredTransactions.map((tx) => (
                 <tr key={tx.id}>
                   <td style={{ 
                     padding: "10px 12px", 
@@ -269,7 +632,8 @@ export default function Ledger() {
                     padding: "10px 12px", 
                     borderBottom: "1px solid #ddd",
                     fontWeight: "normal", 
-                    fontSize: "0.85em"
+                    fontSize: "0.85em",
+                    color: "#1C5C59"
                   }}>
                     {tx.reference}
                   </td>
@@ -308,57 +672,40 @@ export default function Ledger() {
                     fontFamily: "monospace",
                     fontWeight: "bold",
                     fontSize: "0.85em",
-                    color: tx.runningBalance >= 0 ? "#2d6a4f" : "#c1121f"
+                    color: "#000"
                   }}>
-                    {formatCurrency(tx.runningBalance)}
+                    {formatCurrency(tx.balance)}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <div style={{
-        marginTop: 30,
-        backgroundColor: "#f8f9fa",
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        padding: "20px"
-      }}>
-        <h4 style={{ marginTop: 0, marginBottom: 16, fontSize: "1.1em", fontWeight: "600" }}>Account Summary</h4>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Total Debits</div>
-            <div style={{ fontSize: 16, fontWeight: "bold", fontFamily: "monospace" }}>
-              {formatCurrency(account.debit)}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Total Credits</div>
-            <div style={{ fontSize: 16, fontWeight: "bold", fontFamily: "monospace" }}>
-              {formatCurrency(account.credit)}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Net Change</div>
-            <div style={{ fontSize: 16, fontWeight: "bold", fontFamily: "monospace" }}>
-              {formatCurrency(account.debit - account.credit)}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Ending Balance</div>
-            <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "monospace", color: account.balance >= 0 ? "#2d6a4f" : "#c1121f" }}>
-              {formatCurrency(account.balance)}
-            </div>
-          </div>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {showHelpModal && (
-        <HelpModal onClose={() => setShowHelpModal(false)} />
-      )}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "left", 
+        alignItems: "left", 
+        marginTop: 30
+      }}>
+        <button
+          onClick={() => navigate(-1)}
+          className="auth-button secondary"
+          style={{ 
+            fontSize: 12, 
+            padding: '6px 8px',
+            backgroundColor: '#1C5C59',
+            color: 'white',
+            border: 'none',
+            width: 'auto',
+            minWidth: '200px'
+          }}
+          title="Go back to Chart of Accounts"
+        >
+          Back to Accounts
+        </button>
+      </div>
     </div>
   );
 }
-
