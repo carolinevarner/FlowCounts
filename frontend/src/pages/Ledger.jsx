@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
+import HelpModal from "../components/HelpModal";
 import "../styles/auth.css";
 import "../styles/layout.css";
 
@@ -21,6 +22,7 @@ export default function Ledger() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   useEffect(() => {
     fetchAccountDetails();
@@ -33,20 +35,7 @@ export default function Ledger() {
       const response = await api.get(`/chart-of-accounts/${accountId}/`);
       setAccount(response.data);
       
-      // TODO: Fetch actual transactions when journal entries are implemented
-      // For now, we'll show the account details and a placeholder for transactions
-      setTransactions([
-        // Placeholder data structure
-        // {
-        //   id: 1,
-        //   date: "2024-01-15",
-        //   description: "Opening Balance",
-        //   reference: "OB-001",
-        //   debit: response.data.initial_balance > 0 ? response.data.initial_balance : 0,
-        //   credit: response.data.initial_balance < 0 ? Math.abs(response.data.initial_balance) : 0,
-        //   balance: response.data.initial_balance
-        // }
-      ]);
+      setTransactions([]);
     } catch (err) {
       console.error("Error fetching account:", err);
       setError(err?.response?.data?.detail || "Failed to load account details");
@@ -94,25 +83,51 @@ export default function Ledger() {
 
   return (
     <div style={{ padding: "12px 16px", maxWidth: "100%", boxSizing: "border-box" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h2 style={{ margin: 0 }}>Account Ledger</h2>
         <button
-          onClick={() => navigate(-1)}
           className="auth-button secondary"
+          onClick={() => setShowHelpModal(true)}
           style={{ 
             fontSize: 12, 
-            padding: '6px 12px',
-            backgroundColor: '#666',
-            color: 'white',
-            border: 'none'
+            padding: '6px 12px', 
+            backgroundColor: '#f08f00', 
+            color: 'white', 
+            border: 'none',
+            maxWidth: '80px'
           }}
-          title="Go back to Chart of Accounts"
+          title="Get help and information about FlowCounts"
         >
-          ← Back
+          Help
         </button>
-        <h2 style={{ margin: 0 }}>Account Ledger</h2>
       </div>
 
-      {/* Account Details Card */}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        marginBottom: 20, 
+        gap: 20,
+        flexWrap: "wrap"
+      }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <button
+            onClick={() => navigate(-1)}
+            className="auth-button secondary"
+            style={{ 
+              fontSize: 12, 
+              padding: '6px 12px',
+              backgroundColor: '#1C5C59',
+              color: 'white',
+              border: 'none'
+            }}
+            title="Go back to Chart of Accounts"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+
       <div style={{
         backgroundColor: "#f8f9fa",
         border: "1px solid #ddd",
@@ -156,8 +171,7 @@ export default function Ledger() {
         )}
       </div>
 
-      {/* Transactions Table */}
-      <h3 style={{ marginBottom: 16 }}>Transaction History</h3>
+      <h3 style={{ marginBottom: 16, fontSize: "1.1em", fontWeight: "600" }}>Transaction History</h3>
       
       {transactionsWithBalance.length === 0 ? (
         <div style={{
@@ -174,26 +188,68 @@ export default function Ledger() {
           </p>
         </div>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", background: "white" }}>
+        <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+          <table style={{ width: "100%", tableLayout: "auto", borderCollapse: "collapse", background: "white" }}>
             <thead>
               <tr style={{ borderBottom: "2px solid #000" }}>
-                <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: "bold", fontSize: "0.8em" }}>
+                <th style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "left", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000"
+                }}>
                   Date
                 </th>
-                <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: "bold", fontSize: "0.8em" }}>
+                <th style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "left", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000"
+                }}>
                   Reference
                 </th>
-                <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: "bold", fontSize: "0.8em" }}>
+                <th style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "left", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000"
+                }}>
                   Description
                 </th>
-                <th style={{ padding: "10px 12px", textAlign: "right", fontWeight: "bold", fontSize: "0.8em" }}>
+                <th style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "right", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000"
+                }}>
                   Debit
                 </th>
-                <th style={{ padding: "10px 12px", textAlign: "right", fontWeight: "bold", fontSize: "0.8em" }}>
+                <th style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "right", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000"
+                }}>
                   Credit
                 </th>
-                <th style={{ padding: "10px 12px", textAlign: "right", fontWeight: "bold", fontSize: "0.8em" }}>
+                <th style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "right", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000"
+                }}>
                   Balance
                 </th>
               </tr>
@@ -201,13 +257,28 @@ export default function Ledger() {
             <tbody>
               {transactionsWithBalance.map((tx) => (
                 <tr key={tx.id}>
-                  <td style={{ padding: "10px 12px", borderBottom: "1px solid #ddd", fontSize: "0.85em" }}>
+                  <td style={{ 
+                    padding: "10px 12px", 
+                    borderBottom: "1px solid #ddd", 
+                    fontWeight: "normal",
+                    fontSize: "0.85em"
+                  }}>
                     {new Date(tx.date).toLocaleDateString()}
                   </td>
-                  <td style={{ padding: "10px 12px", borderBottom: "1px solid #ddd", fontSize: "0.85em" }}>
+                  <td style={{ 
+                    padding: "10px 12px", 
+                    borderBottom: "1px solid #ddd",
+                    fontWeight: "normal", 
+                    fontSize: "0.85em"
+                  }}>
                     {tx.reference}
                   </td>
-                  <td style={{ padding: "10px 12px", borderBottom: "1px solid #ddd", fontSize: "0.85em" }}>
+                  <td style={{ 
+                    padding: "10px 12px", 
+                    borderBottom: "1px solid #ddd",
+                    fontWeight: "normal", 
+                    fontSize: "0.85em"
+                  }}>
                     {tx.description}
                   </td>
                   <td style={{ 
@@ -215,6 +286,7 @@ export default function Ledger() {
                     borderBottom: "1px solid #ddd", 
                     textAlign: "right",
                     fontFamily: "monospace",
+                    fontWeight: "normal",
                     fontSize: "0.85em"
                   }}>
                     {tx.debit ? formatCurrency(tx.debit) : "-"}
@@ -224,6 +296,7 @@ export default function Ledger() {
                     borderBottom: "1px solid #ddd", 
                     textAlign: "right",
                     fontFamily: "monospace",
+                    fontWeight: "normal",
                     fontSize: "0.85em"
                   }}>
                     {tx.credit ? formatCurrency(tx.credit) : "-"}
@@ -246,7 +319,6 @@ export default function Ledger() {
         </div>
       )}
 
-      {/* Summary Section */}
       <div style={{
         marginTop: 30,
         backgroundColor: "#f8f9fa",
@@ -254,7 +326,7 @@ export default function Ledger() {
         borderRadius: "8px",
         padding: "20px"
       }}>
-        <h4 style={{ marginTop: 0, marginBottom: 16 }}>Account Summary</h4>
+        <h4 style={{ marginTop: 0, marginBottom: 16, fontSize: "1.1em", fontWeight: "600" }}>Account Summary</h4>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
           <div>
             <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>Total Debits</div>
@@ -282,6 +354,10 @@ export default function Ledger() {
           </div>
         </div>
       </div>
+
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} />
+      )}
     </div>
   );
 }

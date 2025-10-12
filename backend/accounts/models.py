@@ -100,6 +100,10 @@ class EventLog(models.Model):
         ("REQUEST_REJECTED", "Access Rejected"),
         ("PASSWORD_CHANGED", "Password Changed"),
         ("PASSWORD_RESET", "Password Reset"),
+        ("ACCOUNT_CREATED", "Account Created"),
+        ("ACCOUNT_UPDATED", "Account Updated"),
+        ("ACCOUNT_ACTIVATED", "Account Activated"),
+        ("ACCOUNT_DEACTIVATED", "Account Deactivated"),
     ]
 
     action = models.CharField(max_length=32, choices=ACTION_CHOICES)
@@ -110,6 +114,10 @@ class EventLog(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="events_targeting"
     )
     details = models.TextField(blank=True)
+    before_image = models.JSONField(null=True, blank=True, help_text="State of the record before the change")
+    after_image = models.JSONField(null=True, blank=True, help_text="State of the record after the change")
+    record_type = models.CharField(max_length=50, blank=True, help_text="Type of record (User, Account, etc.)")
+    record_id = models.IntegerField(null=True, blank=True, help_text="ID of the affected record")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

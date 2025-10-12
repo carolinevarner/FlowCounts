@@ -618,7 +618,6 @@ function AccountFormModal({ account, onClose, onSaved, onOpenDeactivate }) {
   );
 }
 
-// Main Chart of Accounts component
 export default function ChartOfAccounts() {
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
@@ -691,25 +690,20 @@ export default function ChartOfAccounts() {
 
   const isAdmin = userRole === "ADMIN";
 
-  // Determine if account is Current or Long Term based on subcategory
   const getTermType = (account) => {
     const subcategory = (account.account_subcategory || '').toLowerCase();
     
-    // Current terms keywords
     const currentKeywords = ['current', 'short-term', 'short term', 'cash', 'receivable', 'payable'];
     
-    // Check if any current keyword is in the subcategory
     for (const keyword of currentKeywords) {
       if (subcategory.includes(keyword)) {
         return 'Current';
       }
     }
     
-    // Default to Long Term
     return 'Long Term';
   };
 
-  // Handle sorting
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -718,7 +712,6 @@ export default function ChartOfAccounts() {
     setSortConfig({ key, direction });
   };
 
-  // Get sort indicator
   const getSortIndicator = (columnKey) => {
     if (sortConfig.key !== columnKey) {
       return ' ⌄';
@@ -726,9 +719,7 @@ export default function ChartOfAccounts() {
     return sortConfig.direction === 'asc' ? ' ⌃' : ' ⌄';
   };
 
-  // Liquidity order mapping
   const getLiquidityOrder = (account) => {
-    // Define liquidity order by category
     const categoryOrder = {
       'ASSET': 1,
       'LIABILITY': 2,
@@ -737,7 +728,6 @@ export default function ChartOfAccounts() {
       'EXPENSE': 5,
     };
 
-    // Define subcategory order within assets (most liquid first)
     const assetSubcategoryOrder = {
       'cash': 1,
       'current assets': 2,
@@ -757,7 +747,6 @@ export default function ChartOfAccounts() {
       'other': 11,
     };
 
-    // Define subcategory order within liabilities (most current first)
     const liabilitySubcategoryOrder = {
       'current liabilities': 1,
       'current': 1,
@@ -775,10 +764,9 @@ export default function ChartOfAccounts() {
     const category = account.account_category;
     const subcategory = (account.account_subcategory || '').toLowerCase();
     
-    let subcategoryOrder = 999; // Default
+    let subcategoryOrder = 999;
     
     if (category === 'ASSET') {
-      // Find matching subcategory keyword
       for (const [key, order] of Object.entries(assetSubcategoryOrder)) {
         if (subcategory.includes(key)) {
           subcategoryOrder = order;
@@ -786,7 +774,6 @@ export default function ChartOfAccounts() {
         }
       }
     } else if (category === 'LIABILITY') {
-      // Find matching subcategory keyword
       for (const [key, order] of Object.entries(liabilitySubcategoryOrder)) {
         if (subcategory.includes(key)) {
           subcategoryOrder = order;
@@ -803,11 +790,9 @@ export default function ChartOfAccounts() {
     };
   };
 
-  // Filter and search accounts
   const filteredAccounts = useMemo(() => {
     let filtered = accounts;
 
-    // Filter by creation date if a specific date is selected
     if (selectedDate) {
       filtered = filtered.filter((a) => {
         if (!a.created_at) return false;
@@ -816,13 +801,11 @@ export default function ChartOfAccounts() {
       });
     }
 
-    // Filter by active status
     if (filter === "active") {
       filtered = filtered.filter((a) => a.is_active);
     } else if (filter === "inactive") {
       filtered = filtered.filter((a) => !a.is_active);
     } else if (["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"].includes(filter)) {
-      // Filter by category
       filtered = filtered.filter((a) => a.account_category === filter);
     } else if (filter === "zero_balance") {
       filtered = filtered.filter((a) => parseFloat(a.balance) === 0);
@@ -832,7 +815,6 @@ export default function ChartOfAccounts() {
       filtered = filtered.filter((a) => parseFloat(a.balance) < 0);
     }
 
-    // Search filter
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -844,7 +826,6 @@ export default function ChartOfAccounts() {
       );
     }
 
-    // Apply sorting based on user selection
     if (sortConfig.key) {
       filtered = [...filtered].sort((a, b) => {
         let aValue, bValue;
@@ -891,27 +872,22 @@ export default function ChartOfAccounts() {
         return 0;
       });
     } else {
-      // Default sort by liquidity order when no manual sort is applied
       filtered = [...filtered].sort((a, b) => {
         const orderA = getLiquidityOrder(a);
         const orderB = getLiquidityOrder(b);
 
-        // First sort by category (Assets, Liabilities, Equity, Revenue, Expense)
         if (orderA.categoryOrder !== orderB.categoryOrder) {
           return orderA.categoryOrder - orderB.categoryOrder;
         }
 
-        // Then sort by subcategory within category
         if (orderA.subcategoryOrder !== orderB.subcategoryOrder) {
           return orderA.subcategoryOrder - orderB.subcategoryOrder;
         }
 
-        // Then sort by order field
         if (orderA.order !== orderB.order) {
           return orderA.order - orderB.order;
         }
 
-        // Finally sort by account number
         return orderA.accountNumber - orderB.accountNumber;
       });
     }
@@ -1274,7 +1250,6 @@ export default function ChartOfAccounts() {
                   }}>
                     <div 
                       onClick={() => {
-                        // Navigate to the ledger page for this account
                         const basePath = `/${userRole.toLowerCase()}`;
                         navigate(`${basePath}/ledger/${account.id}`);
                       }}

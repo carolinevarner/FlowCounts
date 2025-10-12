@@ -163,6 +163,10 @@ class EventLogSerializer(serializers.ModelSerializer):
             "target_user",
             "target_username",
             "details",
+            "before_image",
+            "after_image",
+            "record_type",
+            "record_id",
             "created_at",
         ]
 

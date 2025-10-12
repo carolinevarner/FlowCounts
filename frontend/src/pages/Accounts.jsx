@@ -1110,7 +1110,6 @@ export default function Accounts() {
                   }}>
                     <div 
                       onClick={() => {
-                        // Navigate to the ledger page for this account
                         const basePath = `/${userRole.toLowerCase()}`;
                         navigate(`${basePath}/ledger/${account.id}`);
                       }}

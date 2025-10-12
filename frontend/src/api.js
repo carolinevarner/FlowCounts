@@ -1,7 +1,5 @@
 import axios from "axios";
 
-// Use relative URL for API calls - Vite proxy will handle routing to backend
-// This works automatically on everyone's computer without configuration
 const api = axios.create({
   baseURL: "/api/",
   headers: { "Content-Type": "application/json" },
@@ -13,7 +11,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle token refresh on 401 errors
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -32,12 +29,10 @@ api.interceptors.response.use(
           const { access } = response.data;
           localStorage.setItem("access", access);
           
-          // Retry the original request with new token
           originalRequest.headers.Authorization = `Bearer ${access}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
         window.location.href = "/login";

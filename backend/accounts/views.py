@@ -1242,30 +1242,92 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
         # create, update, partial_update, destroy, activate, deactivate require Manager or Admin
         return [IsAuthenticated(), IsAdmin()]
     
+    def _account_to_dict(self, account):
+        """Convert account instance to dictionary for logging."""
+        return {
+            'account_number': account.account_number,
+            'account_name': account.account_name,
+            'account_description': account.account_description,
+            'normal_side': account.normal_side,
+            'account_category': account.account_category,
+            'account_subcategory': account.account_subcategory,
+            'initial_balance': str(account.initial_balance),
+            'debit': str(account.debit),
+            'credit': str(account.credit),
+            'balance': str(account.balance),
+            'order': account.order,
+            'statement': account.statement,
+            'comment': account.comment,
+            'is_active': account.is_active,
+            'deactivate_from': str(account.deactivate_from) if account.deactivate_from else None,
+            'deactivate_to': str(account.deactivate_to) if account.deactivate_to else None,
+        }
+    
     def perform_create(self, serializer):
         """Set the created_by field when creating an account."""
-        serializer.save(created_by=self.request.user)
+        account = serializer.save(created_by=self.request.user)
+        
+        # Log account creation with after image
+        try:
+            EventLog.objects.create(
+                action="ACCOUNT_CREATED",
+                actor=self.request.user,
+                record_type="ChartOfAccounts",
+                record_id=account.id,
+                before_image=None,
+                after_image=self._account_to_dict(account),
+                details=f"Created account: {account.account_number} - {account.account_name}"
+            )
+        except Exception as e:
+            logger.warning(f"Failed to log ACCOUNT_CREATED event: {e}", exc_info=True)
     
     def perform_update(self, serializer):
         """Set the updated_by field when updating an account."""
-        serializer.save(updated_by=self.request.user)
+        # Get before image
+        account = self.get_object()
+        before_image = self._account_to_dict(account)
+        
+        # Perform update
+        account = serializer.save(updated_by=self.request.user)
+        after_image = self._account_to_dict(account)
+        
+        # Log account update with before and after images
+        try:
+            EventLog.objects.create(
+                action="ACCOUNT_UPDATED",
+                actor=self.request.user,
+                record_type="ChartOfAccounts",
+                record_id=account.id,
+                before_image=before_image,
+                after_image=after_image,
+                details=f"Updated account: {account.account_number} - {account.account_name}"
+            )
+        except Exception as e:
+            logger.warning(f"Failed to log ACCOUNT_UPDATED event: {e}", exc_info=True)
     
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
         """Activate an account and clear deactivation dates."""
         account = self.get_object()
+        before_image = self._account_to_dict(account)
+        
         account.is_active = True
         account.deactivate_from = None
         account.deactivate_to = None
         account.updated_by = request.user
         account.save(update_fields=["is_active", "deactivate_from", "deactivate_to", "updated_by"])
         
-        # Log the activation event
+        after_image = self._account_to_dict(account)
+        
+        # Log the activation event with before/after images
         try:
             EventLog.objects.create(
-                action="USER_UPDATED",
+                action="ACCOUNT_ACTIVATED",
                 actor=request.user,
-                target_user=None,
+                record_type="ChartOfAccounts",
+                record_id=account.id,
+                before_image=before_image,
+                after_image=after_image,
                 details=f"Account {account.account_number} - {account.account_name} activated"
             )
         except Exception:
@@ -1278,6 +1340,7 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
     def deactivate(self, request, pk=None):
         """Deactivate an account with optional date range."""
         account = self.get_object()
+        before_image = self._account_to_dict(account)
         
         # Check if account can be deactivated (zero balance)
         if account.balance != 0:
@@ -1311,12 +1374,17 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
         account.updated_by = request.user
         account.save(update_fields=["is_active", "deactivate_from", "deactivate_to", "updated_by"])
         
-        # Log the deactivation event
+        after_image = self._account_to_dict(account)
+        
+        # Log the deactivation event with before/after images
         try:
             EventLog.objects.create(
-                action="USER_UPDATED",
+                action="ACCOUNT_DEACTIVATED",
                 actor=request.user,
-                target_user=None,
+                record_type="ChartOfAccounts",
+                record_id=account.id,
+                before_image=before_image,
+                after_image=after_image,
                 details=f"Account {account.account_number} - {account.account_name} deactivated"
             )
         except Exception:
