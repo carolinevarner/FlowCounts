@@ -794,7 +794,7 @@ export default function Accounts() {
   return (
     <div style={{ padding: "12px 16px", maxWidth: "100%", boxSizing: "border-box" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h2 style={{ margin: 0 }}>Accounts</h2>
+        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Accounts</h2>
         <button
           className="auth-button secondary"
           onClick={() => setShowHelpModal(true)}

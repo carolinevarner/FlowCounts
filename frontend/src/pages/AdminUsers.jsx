@@ -681,7 +681,7 @@ export default function AdminUsers() {
       ) : (
         <>
           <div className="card" style={{ marginBottom: 16 }}>
-            <h2>Pending Access Requests</h2>
+            <h2 style={{ fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Pending Access Requests</h2>
             {pending.length === 0 ? (
               <div className="muted">No pending requests.</div>
             ) : (
@@ -757,7 +757,7 @@ export default function AdminUsers() {
           <div className="card">
             <br />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <h2 style={{ margin: 0 }}>Current Users</h2>
+              <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Current Users</h2>
               <button
                 className="auth-button secondary"
                 style={{ fontSize: 12, padding: '6px 12px', backgroundColor: '#1C5C59', color: 'white', border: 'none', width: '28%' }}

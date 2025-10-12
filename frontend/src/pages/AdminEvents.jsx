@@ -178,7 +178,7 @@ export default function AdminEvents() {
 
   return (
     <div style={{ padding: "12px 16px", maxWidth: "100%", boxSizing: "border-box" }}>
-      <h2 style={{ margin: "0 0 20px 0" }}>Event Log</h2>
+      <h2 style={{ margin: "0 0 20px 0", fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Event Log</h2>
 
       {events.length === 0 ? (
         <div style={{ 

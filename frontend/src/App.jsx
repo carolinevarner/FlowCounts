@@ -15,6 +15,7 @@ import ChartOfAccounts from "./pages/ChartOfAccounts.jsx";
 import Accounts from "./pages/Accounts.jsx";
 import Profile from "./pages/Profile.jsx";
 import Ledger from "./pages/Ledger.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 
 function Blank({ title }) {
   return (
@@ -50,7 +51,7 @@ export default function App() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<Blank title="Admins HomePage" />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="chart" element={<ChartOfAccounts />} />
         <Route path="ledger/:accountId" element={<Ledger />} />
         <Route path="accounts" element={<Accounts />} />
@@ -67,7 +68,7 @@ export default function App() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<Blank title="Managers HomePage" />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="chart" element={<ChartOfAccounts />} />
         <Route path="ledger/:accountId" element={<Ledger />} />
         <Route path="accounts" element={<Accounts />} />
@@ -87,7 +88,7 @@ export default function App() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<Blank title="Accountants HomePage" />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="chart" element={<ChartOfAccounts />} />
         <Route path="ledger/:accountId" element={<Ledger />} />
         <Route path="accounts" element={<Accounts />} />
