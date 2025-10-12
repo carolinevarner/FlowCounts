@@ -15,6 +15,7 @@ from accounts.views import (
     forgot_password,
     get_username_by_email,
     change_password,
+    ChartOfAccountsViewSet,
 )
 from accounts.error_views import ErrorMessageViewSet, ErrorLogViewSet
 
@@ -24,6 +25,7 @@ router.register(r"auth/users", UserAdminViewSet, basename="auth-users")
 router.register(r"auth/events", EventLogViewSet, basename="auth-events")
 router.register(r"auth/error-messages", ErrorMessageViewSet, basename="error-messages")
 router.register(r"auth/error-logs", ErrorLogViewSet, basename="error-logs")
+router.register(r"chart-of-accounts", ChartOfAccountsViewSet, basename="chart-of-accounts")
 
 urlpatterns = [
     path("api/", include(router.urls)),

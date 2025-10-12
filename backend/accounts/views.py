@@ -27,7 +27,7 @@ import time
 from django.core.mail import send_mail
 import logging, secrets, string
 
-from .models import RegistrationRequest, EventLog, PasswordHistory
+from .models import RegistrationRequest, EventLog, PasswordHistory, ChartOfAccounts
 from .error_utils import log_error, DatabaseErrorResponse, get_error_message
 from .serializers import (
     UserSerializer,
@@ -35,6 +35,7 @@ from .serializers import (
     RegistrationRequestSerializer,
     CreateUserSerializer,
     EventLogSerializer,
+    ChartOfAccountsSerializer,
 )
 from .permissions import IsAdmin
 from .password_utils import (
@@ -1222,3 +1223,75 @@ def change_password(request):
 @api_view(["GET"])
 def me(request):
     return Response(UserSerializer(request.user).data)
+
+
+class ChartOfAccountsViewSet(viewsets.ModelViewSet):
+    queryset = ChartOfAccounts.objects.all()
+    serializer_class = ChartOfAccountsSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAdmin()]
+        return [IsAuthenticated()]
+    
+    def get_queryset(self):
+        queryset = ChartOfAccounts.objects.all()
+        
+        is_active = self.request.query_params.get('is_active', None)
+        if is_active is not None:
+            if is_active.lower() == 'true':
+                queryset = queryset.filter(is_active=True)
+            elif is_active.lower() == 'false':
+                queryset = queryset.filter(is_active=False)
+        
+        return queryset
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
+    def deactivate(self, request, pk=None):
+        account = self.get_object()
+        
+        if not account.can_deactivate():
+            return Response(
+                {'error': 'Cannot deactivate an account with a non-zero balance.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        deactivate_from = request.data.get('deactivate_from')
+        deactivate_to = request.data.get('deactivate_to')
+        
+        account.is_active = False
+        account.deactivate_from = deactivate_from if deactivate_from else None
+        account.deactivate_to = deactivate_to if deactivate_to else None
+        account.updated_by = request.user
+        account.save()
+        
+        serializer = self.get_serializer(account)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
+    def activate(self, request, pk=None):
+        account = self.get_object()
+        account.is_active = True
+        account.deactivate_from = None
+        account.deactivate_to = None
+        account.updated_by = request.user
+        account.save()
+        
+        serializer = self.get_serializer(account)
+        return Response(serializer.data)

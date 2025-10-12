@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import serializers
-from .models import RegistrationRequest, User, EventLog, ErrorMessage, ErrorLog
+from .models import RegistrationRequest, User, EventLog, ErrorMessage, ErrorLog, ChartOfAccounts
+import re
 
 User = get_user_model()
 
@@ -221,3 +222,117 @@ class ErrorLogSerializer(serializers.ModelSerializer):
     
     def get_resolved_by_username(self, obj):
         return getattr(obj.resolved_by, "username", None) if obj.resolved_by else None
+
+
+class ChartOfAccountsSerializer(serializers.ModelSerializer):
+    created_by_username = serializers.SerializerMethodField()
+    updated_by_username = serializers.SerializerMethodField()
+    can_deactivate = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ChartOfAccounts
+        fields = [
+            'id',
+            'account_name',
+            'account_number',
+            'account_description',
+            'normal_side',
+            'account_category',
+            'account_subcategory',
+            'initial_balance',
+            'debit',
+            'credit',
+            'balance',
+            'order',
+            'statement',
+            'comment',
+            'created_at',
+            'created_by',
+            'created_by_username',
+            'updated_at',
+            'updated_by',
+            'updated_by_username',
+            'is_active',
+            'deactivate_from',
+            'deactivate_to',
+            'can_deactivate',
+        ]
+        read_only_fields = ['created_at', 'created_by', 'updated_at', 'updated_by', 'can_deactivate']
+    
+    def _get_display_username(self, user):
+        if not user:
+            return None
+        
+        role_base = {
+            'ADMIN': 'adminUser',
+            'MANAGER': 'managerUser',
+            'ACCOUNTANT': 'accountantUser',
+        }
+        
+        base = role_base.get(user.role, 'user')
+        
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        count = User.objects.filter(role=user.role, id__lte=user.id).count()
+        
+        return f"{base}{count}"
+    
+    def get_created_by_username(self, obj):
+        return self._get_display_username(obj.created_by)
+    
+    def get_updated_by_username(self, obj):
+        return self._get_display_username(obj.updated_by)
+    
+    def get_can_deactivate(self, obj):
+        return obj.can_deactivate()
+    
+    def validate_account_number(self, value):
+        if not value:
+            raise serializers.ValidationError("Account number is required.")
+        
+        if not re.match(r'^\d+$', value):
+            raise serializers.ValidationError(
+                "Account number must be numeric only (no decimals or alphanumeric characters)."
+            )
+        
+        return value
+    
+    def validate_account_name(self, value):
+        if self.instance:
+            if ChartOfAccounts.objects.filter(account_name__iexact=value).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError("An account with this name already exists.")
+        else:
+            if ChartOfAccounts.objects.filter(account_name__iexact=value).exists():
+                raise serializers.ValidationError("An account with this name already exists.")
+        return value
+    
+    def validate(self, data):
+        account_number = data.get('account_number')
+        if account_number:
+            query = ChartOfAccounts.objects.filter(account_number=account_number)
+            if self.instance:
+                query = query.exclude(id=self.instance.id)
+            if query.exists():
+                raise serializers.ValidationError({
+                    'account_number': 'An account with this number already exists.'
+                })
+        
+        if self.instance and 'is_active' in data:
+            if not data['is_active'] and self.instance.balance != 0:
+                raise serializers.ValidationError({
+                    'is_active': 'Cannot deactivate an account with a non-zero balance.'
+                })
+        
+        return data
+    
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['created_by'] = request.user
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['updated_by'] = request.user
+        return super().update(instance, validated_data)

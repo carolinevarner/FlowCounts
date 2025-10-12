@@ -82,18 +82,17 @@ export default function Login() {
           required
         />
 
-        <button className="auth-button login-button" type="submit">Login</button>
+        <button className="auth-button" type="submit">Login</button>
 
-        <div className="auth-actions">
-          <button className="auth-button secondary" type="button" onClick={onCancel}>Cancel</button>
-          <button
-            type="button"
-            className="auth-button"
-            onClick={() => navigate("/forgot")}
-          >
-            Forgot Password
-          </button>
-        </div>
+        <button
+          type="button"
+          className="auth-button white-green"
+          onClick={() => navigate("/forgot")}
+        >
+          Forgot Password
+        </button>
+
+        <button className="auth-button cancel" type="button" onClick={onCancel}>Cancel</button>
 
         <div className="auth-footer">
           <span>Don't have an account?</span>

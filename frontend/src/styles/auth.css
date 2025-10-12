@@ -107,6 +107,29 @@ h2{
   background: #000000; 
 }
 
+.auth-button.white-green {
+  background: white;
+  border: 2.8px solid #1C5C59;
+  color: #1C5C59;
+  font-weight: bold;
+}
+
+.auth-button.white-green:hover {
+  background: #1C5C59;
+  color: #FFFFFF;
+}
+
+.auth-button.cancel {
+  background: #c1121f;
+  color: #FFFFFF;
+  width: 50%;
+  margin: 10px auto 0;
+}
+
+.auth-button.cancel:hover {
+  background: #a00d18;
+}
+
 .auth-row {
   display: grid;
   gap: 10px;
@@ -126,16 +149,18 @@ h2{
 }
 
 .auth-linkbtn {
-  border: 0;
+  border: 2.8px solid #1C5C59;
   padding: 0 12px;
-  color: var(--btnText);
+  color: #1C5C59;
   cursor: pointer;
-  background:#1C302F;
-    transition: background 0.2s ease;
+  background: white;
+  transition: background 0.2s ease;
+  font-weight: bold;
 }
 
 .auth-linkbtn:hover {
   background: #1C5C59;
+  color: #FFFFFF;
 }
 
 .auth-logo {
@@ -152,21 +177,20 @@ h2{
 }
 
 .auth-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr; 
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-top: 6px;
 }
 
-.auth-button.secondary, .auth-linkbtn.secondary {
+.auth-button.secondary {
   background: #c1121f;
   border-color: #c1121f;
   color: #FFFFFF;
   border: 2px solid var(--border);
 }
 
-.auth-button:not(.secondary):hover,
-.auth-linkbtn:not(.secondary):hover {
+.auth-button:not(.secondary):not(.white-green):not(.cancel):hover {
   background: #1C5C59;
 }
 
@@ -174,10 +198,186 @@ h2{
   background: #a00d18;
 }
 
-.login-button {
-  background: #1C5C59 !important;
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
 }
 
-.login-button:hover {
-  background: #165048 !important;
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #1C5C59;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+  font-size: 0.9em;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1em;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #1C5C59;
+  box-shadow: 0 0 0 2px rgba(28, 92, 89, 0.1);
+}
+
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.form-actions button {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.form-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-actions button.btn-primary {
+  background: #1C5C59;
+  color: white;
+  border-color: #1C5C59;
+}
+
+.form-actions button.btn-primary:hover:not(:disabled) {
+  background: #164845;
+}
+
+.form-actions button:not(.btn-primary) {
+  background: white;
+}
+
+.form-actions button:not(.btn-primary):hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table thead {
+  background: #1C5C59;
+  color: white;
+}
+
+.data-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.data-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.error-box {
+  background: #fee;
+  color: #c00;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border: 1px solid #fcc;
+}
+
+button {
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: #1C5C59;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #164845;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

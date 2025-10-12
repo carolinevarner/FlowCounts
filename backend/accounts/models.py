@@ -191,4 +191,81 @@ class ErrorLog(models.Model):
         self.resolved_at = timezone.now()
         if resolved_by_user:
             self.resolved_by = resolved_by_user
-        self.save()  
+        self.save()
+
+
+class ChartOfAccounts(models.Model):
+    ACCOUNT_CATEGORY_CHOICES = [
+        ('ASSET', 'Asset'),
+        ('LIABILITY', 'Liability'),
+        ('EQUITY', 'Equity'),
+        ('REVENUE', 'Revenue'),
+        ('EXPENSE', 'Expense'),
+    ]
+    
+    NORMAL_SIDE_CHOICES = [
+        ('DEBIT', 'Debit'),
+        ('CREDIT', 'Credit'),
+    ]
+    
+    STATEMENT_CHOICES = [
+        ('IS', 'Income Statement'),
+        ('BS', 'Balance Sheet'),
+        ('RE', 'Retained Earnings'),
+    ]
+    
+    account_name = models.CharField(max_length=255, unique=True)
+    account_number = models.CharField(max_length=50, unique=True)
+    account_description = models.TextField()
+    normal_side = models.CharField(max_length=10, choices=NORMAL_SIDE_CHOICES)
+    account_category = models.CharField(max_length=20, choices=ACCOUNT_CATEGORY_CHOICES)
+    account_subcategory = models.CharField(max_length=100)
+    initial_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    debit = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    credit = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    order = models.PositiveIntegerField(help_text="Display order (e.g., 01 for Cash)")
+    statement = models.CharField(max_length=5, choices=STATEMENT_CHOICES)
+    comment = models.TextField(blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='accounts_created'
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='accounts_updated'
+    )
+    is_active = models.BooleanField(default=True)
+    deactivate_from = models.DateField(blank=True, null=True)
+    deactivate_to = models.DateField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['order', 'account_number']
+        verbose_name = 'Chart of Account'
+        verbose_name_plural = 'Chart of Accounts'
+    
+    def __str__(self):
+        return f"{self.account_number} - {self.account_name}"
+    
+    def can_deactivate(self):
+        return self.balance == 0
+    
+    def is_currently_deactivated(self):
+        if not self.is_active:
+            return True
+        
+        today = timezone.localdate()
+        if self.deactivate_from and self.deactivate_to:
+            return self.deactivate_from <= today <= self.deactivate_to
+        elif self.deactivate_from and not self.deactivate_to:
+            return self.deactivate_from <= today
+        
+        return False  
