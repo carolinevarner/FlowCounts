@@ -1226,72 +1226,101 @@ def me(request):
 
 
 class ChartOfAccountsViewSet(viewsets.ModelViewSet):
-    queryset = ChartOfAccounts.objects.all()
-    serializer_class = ChartOfAccountsSerializer
+    """ViewSet for Chart of Accounts CRUD operations."""
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+    queryset = ChartOfAccounts.objects.all().order_by('order', 'account_number')
+    serializer_class = ChartOfAccountsSerializer
     
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        """
+        Managers and Admins can create/update/delete accounts.
+        Accountants can only view (list/retrieve).
+        """
+        if self.action in ['list', 'retrieve']:
+            return [IsAuthenticated()]
+        # create, update, partial_update, destroy, activate, deactivate require Manager or Admin
+        return [IsAuthenticated(), IsAdmin()]
     
-    def get_queryset(self):
-        queryset = ChartOfAccounts.objects.all()
-        
-        is_active = self.request.query_params.get('is_active', None)
-        if is_active is not None:
-            if is_active.lower() == 'true':
-                queryset = queryset.filter(is_active=True)
-            elif is_active.lower() == 'false':
-                queryset = queryset.filter(is_active=False)
-        
-        return queryset
+    def perform_create(self, serializer):
+        """Set the created_by field when creating an account."""
+        serializer.save(created_by=self.request.user)
     
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    def perform_update(self, serializer):
+        """Set the updated_by field when updating an account."""
+        serializer.save(updated_by=self.request.user)
     
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
-    
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
-    def deactivate(self, request, pk=None):
-        account = self.get_object()
-        
-        if not account.can_deactivate():
-            return Response(
-                {'error': 'Cannot deactivate an account with a non-zero balance.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        deactivate_from = request.data.get('deactivate_from')
-        deactivate_to = request.data.get('deactivate_to')
-        
-        account.is_active = False
-        account.deactivate_from = deactivate_from if deactivate_from else None
-        account.deactivate_to = deactivate_to if deactivate_to else None
-        account.updated_by = request.user
-        account.save()
-        
-        serializer = self.get_serializer(account)
-        return Response(serializer.data)
-    
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
+    @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
+        """Activate an account and clear deactivation dates."""
         account = self.get_object()
         account.is_active = True
         account.deactivate_from = None
         account.deactivate_to = None
         account.updated_by = request.user
-        account.save()
+        account.save(update_fields=["is_active", "deactivate_from", "deactivate_to", "updated_by"])
+        
+        # Log the activation event
+        try:
+            EventLog.objects.create(
+                action="USER_UPDATED",
+                actor=request.user,
+                target_user=None,
+                details=f"Account {account.account_number} - {account.account_name} activated"
+            )
+        except Exception:
+            logger.warning("Failed to log account activation event", exc_info=True)
+        
+        serializer = self.get_serializer(account)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=["post"])
+    def deactivate(self, request, pk=None):
+        """Deactivate an account with optional date range."""
+        account = self.get_object()
+        
+        # Check if account can be deactivated (zero balance)
+        if account.balance != 0:
+            return Response(
+                {"error": "Cannot deactivate an account with a non-zero balance."},
+                status=400
+            )
+        
+        # Get deactivation dates from request
+        deactivate_from = request.data.get("deactivate_from")
+        deactivate_to = request.data.get("deactivate_to")
+        
+        if deactivate_from:
+            account.deactivate_from = parse_date(deactivate_from)
+        if deactivate_to:
+            account.deactivate_to = parse_date(deactivate_to)
+        
+        # If indefinite (no dates provided), just set is_active to False
+        if not deactivate_from and not deactivate_to:
+            account.is_active = False
+        else:
+            # Set is_active based on current date
+            today = timezone.localdate()
+            if account.deactivate_from and account.deactivate_to:
+                account.is_active = not (account.deactivate_from <= today <= account.deactivate_to)
+            elif account.deactivate_from:
+                account.is_active = not (account.deactivate_from <= today)
+            elif account.deactivate_to:
+                account.is_active = not (today <= account.deactivate_to)
+        
+        account.updated_by = request.user
+        account.save(update_fields=["is_active", "deactivate_from", "deactivate_to", "updated_by"])
+        
+        # Log the deactivation event
+        try:
+            EventLog.objects.create(
+                action="USER_UPDATED",
+                actor=request.user,
+                target_user=None,
+                details=f"Account {account.account_number} - {account.account_name} deactivated"
+            )
+        except Exception:
+            logger.warning("Failed to log account deactivation event", exc_info=True)
         
         serializer = self.get_serializer(account)
         return Response(serializer.data)

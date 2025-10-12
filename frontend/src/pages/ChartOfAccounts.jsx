@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
+import HelpModal from "../components/HelpModal";
 import "../styles/auth.css";
 import "../styles/layout.css";
 
@@ -618,6 +620,7 @@ function AccountFormModal({ account, onClose, onSaved, onOpenDeactivate }) {
 
 // Main Chart of Accounts component
 export default function ChartOfAccounts() {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -631,6 +634,7 @@ export default function ChartOfAccounts() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   useEffect(() => {
     fetchUserRole();
@@ -817,6 +821,15 @@ export default function ChartOfAccounts() {
       filtered = filtered.filter((a) => a.is_active);
     } else if (filter === "inactive") {
       filtered = filtered.filter((a) => !a.is_active);
+    } else if (["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"].includes(filter)) {
+      // Filter by category
+      filtered = filtered.filter((a) => a.account_category === filter);
+    } else if (filter === "zero_balance") {
+      filtered = filtered.filter((a) => parseFloat(a.balance) === 0);
+    } else if (filter === "positive_balance") {
+      filtered = filtered.filter((a) => parseFloat(a.balance) > 0);
+    } else if (filter === "negative_balance") {
+      filtered = filtered.filter((a) => parseFloat(a.balance) < 0);
     }
 
     // Search filter
@@ -904,7 +917,7 @@ export default function ChartOfAccounts() {
     }
 
     return filtered;
-  }, [accounts, filter, searchTerm, sortConfig]);
+  }, [accounts, filter, searchTerm, sortConfig, selectedDate]);
 
   if (loading) {
     return <div style={{ padding: "12px 16px" }}>Loading...</div>;
@@ -912,7 +925,24 @@ export default function ChartOfAccounts() {
 
   return (
     <div style={{ padding: "12px 16px", maxWidth: "100%", boxSizing: "border-box" }}>
-      <h2 style={{ margin: "0 0 20px 0" }}>Chart of Accounts</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h2 style={{ margin: 0 }}>Chart of Accounts</h2>
+        <button
+          className="auth-button secondary"
+          onClick={() => setShowHelpModal(true)}
+          style={{ 
+            fontSize: 12, 
+            padding: '6px 12px', 
+            backgroundColor: '#f08f00', 
+            color: 'white', 
+            border: 'none',
+            maxWidth: '80px'
+          }}
+          title="Get help and information about FlowCounts"
+        >
+          Help
+        </button>
+      </div>
 
       {error && <div className="error-box">{error}</div>}
 
@@ -1021,6 +1051,7 @@ export default function ChartOfAccounts() {
                 color: 'white', 
                 border: 'none'
               }}
+              title="Create a new account in the chart of accounts"
             >
               + Add Account
             </button>
@@ -1044,10 +1075,23 @@ export default function ChartOfAccounts() {
               height: "30px",
               lineHeight: "1"
             }}
+            title="Filter accounts by various criteria"
           >
             <option value="all">All Accounts</option>
             <option value="active">Active Only</option>
             <option value="inactive">Inactive Only</option>
+            <optgroup label="By Category">
+              <option value="ASSET">Assets</option>
+              <option value="LIABILITY">Liabilities</option>
+              <option value="EQUITY">Equity</option>
+              <option value="REVENUE">Revenue</option>
+              <option value="EXPENSE">Expenses</option>
+            </optgroup>
+            <optgroup label="By Balance">
+              <option value="zero_balance">Zero Balance</option>
+              <option value="positive_balance">Positive Balance</option>
+              <option value="negative_balance">Negative Balance</option>
+            </optgroup>
           </select>
 
           <input
@@ -1069,6 +1113,7 @@ export default function ChartOfAccounts() {
               lineHeight: "1",
               boxSizing: "border-box"
             }}
+            title="Search by account name, number, category, or subcategory"
           />
         </div>
       </div>
@@ -1228,13 +1273,26 @@ export default function ChartOfAccounts() {
                     fontSize: "0.85em"
                   }}>
                     <div 
+                      onClick={() => {
+                        // Navigate to the ledger page for this account
+                        const basePath = `/${userRole.toLowerCase()}`;
+                        navigate(`${basePath}/ledger/${account.id}`);
+                      }}
                       style={{
                         color: "#1C5C59",
                         cursor: "pointer",
-                        transition: "text-decoration 0.2s"
+                        transition: "all 0.2s",
+                        fontWeight: "normal"
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.textDecoration = "underline"}
-                      onMouseLeave={(e) => e.currentTarget.style.textDecoration = "none"}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.textDecoration = "underline";
+                        e.currentTarget.style.fontWeight = "600";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.textDecoration = "none";
+                        e.currentTarget.style.fontWeight = "normal";
+                      }}
+                      title="Click to view account ledger"
                     >
                       {account.account_number}
                     </div>
@@ -1245,7 +1303,7 @@ export default function ChartOfAccounts() {
                         borderRadius: "12px",
                         fontSize: "0.7em",
                         fontWeight: "500",
-                        backgroundColor: account.is_active ? "#f4a261" : "#c1121f",
+                        backgroundColor: account.is_active ? "#4f772d" : "#c1121f",
                         color: "white"
                       }}>
                         {account.is_active ? "Active" : "Inactive"}
@@ -1317,6 +1375,7 @@ export default function ChartOfAccounts() {
                           color: 'white',
                           border: 'none'
                         }}
+                        title="Edit or deactivate this account"
                       >
                         Edit
                       </button>
@@ -1355,6 +1414,10 @@ export default function ChartOfAccounts() {
             fetchAccounts();
           }}
         />
+      )}
+
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} />
       )}
     </div>
   );
