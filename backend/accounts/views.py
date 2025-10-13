@@ -1226,7 +1226,10 @@ def me(request):
 
 
 class ChartOfAccountsViewSet(viewsets.ModelViewSet):
-    """ViewSet for Chart of Accounts CRUD operations."""
+    """
+    ViewSet for Chart of Accounts management.
+    Provides CRUD operations with event logging for all changes.
+    """
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = ChartOfAccounts.objects.all().order_by('order', 'account_number')
@@ -1234,19 +1237,19 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """
-        Managers and Admins can create/update/delete accounts.
-        Accountants can only view (list/retrieve).
+        Admin and Manager can create, update, delete accounts.
+        Accountants can only view accounts.
         """
-        if self.action in ['list', 'retrieve']:
-            return [IsAuthenticated()]
-        # create, update, partial_update, destroy, activate, deactivate require Manager or Admin
-        return [IsAuthenticated(), IsAdmin()]
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'activate', 'deactivate']:
+            return [IsAuthenticated(), IsAdmin()]
+        return [IsAuthenticated()]
     
     def _account_to_dict(self, account):
-        """Convert account instance to dictionary for logging."""
+        """Convert account instance to dictionary for event logging."""
         return {
-            'account_number': account.account_number,
+            'id': account.id,
             'account_name': account.account_name,
+            'account_number': account.account_number,
             'account_description': account.account_description,
             'normal_side': account.normal_side,
             'account_category': account.account_category,
@@ -1259,136 +1262,119 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
             'statement': account.statement,
             'comment': account.comment,
             'is_active': account.is_active,
-            'deactivate_from': str(account.deactivate_from) if account.deactivate_from else None,
-            'deactivate_to': str(account.deactivate_to) if account.deactivate_to else None,
+            'deactivate_from': account.deactivate_from.isoformat() if account.deactivate_from else None,
+            'deactivate_to': account.deactivate_to.isoformat() if account.deactivate_to else None,
+            'created_at': account.created_at.isoformat() if account.created_at else None,
+            'created_by': account.created_by.username if account.created_by else None,
         }
     
     def perform_create(self, serializer):
-        """Set the created_by field when creating an account."""
-        account = serializer.save(created_by=self.request.user)
+        """Create account and log the event with after_image."""
+        account = serializer.save()
         
-        # Log account creation with after image
         try:
             EventLog.objects.create(
-                action="ACCOUNT_CREATED",
+                action='ACCOUNT_CREATED',
                 actor=self.request.user,
-                record_type="ChartOfAccounts",
-                record_id=account.id,
-                before_image=None,
+                details=f"Created account {account.account_number} - {account.account_name}",
                 after_image=self._account_to_dict(account),
-                details=f"Created account: {account.account_number} - {account.account_name}"
+                record_type='Account',
+                record_id=account.id
             )
-        except Exception as e:
-            logger.warning(f"Failed to log ACCOUNT_CREATED event: {e}", exc_info=True)
+        except Exception:
+            logger.warning("Failed to log ACCOUNT_CREATED event", exc_info=True)
     
     def perform_update(self, serializer):
-        """Set the updated_by field when updating an account."""
-        # Get before image
+        """Update account and log the event with before/after images."""
         account = self.get_object()
         before_image = self._account_to_dict(account)
         
-        # Perform update
-        account = serializer.save(updated_by=self.request.user)
-        after_image = self._account_to_dict(account)
+        updated_account = serializer.save()
+        after_image = self._account_to_dict(updated_account)
         
-        # Log account update with before and after images
         try:
             EventLog.objects.create(
-                action="ACCOUNT_UPDATED",
+                action='ACCOUNT_UPDATED',
                 actor=self.request.user,
-                record_type="ChartOfAccounts",
-                record_id=account.id,
+                details=f"Updated account {updated_account.account_number} - {updated_account.account_name}",
                 before_image=before_image,
                 after_image=after_image,
-                details=f"Updated account: {account.account_number} - {account.account_name}"
+                record_type='Account',
+                record_id=updated_account.id
             )
-        except Exception as e:
-            logger.warning(f"Failed to log ACCOUNT_UPDATED event: {e}", exc_info=True)
+        except Exception:
+            logger.warning("Failed to log ACCOUNT_UPDATED event", exc_info=True)
     
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
-        """Activate an account and clear deactivation dates."""
+        """Activate an account and log the event."""
         account = self.get_object()
         before_image = self._account_to_dict(account)
         
         account.is_active = True
         account.deactivate_from = None
         account.deactivate_to = None
-        account.updated_by = request.user
-        account.save(update_fields=["is_active", "deactivate_from", "deactivate_to", "updated_by"])
+        account.save(update_fields=['is_active', 'deactivate_from', 'deactivate_to'])
         
         after_image = self._account_to_dict(account)
         
-        # Log the activation event with before/after images
         try:
             EventLog.objects.create(
-                action="ACCOUNT_ACTIVATED",
+                action='ACCOUNT_ACTIVATED',
                 actor=request.user,
-                record_type="ChartOfAccounts",
-                record_id=account.id,
+                details=f"Activated account {account.account_number} - {account.account_name}",
                 before_image=before_image,
                 after_image=after_image,
-                details=f"Account {account.account_number} - {account.account_name} activated"
+                record_type='Account',
+                record_id=account.id
             )
         except Exception:
-            logger.warning("Failed to log account activation event", exc_info=True)
+            logger.warning("Failed to log ACCOUNT_ACTIVATED event", exc_info=True)
         
-        serializer = self.get_serializer(account)
-        return Response(serializer.data)
+        return Response(ChartOfAccountsSerializer(account, context={'request': request}).data)
     
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=['post'])
     def deactivate(self, request, pk=None):
-        """Deactivate an account with optional date range."""
+        """
+        Deactivate an account. Only allows deactivation if balance is zero.
+        Logs the event with before/after images.
+        """
         account = self.get_object()
-        before_image = self._account_to_dict(account)
         
-        # Check if account can be deactivated (zero balance)
+        # Check if account can be deactivated
         if account.balance != 0:
             return Response(
-                {"error": "Cannot deactivate an account with a non-zero balance."},
+                {"detail": "Accounts with balance greater than zero cannot be deactivated"},
                 status=400
             )
         
-        # Get deactivation dates from request
-        deactivate_from = request.data.get("deactivate_from")
-        deactivate_to = request.data.get("deactivate_to")
+        before_image = self._account_to_dict(account)
+        
+        # Get optional date range from request
+        deactivate_from = request.data.get('deactivate_from')
+        deactivate_to = request.data.get('deactivate_to')
         
         if deactivate_from:
-            account.deactivate_from = parse_date(deactivate_from)
+            account.deactivate_from = parse_date(deactivate_from) if isinstance(deactivate_from, str) else deactivate_from
         if deactivate_to:
-            account.deactivate_to = parse_date(deactivate_to)
+            account.deactivate_to = parse_date(deactivate_to) if isinstance(deactivate_to, str) else deactivate_to
         
-        # If indefinite (no dates provided), just set is_active to False
-        if not deactivate_from and not deactivate_to:
-            account.is_active = False
-        else:
-            # Set is_active based on current date
-            today = timezone.localdate()
-            if account.deactivate_from and account.deactivate_to:
-                account.is_active = not (account.deactivate_from <= today <= account.deactivate_to)
-            elif account.deactivate_from:
-                account.is_active = not (account.deactivate_from <= today)
-            elif account.deactivate_to:
-                account.is_active = not (today <= account.deactivate_to)
-        
-        account.updated_by = request.user
-        account.save(update_fields=["is_active", "deactivate_from", "deactivate_to", "updated_by"])
+        account.is_active = False
+        account.save(update_fields=['is_active', 'deactivate_from', 'deactivate_to'])
         
         after_image = self._account_to_dict(account)
         
-        # Log the deactivation event with before/after images
         try:
             EventLog.objects.create(
-                action="ACCOUNT_DEACTIVATED",
+                action='ACCOUNT_DEACTIVATED',
                 actor=request.user,
-                record_type="ChartOfAccounts",
-                record_id=account.id,
+                details=f"Deactivated account {account.account_number} - {account.account_name}",
                 before_image=before_image,
                 after_image=after_image,
-                details=f"Account {account.account_number} - {account.account_name} deactivated"
+                record_type='Account',
+                record_id=account.id
             )
         except Exception:
-            logger.warning("Failed to log account deactivation event", exc_info=True)
+            logger.warning("Failed to log ACCOUNT_DEACTIVATED event", exc_info=True)
         
-        serializer = self.get_serializer(account)
-        return Response(serializer.data)
+        return Response(ChartOfAccountsSerializer(account, context={'request': request}).data)
