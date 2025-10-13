@@ -7,7 +7,6 @@ export default function AdminEvents() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expandedEvent, setExpandedEvent] = useState(null);
 
   async function loadEvents() {
     setLoading(true);
@@ -108,31 +107,31 @@ export default function AdminEvents() {
     if (changes.length === 0) return null;
 
     return (
-      <div style={{ marginTop: 10 }}>
-        <strong style={{ display: "block", marginBottom: 8, fontSize: "0.9em" }}>Changes Made:</strong>
-        <table style={{ 
-          width: "100%", 
-          borderCollapse: "collapse", 
-          fontSize: "0.85em",
-          border: "1px solid #ddd"
-        }}>
+      <div style={{ 
+        marginTop: 12, 
+        background: "#fff", 
+        borderRadius: "8px", 
+        overflow: "hidden",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+      }}>
+        <table className="users-table" style={{ margin: 0 }}>
           <thead>
-            <tr style={{ backgroundColor: "#f8f9fa" }}>
-              <th style={{ padding: "8px", textAlign: "left", border: "1px solid #ddd", fontWeight: "bold" }}>Field</th>
-              <th style={{ padding: "8px", textAlign: "left", border: "1px solid #ddd", fontWeight: "bold" }}>Before</th>
-              <th style={{ padding: "8px", textAlign: "left", border: "1px solid #ddd", fontWeight: "bold" }}>After</th>
+            <tr style={{ background: "#1C302F" }}>
+              <th style={{ color: "#fff" }}>Field</th>
+              <th style={{ color: "#fff", borderLeft: "1px solid rgba(255,255,255,0.2)" }}>Before</th>
+              <th style={{ color: "#fff", borderLeft: "1px solid rgba(255,255,255,0.2)" }}>After</th>
             </tr>
           </thead>
           <tbody>
             {changes.map((change, index) => (
               <tr key={index}>
-                <td style={{ padding: "8px", border: "1px solid #ddd", fontWeight: "500" }}>
+                <td style={{ fontWeight: "500" }}>
                   {change.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </td>
-                <td style={{ padding: "8px", border: "1px solid #ddd", color: "#c1121f" }}>
+                <td style={{ color: "#c1121f", borderLeft: "1px solid #eee" }}>
                   {change.before !== null && change.before !== undefined ? String(change.before) : 'N/A'}
                 </td>
-                <td style={{ padding: "8px", border: "1px solid #ddd", color: "#4f772d" }}>
+                <td style={{ color: "#4f772d", borderLeft: "1px solid #eee" }}>
                   {change.after !== null && change.after !== undefined ? String(change.after) : 'N/A'}
                 </td>
               </tr>
@@ -147,21 +146,27 @@ export default function AdminEvents() {
     if (!image) return null;
 
     return (
-      <div style={{ marginTop: 10 }}>
-        <strong style={{ display: "block", marginBottom: 8, fontSize: "0.9em" }}>{title}:</strong>
-        <table style={{ 
-          width: "100%", 
-          borderCollapse: "collapse", 
-          fontSize: "0.85em",
-          border: "1px solid #ddd"
-        }}>
+      <div style={{ 
+        marginTop: 12, 
+        background: "#fff", 
+        borderRadius: "8px", 
+        overflow: "hidden",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+      }}>
+        <table className="users-table" style={{ margin: 0 }}>
+          <thead>
+            <tr style={{ background: "#1C302F" }}>
+              <th style={{ width: "35%", color: "#fff" }}>Field</th>
+              <th style={{ color: "#fff", borderLeft: "1px solid rgba(255, 255, 255, 0.07)" }}>Value</th>
+            </tr>
+          </thead>
           <tbody>
             {Object.entries(image).map(([key, value], index) => (
-              <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#fff" : "#f8f9fa" }}>
-                <td style={{ padding: "8px", border: "1px solid #ddd", fontWeight: "500", width: "40%" }}>
+              <tr key={index}>
+                <td style={{ fontWeight: "500" }}>
                   {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </td>
-                <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                <td style={{ borderLeft: "1px solid #eee" }}>
                   {value !== null && value !== undefined ? String(value) : 'N/A'}
                 </td>
               </tr>
@@ -173,50 +178,52 @@ export default function AdminEvents() {
   }
 
   if (loading) {
-    return <div style={{ padding: "12px 16px" }}>Loading event logs...</div>;
+    return (
+      <div className="main-body">
+        <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+          Loading event logs...
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div style={{ padding: "12px 16px" }}>
-        <div className="error-box">{error}</div>
+      <div className="main-body">
+        <div className="error">{error}</div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "12px 16px", maxWidth: "100%", boxSizing: "border-box" }}>
-      <h2 style={{ margin: "0 0 20px 0", fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Event Log</h2>
+    <div className="main-body">
+      <h2 style={{ marginTop: 0, marginBottom: 24, fontFamily: "Playfair Display", fontSize: "1.8em", fontWeight: "600", color: "#000000" }}>
+        Event Log
+      </h2>
 
       {events.length === 0 ? (
-        <div style={{ 
-          padding: "40px", 
-          textAlign: "center", 
-          backgroundColor: "#f8f9fa", 
-          borderRadius: "8px",
-          color: "#666" 
-        }}>
-          No events logged yet.
+        <div className="card" style={{ textAlign: "center", padding: "60px 40px", background: "#f8f9fa" }}>
+          <p style={{ margin: 0, color: "#666", fontSize: "1.1em" }}>No events logged yet.</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {events.map((event) => (
-            <div key={event.id} style={{
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              backgroundColor: "white",
-              overflow: "hidden"
-            }}>
-              {/* Before/After Images Section - Shown First */}
+            <div key={event.id} className="card" style={{ padding: 0, overflow: "hidden", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)" }}>
               {(event.before_image || event.after_image) && (
                 <div style={{ 
-                  padding: "20px", 
-                  backgroundColor: "#f8f9fa",
-                  borderBottom: "2px solid #ddd"
+                  padding: "24px", 
+                  background: "#f8f9fa",
+                  borderBottom: "2px solid #e0e0e0"
                 }}>
-                  <h4 style={{ marginTop: 0, marginBottom: 16, color: "#1C5C59", fontSize: "1.1em" }}>
-                    Before & After Images
-                  </h4>
+                  <h3 style={{ 
+                    margin: "0 0 16px 0", 
+                    color: "#000000", 
+                    fontSize: "1.2em",
+                    fontFamily: "Playfair Display",
+                    fontWeight: "600"
+                  }}>
+                    Changes Made
+                  </h3>
                   
                   {event.before_image && event.after_image ? (
                     renderChangeDetails(event.before_image, event.after_image)
@@ -226,42 +233,47 @@ export default function AdminEvents() {
                 </div>
               )}
 
-              {/* Event Details Section - Shown After */}
-              <div style={{ padding: "20px" }}>
-                <h4 style={{ marginTop: 0, marginBottom: 16, color: "#1C5C59", fontSize: "1.1em" }}>
+              <div style={{ padding: "24px" }}>
+                <h3 style={{ 
+                  margin: "0 0 20px 0", 
+                  color: "#000000", 
+                  fontSize: "1.2em",
+                  fontFamily: "Playfair Display",
+                  fontWeight: "600"
+                }}>
                   Event Information
-                </h4>
+                </h3>
                 
                 <div style={{ 
                   display: "grid", 
-                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", 
-                  gap: "16px",
-                  marginBottom: "12px"
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
+                  gap: "20px",
+                  marginBottom: "16px"
                 }}>
                   <div>
-                    <div style={{ fontSize: "0.75em", color: "#666", marginBottom: 4, fontWeight: "600" }}>
-                      EVENT ID
+                    <div style={{ fontSize: "0.7em", color: "#888", marginBottom: 6, fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                      Event ID
                     </div>
-                    <div style={{ fontSize: "1.1em", fontWeight: "bold", color: "#1C5C59" }}>
+                    <div style={{ fontSize: "1.1em", fontWeight: "600", color: "#1C5C59" }}>
                       #{event.id}
                     </div>
                   </div>
 
                   <div>
-                    <div style={{ fontSize: "0.75em", color: "#666", marginBottom: 4, fontWeight: "600" }}>
-                      DATE & TIME
+                    <div style={{ fontSize: "0.7em", color: "#888", marginBottom: 6, fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                      Date & Time
                     </div>
-                    <div style={{ fontSize: "0.9em", fontWeight: "normal" }}>
+                    <div style={{ fontSize: "0.95em", color: "#333" }}>
                       {formatDate(event.created_at)}
                     </div>
                   </div>
 
                   <div>
-                    <div style={{ fontSize: "0.75em", color: "#666", marginBottom: 4, fontWeight: "600" }}>
-                      ACTION
+                    <div style={{ fontSize: "0.7em", color: "#888", marginBottom: 6, fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                      Action
                     </div>
                     <span style={{
-                      padding: "4px 10px",
+                      padding: "6px 12px",
                       borderRadius: "6px",
                       fontSize: "0.85em",
                       fontWeight: "600",
@@ -274,29 +286,29 @@ export default function AdminEvents() {
                   </div>
 
                   <div>
-                    <div style={{ fontSize: "0.75em", color: "#666", marginBottom: 4, fontWeight: "600" }}>
-                      USER / ACTOR
+                    <div style={{ fontSize: "0.7em", color: "#888", marginBottom: 6, fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                      User / Actor
                     </div>
-                    <div style={{ fontSize: "0.9em", fontWeight: "normal" }}>
+                    <div style={{ fontSize: "0.95em", color: "#333" }}>
                       {event.actor_username || "System"}
                     </div>
                   </div>
 
                   <div>
-                    <div style={{ fontSize: "0.75em", color: "#666", marginBottom: 4, fontWeight: "600" }}>
-                      RECORD TYPE
+                    <div style={{ fontSize: "0.7em", color: "#888", marginBottom: 6, fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                      Record Type
                     </div>
-                    <div style={{ fontSize: "0.9em", fontWeight: "normal" }}>
+                    <div style={{ fontSize: "0.95em", color: "#333" }}>
                       {event.record_type || "—"}
                     </div>
                   </div>
 
                   {event.record_id && (
                     <div>
-                      <div style={{ fontSize: "0.75em", color: "#666", marginBottom: 4, fontWeight: "600" }}>
-                        RECORD ID
+                      <div style={{ fontSize: "0.7em", color: "#888", marginBottom: 6, fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                        Record ID
                       </div>
-                      <div style={{ fontSize: "0.9em", fontWeight: "normal" }}>
+                      <div style={{ fontSize: "0.95em", color: "#333" }}>
                         {event.record_id}
                       </div>
                     </div>
@@ -304,11 +316,11 @@ export default function AdminEvents() {
                 </div>
 
                 {event.details && (
-                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e0e0e0" }}>
-                    <div style={{ fontSize: "0.75em", color: "#666", marginBottom: 4, fontWeight: "600" }}>
-                      DETAILS
+                  <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #e0e0e0" }}>
+                    <div style={{ fontSize: "0.7em", color: "#888", marginBottom: 6, fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                      Details
                     </div>
-                    <div style={{ fontSize: "0.9em", color: "#333" }}>
+                    <div style={{ fontSize: "0.95em", color: "#333", lineHeight: "1.6" }}>
                       {event.details}
                     </div>
                   </div>
