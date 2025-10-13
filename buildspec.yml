@@ -8,7 +8,7 @@ phases:
     commands:
       - echo "Installing backend dependencies..."
       - pip install --upgrade pip
-      - pip install -r backend/requirements.txt
+      - pip install -r requirements.txt
 
       - echo "Installing frontend dependencies..."
       - npm ci --prefix frontend
@@ -21,17 +21,16 @@ phases:
       - echo "Preparing deploy directory..."
       - mkdir -p deploy/core
       - mkdir -p deploy/frontend_build
-      - mkdir -p deploy/staticfiles
+      - mkdir -p deploy/core/static
 
       - echo "Copying backend files..."
-      - cp backend/manage.py deploy/
-      - cp -r backend/core deploy/core
-      - cp backend/requirements.txt deploy/
+      - cp manage.py deploy/
+      - cp -r core deploy/core
+      - cp requirements.txt deploy/
       - cp Procfile deploy/
 
       - echo "Copying built frontend files..."
       - cp -r frontend/dist/* deploy/frontend_build/
-      - mkdir -p deploy/core/static/
       - cp -r deploy/frontend_build/* deploy/core/static/
 
       - echo "Copying .ebextensions..."
