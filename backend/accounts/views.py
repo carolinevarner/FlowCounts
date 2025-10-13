@@ -251,7 +251,6 @@ class FlowTokenView(TokenObtainPairView):
                 # Check if user should be suspended
                 max_attempts = getattr(settings, "MAX_FAILED_LOGINS", 3)
                 if user_obj.failed_attempts >= max_attempts:
-                    # Capture before state
                     before_state = {
                         'id': user_obj.id,
                         'username': user_obj.username,
@@ -262,11 +261,9 @@ class FlowTokenView(TokenObtainPairView):
                         'failed_attempts': user_obj.failed_attempts,
                     }
                     
-                    # Suspend user
                     user_obj.is_active = False
                     user_obj.save(update_fields=["is_active"])
                     
-                    # Capture after state
                     after_state = {
                         'id': user_obj.id,
                         'username': user_obj.username,
@@ -277,10 +274,9 @@ class FlowTokenView(TokenObtainPairView):
                         'failed_attempts': user_obj.failed_attempts,
                     }
                     
-                    # Log suspension event
                     EventLog.objects.create(
                         action="USER_SUSPENDED",
-                        actor=None,  # System action
+                        actor=None,
                         target_user=user_obj,
                         details=f"User suspended due to {max_attempts} failed login attempts",
                         before_image=before_state,
@@ -289,7 +285,6 @@ class FlowTokenView(TokenObtainPairView):
                         record_id=user_obj.id
                     )
                     
-                    # Send emails
                     send_suspension_emails(user_obj, max_attempts)
         else:
             reason = "user_not_found"
@@ -391,7 +386,6 @@ class UserAdminViewSet(
         return CreateUserSerializer if self.action == "create" else UserSerializer
     
     def _user_to_dict(self, user):
-        """Convert user instance to dictionary for event logging."""
         return {
             'id': user.id,
             'username': user.username,
@@ -408,22 +402,16 @@ class UserAdminViewSet(
             'date_joined': user.date_joined.isoformat() if user.date_joined else None,
         }
     
-    # Ensure PATCH is treated as partial update
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
         
-        # Get the user being updated and capture before state
         user = self.get_object()
         before_image = self._user_to_dict(user)
         
-        # Perform the update
         response = super().update(request, *args, **kwargs)
         
-        # Get the updated user data and capture after state
         updated_user = User.objects.get(id=user.id)
         after_image = self._user_to_dict(updated_user)
-        
-        # Log the update event
         try:
             changes = []
             if before_image['role'] != after_image['role']:
@@ -455,7 +443,6 @@ class UserAdminViewSet(
         
         return response
 
-    # Allow POST create while auto-generating username when missing
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         if not data.get("username"):
@@ -463,7 +450,7 @@ class UserAdminViewSet(
                 data.get("first_name", ""),
                 data.get("last_name", ""),
             )
-        # Ensure a unique display_handle
+        
         if not data.get("display_handle"):
             base = f"{(data.get('first_name','') or '')[:1]}{(data.get('last_name','') or '')}".lower()
             base = "".join(ch for ch in base if ch.isalnum()) or "user"
@@ -477,17 +464,12 @@ class UserAdminViewSet(
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         
-        # Get the created user for email notifications and password setup
         created_user = User.objects.filter(username=serializer.data.get("username")).first()
         
-        # Set up temporary password expiration (3 days)
         if created_user:
             set_password_expiration(created_user, is_temporary=True)
-            # Save the initial password to history
             save_password_to_history(created_user, created_user.password)
             created_user.save()
-        
-        # Log event
         try:
             EventLog.objects.create(
                 action="USER_CREATED",
@@ -500,11 +482,8 @@ class UserAdminViewSet(
             )
         except Exception:
             logger.warning("Failed to log USER_CREATED event", exc_info=True)
-        
-        # Send email notifications
         try:
             if created_user and created_user.email:
-                # Email to new user with temporary password warning
                 send_mail(
                     "Welcome to FlowCounts - Action Required",
                     f"Hello {created_user.first_name or created_user.username},\n\n"
@@ -596,7 +575,6 @@ class UserAdminViewSet(
         end_raw   = (request.data.get("suspend_to") or "").strip()
 
         if not start_raw or not end_raw:
-            # Treat as UNSUSPEND action
             user.suspend_from = None
             user.suspend_to = None
             user.is_active = True
@@ -614,8 +592,6 @@ class UserAdminViewSet(
                 record_type='User',
                 record_id=user.id
             )
-
-            # Notify user of unsuspension
             try:
                 if user.email:
                     send_mail(
@@ -676,7 +652,6 @@ class UserAdminViewSet(
         user.save(update_fields=["suspend_from", "suspend_to", "is_active"])
         after_image = self._user_to_dict(user)
         
-        # Format suspension details more readably
         today = timezone.localdate()
         if user.suspend_from and user.suspend_to:
             details = f"User suspended from {today} to {user.suspend_to}"
@@ -697,8 +672,7 @@ class UserAdminViewSet(
             record_type='User',
             record_id=user.id
         )
-
-        # Send user/admin emails for date-based suspension
+        
         send_scheduled_suspension_emails(user, user.suspend_from, user.suspend_to)
         return Response(UserSerializer(user).data)
 
@@ -723,7 +697,6 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated(), IsAdmin()]
     
     def _user_to_dict(self, user):
-        """Convert user instance to dictionary for event logging."""
         return {
             'id': user.id,
             'username': user.username,
@@ -741,7 +714,6 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
         }
 
     def create(self, request, *args, **kwargs):
-        """Create a new registration request and send notification emails."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
