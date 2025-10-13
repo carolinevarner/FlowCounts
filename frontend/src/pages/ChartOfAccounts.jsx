@@ -1178,7 +1178,7 @@ export default function ChartOfAccounts() {
                   userSelect: "none"
                 }}
               >
-                Terms{getSortIndicator('terms')}
+                Term{getSortIndicator('terms')}
               </th>
               <th 
                 onClick={() => handleSort('balance')}
@@ -1325,7 +1325,6 @@ export default function ChartOfAccounts() {
                     padding: "10px 12px", 
                     borderBottom: "1px solid #ddd", 
                     textAlign: "right", 
-                    fontFamily: "monospace",
                     fontWeight: "normal",
                     fontSize: "0.85em"
                   }}>{formatCurrency(account.balance)}</td>

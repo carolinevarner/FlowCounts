@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import serializers
-from .models import RegistrationRequest, User, EventLog, ErrorMessage, ErrorLog, ChartOfAccounts
+from .models import RegistrationRequest, User, EventLog, ErrorMessage, ErrorLog, ChartOfAccounts, JournalEntry, JournalEntryLine, JournalEntryAttachment
 import re
 
 User = get_user_model()
@@ -340,3 +340,152 @@ class ChartOfAccountsSerializer(serializers.ModelSerializer):
         if request and hasattr(request, 'user'):
             validated_data['updated_by'] = request.user
         return super().update(instance, validated_data)
+
+
+class JournalEntryLineSerializer(serializers.ModelSerializer):
+    account_name = serializers.CharField(source='account.account_name', read_only=True)
+    account_number = serializers.CharField(source='account.account_number', read_only=True)
+    
+    class Meta:
+        model = JournalEntryLine
+        fields = [
+            'id',
+            'account',
+            'account_name',
+            'account_number',
+            'description',
+            'debit',
+            'credit',
+            'order',
+        ]
+    
+    def validate(self, data):
+        debit = data.get('debit', 0)
+        credit = data.get('credit', 0)
+        
+        if debit < 0 or credit < 0:
+            raise serializers.ValidationError("Debit and credit amounts cannot be negative.")
+        
+        if debit > 0 and credit > 0:
+            raise serializers.ValidationError("A line cannot have both debit and credit amounts.")
+        
+        if debit == 0 and credit == 0:
+            raise serializers.ValidationError("A line must have either a debit or credit amount.")
+        
+        return data
+
+
+class JournalEntryAttachmentSerializer(serializers.ModelSerializer):
+    uploaded_by_username = serializers.CharField(source='uploaded_by.username', read_only=True)
+    file_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = JournalEntryAttachment
+        fields = [
+            'id',
+            'file',
+            'file_url',
+            'file_name',
+            'file_size',
+            'uploaded_at',
+            'uploaded_by',
+            'uploaded_by_username',
+        ]
+        read_only_fields = ['uploaded_at', 'uploaded_by']
+    
+    def get_file_url(self, obj):
+        if obj.file:
+            return obj.file.url
+        return None
+
+
+class JournalEntrySerializer(serializers.ModelSerializer):
+    lines = JournalEntryLineSerializer(many=True)
+    attachments = JournalEntryAttachmentSerializer(many=True, read_only=True)
+    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
+    reviewed_by_username = serializers.CharField(source='reviewed_by.username', read_only=True)
+    total_debits = serializers.SerializerMethodField()
+    total_credits = serializers.SerializerMethodField()
+    is_balanced = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = JournalEntry
+        fields = [
+            'id',
+            'entry_date',
+            'description',
+            'status',
+            'created_by',
+            'created_by_username',
+            'created_at',
+            'reviewed_by',
+            'reviewed_by_username',
+            'reviewed_at',
+            'rejection_reason',
+            'lines',
+            'attachments',
+            'total_debits',
+            'total_credits',
+            'is_balanced',
+        ]
+        read_only_fields = ['created_by', 'created_at', 'reviewed_by', 'reviewed_at', 'status']
+    
+    def get_total_debits(self, obj):
+        return float(obj.total_debits())
+    
+    def get_total_credits(self, obj):
+        return float(obj.total_credits())
+    
+    def get_is_balanced(self, obj):
+        return obj.is_balanced()
+    
+    def validate_lines(self, lines):
+        if len(lines) < 2:
+            raise serializers.ValidationError("A journal entry must have at least 2 lines (one debit and one credit).")
+        
+        has_debit = any(line.get('debit', 0) > 0 for line in lines)
+        has_credit = any(line.get('credit', 0) > 0 for line in lines)
+        
+        if not has_debit:
+            raise serializers.ValidationError("Journal entry must have at least one debit entry.")
+        if not has_credit:
+            raise serializers.ValidationError("Journal entry must have at least one credit entry.")
+        
+        total_debits = sum(line.get('debit', 0) for line in lines)
+        total_credits = sum(line.get('credit', 0) for line in lines)
+        
+        if total_debits != total_credits:
+            raise serializers.ValidationError(
+                f"Total debits (${total_debits:.2f}) must equal total credits (${total_credits:.2f}). "
+                f"Difference: ${abs(total_debits - total_credits):.2f}"
+            )
+        
+        return lines
+    
+    def create(self, validated_data):
+        lines_data = validated_data.pop('lines')
+        request = self.context.get('request')
+        
+        if request and hasattr(request, 'user'):
+            validated_data['created_by'] = request.user
+        
+        journal_entry = JournalEntry.objects.create(**validated_data)
+        
+        for line_data in lines_data:
+            JournalEntryLine.objects.create(journal_entry=journal_entry, **line_data)
+        
+        return journal_entry
+    
+    def update(self, instance, validated_data):
+        lines_data = validated_data.pop('lines', None)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        if lines_data is not None:
+            instance.lines.all().delete()
+            for line_data in lines_data:
+                JournalEntryLine.objects.create(journal_entry=instance, **line_data)
+        
+        return instance

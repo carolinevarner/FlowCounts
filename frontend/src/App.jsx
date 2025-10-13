@@ -16,6 +16,9 @@ import Accounts from "./pages/Accounts.jsx";
 import Profile from "./pages/Profile.jsx";
 import Ledger from "./pages/Ledger.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import JournalEntry from "./pages/JournalEntry.jsx";
+import JournalList from "./pages/JournalList.jsx";
+import JournalView from "./pages/JournalView.jsx";
 
 function Blank({ title }) {
   return (
@@ -72,7 +75,10 @@ export default function App() {
         <Route path="chart" element={<ChartOfAccounts />} />
         <Route path="ledger/:accountId" element={<Ledger />} />
         <Route path="accounts" element={<Accounts />} />
-        <Route path="journal" element={<Blank title="Manager • Journalize" />} />
+        <Route path="journal" element={<JournalList />} />
+        <Route path="journal/new" element={<JournalEntry />} />
+        <Route path="journal/edit/:id" element={<JournalEntry />} />
+        <Route path="journal/view/:id" element={<JournalView />} />
         <Route path="trial" element={<Blank title="Manager • Trial Balance" />} />
         <Route path="income" element={<Blank title="Manager • Income Statement" />} />
         <Route path="balance" element={<Blank title="Manager • Balance Sheet" />} />
@@ -92,7 +98,10 @@ export default function App() {
         <Route path="chart" element={<ChartOfAccounts />} />
         <Route path="ledger/:accountId" element={<Ledger />} />
         <Route path="accounts" element={<Accounts />} />
-        <Route path="journal" element={<Blank title="Accountant • Journalize" />} />
+        <Route path="journal" element={<JournalList />} />
+        <Route path="journal/new" element={<JournalEntry />} />
+        <Route path="journal/edit/:id" element={<JournalEntry />} />
+        <Route path="journal/view/:id" element={<JournalView />} />
         <Route path="trial" element={<Blank title="Accountant • Trial Balance" />} />
         <Route path="income" element={<Blank title="Accountant • Income Statement" />} />
         <Route path="balance" element={<Blank title="Accountant • Balance Sheet" />} />

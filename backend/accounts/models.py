@@ -104,6 +104,10 @@ class EventLog(models.Model):
         ("ACCOUNT_UPDATED", "Account Updated"),
         ("ACCOUNT_ACTIVATED", "Account Activated"),
         ("ACCOUNT_DEACTIVATED", "Account Deactivated"),
+        ("JOURNAL_ENTRY_CREATED", "Journal Entry Created"),
+        ("JOURNAL_ENTRY_UPDATED", "Journal Entry Updated"),
+        ("JOURNAL_ENTRY_APPROVED", "Journal Entry Approved"),
+        ("JOURNAL_ENTRY_REJECTED", "Journal Entry Rejected"),
     ]
 
     action = models.CharField(max_length=32, choices=ACTION_CHOICES)
@@ -276,4 +280,106 @@ class ChartOfAccounts(models.Model):
         elif self.deactivate_from and not self.deactivate_to:
             return self.deactivate_from <= today
         
-        return False  
+        return False
+
+
+class JournalEntry(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending Approval'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+    
+    entry_date = models.DateField()
+    description = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='journal_entries_created'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='journal_entries_reviewed'
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    
+    rejection_reason = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-entry_date', '-created_at']
+        verbose_name = 'Journal Entry'
+        verbose_name_plural = 'Journal Entries'
+    
+    def __str__(self):
+        return f"JE-{self.id} ({self.entry_date})"
+    
+    def total_debits(self):
+        return sum(line.debit for line in self.lines.all())
+    
+    def total_credits(self):
+        return sum(line.credit for line in self.lines.all())
+    
+    def is_balanced(self):
+        return self.total_debits() == self.total_credits()
+    
+    def has_valid_lines(self):
+        lines = list(self.lines.all())
+        if len(lines) < 2:
+            return False
+        has_debit = any(line.debit > 0 for line in lines)
+        has_credit = any(line.credit > 0 for line in lines)
+        return has_debit and has_credit
+
+
+class JournalEntryLine(models.Model):
+    journal_entry = models.ForeignKey(
+        JournalEntry,
+        on_delete=models.CASCADE,
+        related_name='lines'
+    )
+    account = models.ForeignKey(
+        ChartOfAccounts,
+        on_delete=models.PROTECT,
+        related_name='journal_lines'
+    )
+    description = models.CharField(max_length=255, blank=True)
+    debit = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    credit = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order', 'id']
+    
+    def __str__(self):
+        return f"{self.account.account_name}: Dr {self.debit} Cr {self.credit}"
+
+
+class JournalEntryAttachment(models.Model):
+    journal_entry = models.ForeignKey(
+        JournalEntry,
+        on_delete=models.CASCADE,
+        related_name='attachments'
+    )
+    file = models.FileField(upload_to='journal_attachments/%Y/%m/')
+    file_name = models.CharField(max_length=255)
+    file_size = models.IntegerField()
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    
+    class Meta:
+        ordering = ['uploaded_at']
+    
+    def __str__(self):
+        return f"{self.file_name} ({self.journal_entry})"  

@@ -16,6 +16,8 @@ from accounts.views import (
     get_username_by_email,
     change_password,
     ChartOfAccountsViewSet,
+    JournalEntryViewSet,
+    send_email_to_user,
 )
 from accounts.error_views import ErrorMessageViewSet, ErrorLogViewSet
 
@@ -26,6 +28,7 @@ router.register(r"auth/events", EventLogViewSet, basename="auth-events")
 router.register(r"auth/error-messages", ErrorMessageViewSet, basename="error-messages")
 router.register(r"auth/error-logs", ErrorLogViewSet, basename="error-logs")
 router.register(r"chart-of-accounts", ChartOfAccountsViewSet, basename="chart-of-accounts")
+router.register(r"journal-entries", JournalEntryViewSet, basename="journal-entries")
 
 urlpatterns = [
     path("api/", include(router.urls)),
@@ -35,6 +38,7 @@ urlpatterns = [
     path("api/auth/change-password/", change_password, name="change-password"),
     path("api/auth/get-username/", get_username_by_email, name="get-username"),
     path("api/auth/forgot-password/", forgot_password, name="forgot-password"),
+    path("api/auth/send-email/", send_email_to_user, name="send-email"),
 ]
 
 # Serve media files in development

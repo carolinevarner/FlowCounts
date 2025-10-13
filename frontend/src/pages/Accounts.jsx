@@ -795,8 +795,54 @@ export default function Accounts() {
     } else if (filter === "inactive") {
       filtered = filtered.filter((a) => !a.is_active);
     } else if (["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"].includes(filter)) {
-      // Filter by category
       filtered = filtered.filter((a) => a.account_category === filter);
+    } else if (filter === "current_assets") {
+      filtered = filtered.filter((a) => 
+        a.account_category === "ASSET" && 
+        a.account_subcategory.toLowerCase().includes("current")
+      );
+    } else if (filter === "fixed_assets") {
+      filtered = filtered.filter((a) => 
+        a.account_category === "ASSET" && 
+        (a.account_subcategory.toLowerCase().includes("fixed") || 
+         a.account_subcategory.toLowerCase().includes("property") ||
+         a.account_subcategory.toLowerCase().includes("equipment"))
+      );
+    } else if (filter === "current_liabilities") {
+      filtered = filtered.filter((a) => 
+        a.account_category === "LIABILITY" && 
+        a.account_subcategory.toLowerCase().includes("current")
+      );
+    } else if (filter === "long_term_liabilities") {
+      filtered = filtered.filter((a) => 
+        a.account_category === "LIABILITY" && 
+        (a.account_subcategory.toLowerCase().includes("long") || 
+         a.account_subcategory.toLowerCase().includes("term"))
+      );
+    } else if (filter === "cash") {
+      filtered = filtered.filter((a) => 
+        a.account_subcategory.toLowerCase().includes("cash")
+      );
+    } else if (filter === "accounts_receivable") {
+      filtered = filtered.filter((a) => 
+        a.account_subcategory.toLowerCase().includes("receivable")
+      );
+    } else if (filter === "accounts_payable") {
+      filtered = filtered.filter((a) => 
+        a.account_subcategory.toLowerCase().includes("payable")
+      );
+    } else if (filter === "inventory") {
+      filtered = filtered.filter((a) => 
+        a.account_subcategory.toLowerCase().includes("inventory")
+      );
+    } else if (filter === "equipment") {
+      filtered = filtered.filter((a) => 
+        a.account_subcategory.toLowerCase().includes("equipment")
+      );
+    } else if (filter === "other") {
+      filtered = filtered.filter((a) => 
+        a.account_subcategory.toLowerCase().includes("other")
+      );
     } else if (filter === "zero_balance") {
       filtered = filtered.filter((a) => parseFloat(a.balance || 0) === 0);
     } else if (filter === "positive_balance") {
@@ -1063,6 +1109,18 @@ export default function Accounts() {
               <option value="REVENUE">Revenue</option>
               <option value="EXPENSE">Expenses</option>
             </optgroup>
+            <optgroup label="By Subtype">
+              <option value="current_assets">Current Assets</option>
+              <option value="fixed_assets">Fixed Assets</option>
+              <option value="current_liabilities">Current Liabilities</option>
+              <option value="long_term_liabilities">Long-term Liabilities</option>
+              <option value="cash">Cash</option>
+              <option value="accounts_receivable">Accounts Receivable</option>
+              <option value="accounts_payable">Accounts Payable</option>
+              <option value="inventory">Inventory</option>
+              <option value="equipment">Equipment</option>
+              <option value="other">Other</option>
+            </optgroup>
             <optgroup label="By Balance">
               <option value="zero_balance">Zero Balance</option>
               <option value="positive_balance">Positive Balance</option>
@@ -1176,7 +1234,7 @@ export default function Accounts() {
                   userSelect: "none"
                 }}
               >
-                Terms{getSortIndicator('terms')}
+                Term{getSortIndicator('terms')}
               </th>
               <th style={{ 
                 padding: "10px 12px", 

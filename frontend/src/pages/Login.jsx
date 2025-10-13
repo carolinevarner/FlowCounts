@@ -52,7 +52,7 @@ export default function Login() {
     }
 
     if (typeof attemptsLeft === "number") {
-      setError(detail); // Use the backend message: "Incorrect Login, X attempts left"
+      setError(detail);
     } else {
       setError(detail);
     }

@@ -21,8 +21,18 @@ function generateSampleTransactions(account) {
   const totalDebits = parseFloat(account.debit || 0);
   const totalCredits = parseFloat(account.credit || 0);
   
-  let runningBalance = initialBalance;
+  let runningBalance = 0;
   let transactionId = 1;
+  
+  transactions.push({
+    id: 0,
+    date: "",
+    reference: "",
+    description: "",
+    debit: 0,
+    credit: 0,
+    balance: 0
+  });
   
   if (initialBalance !== 0) {
     transactions.push({
@@ -226,22 +236,10 @@ export default function Ledger() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
     fetchAccountDetails();
   }, [accountId]);
-
-  useEffect(() => {
-    const handleClickOutside = () => {
-      if (showDatePicker) {
-        setShowDatePicker(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showDatePicker]);
 
   async function fetchAccountDetails() {
     try {
@@ -278,13 +276,6 @@ export default function Ledger() {
   const filteredTransactions = useMemo(() => {
     let filtered = transactions;
 
-    if (selectedDate) {
-      filtered = filtered.filter((tx) => {
-        const transactionDate = new Date(tx.date).toISOString().split('T')[0];
-        return transactionDate === selectedDate;
-      });
-    }
-
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -299,6 +290,8 @@ export default function Ledger() {
       filtered = filtered.filter((tx) => tx.debit > 0);
     } else if (filter === "credit") {
       filtered = filtered.filter((tx) => tx.credit > 0);
+    } else if (filter === "opening") {
+      filtered = filtered.filter((tx) => tx.description === "Opening Balance");
     }
 
     if (sortConfig.key) {
@@ -345,7 +338,7 @@ export default function Ledger() {
     }
 
     return filtered;
-  }, [transactions, searchTerm, filter, sortConfig, selectedDate]);
+  }, [transactions, searchTerm, filter, sortConfig]);
 
   if (loading) {
     return <div style={{ padding: "12px 16px" }}>Loading ledger...</div>;
@@ -387,109 +380,6 @@ export default function Ledger() {
         flexWrap: "wrap"
       }}>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <div style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDatePicker(!showDatePicker);
-              }}
-              style={{
-                padding: "6px 10px",
-                fontSize: 16,
-                borderRadius: "6px",
-                border: "1px solid #b8b6b6",
-                backgroundColor: "#fff",
-                cursor: "pointer",
-                height: "30px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minWidth: "40px",
-                color: "#000"
-              }}
-              title={selectedDate ? `View transactions on: ${new Date(selectedDate).toLocaleDateString()}` : "Select a date to filter transactions"}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-              </svg>
-            </button>
-            {showDatePicker && (
-              <div 
-                style={{
-                  position: "absolute",
-                  top: "35px",
-                  left: 0,
-                  background: "white",
-                  border: "1px solid #b8b6b6",
-                  borderRadius: "6px",
-                  padding: "12px",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-                  zIndex: 1000,
-                  minWidth: 220
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div style={{ marginBottom: 8, fontSize: 12, fontWeight: "bold", color: "#333" }}>
-                  View transactions on:
-                </div>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => {
-                    setSelectedDate(e.target.value);
-                    setShowDatePicker(false);
-                  }}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    fontSize: 12,
-                    borderRadius: "4px",
-                    border: "1px solid #b8b6b6"
-                  }}
-                />
-                <div style={{ marginTop: 8, fontSize: 11, color: "#666", textAlign: "center" }}>
-                  {selectedDate ? `Selected: ${new Date(selectedDate).toLocaleDateString()}` : "No date selected - Showing all"}
-                </div>
-                <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
-                  <button
-                    onClick={() => {
-                      setSelectedDate(new Date().toISOString().split('T')[0]);
-                      setShowDatePicker(false);
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: "4px 8px",
-                      fontSize: 11,
-                      backgroundColor: "#f5f5f5",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedDate("");
-                      setShowDatePicker(false);
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: "4px 8px",
-                      fontSize: 11,
-                      backgroundColor: "#f5f5f5",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Clear
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -508,6 +398,7 @@ export default function Ledger() {
             <option value="all">All Transactions</option>
             <option value="debit">Debit Only</option>
             <option value="credit">Credit Only</option>
+            <option value="opening">Opening Balance</option>
           </select>
 
           <input
@@ -553,20 +444,20 @@ export default function Ledger() {
               >
                 Date{getSortIndicator('date')}
               </th>
-              <th 
-                onClick={() => handleSort('reference')}
-                style={{ 
-                  padding: "10px 12px", 
-                  textAlign: "left", 
-                  fontWeight: "bold", 
-                  fontSize: "0.8em",
-                  background: "white",
-                  color: "#000",
-                  cursor: "pointer",
-                  userSelect: "none"
-                }}
-              >
-                Reference{getSortIndicator('reference')}
+                <th 
+                  onClick={() => handleSort('reference')}
+                  style={{ 
+                    padding: "10px 12px", 
+                    textAlign: "left", 
+                    fontWeight: "bold", 
+                    fontSize: "0.8em",
+                    background: "white",
+                    color: "#000",
+                    cursor: "pointer",
+                    userSelect: "none"
+                  }}
+                >
+                  Reference No.{getSortIndicator('reference')}
               </th>
               <th style={{ 
                 padding: "10px 12px", 
@@ -618,7 +509,7 @@ export default function Ledger() {
                 </td>
               </tr>
             ) : (
-              filteredTransactions.map((tx) => (
+                filteredTransactions.map((tx) => (
                 <tr key={tx.id}>
                   <td style={{ 
                     padding: "10px 12px", 
@@ -626,7 +517,7 @@ export default function Ledger() {
                     fontWeight: "normal",
                     fontSize: "0.85em"
                   }}>
-                    {new Date(tx.date).toLocaleDateString()}
+                    {tx.date ? new Date(tx.date).toLocaleDateString() : ""}
                   </td>
                   <td style={{ 
                     padding: "10px 12px", 
@@ -635,7 +526,7 @@ export default function Ledger() {
                     fontSize: "0.85em",
                     color: "#1C5C59"
                   }}>
-                    {tx.reference}
+                    {tx.reference || ""}
                   </td>
                   <td style={{ 
                     padding: "10px 12px", 
@@ -643,34 +534,31 @@ export default function Ledger() {
                     fontWeight: "normal", 
                     fontSize: "0.85em"
                   }}>
-                    {tx.description}
+                    {tx.description || ""}
                   </td>
                   <td style={{ 
                     padding: "10px 12px", 
                     borderBottom: "1px solid #ddd", 
                     textAlign: "right",
-                    fontFamily: "monospace",
                     fontWeight: "normal",
                     fontSize: "0.85em"
                   }}>
-                    {tx.debit ? formatCurrency(tx.debit) : "-"}
+                    {tx.debit > 0 ? formatCurrency(tx.debit) : ""}
                   </td>
                   <td style={{ 
                     padding: "10px 12px", 
                     borderBottom: "1px solid #ddd", 
                     textAlign: "right",
-                    fontFamily: "monospace",
                     fontWeight: "normal",
                     fontSize: "0.85em"
                   }}>
-                    {tx.credit ? formatCurrency(tx.credit) : "-"}
+                    {tx.credit > 0 ? formatCurrency(tx.credit) : ""}
                   </td>
                   <td style={{ 
                     padding: "10px 12px", 
                     borderBottom: "1px solid #ddd", 
                     textAlign: "right",
-                    fontFamily: "monospace",
-                    fontWeight: "bold",
+                    fontWeight: "normal",
                     fontSize: "0.85em",
                     color: "#000"
                   }}>

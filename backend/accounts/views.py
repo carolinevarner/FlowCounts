@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
-from rest_framework import viewsets, mixins, status
+from rest_framework import viewsets, mixins, status, serializers
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -27,7 +27,7 @@ import time
 from django.core.mail import send_mail
 import logging, secrets, string
 
-from .models import RegistrationRequest, EventLog, PasswordHistory, ChartOfAccounts
+from .models import RegistrationRequest, EventLog, PasswordHistory, ChartOfAccounts, JournalEntry, JournalEntryLine, JournalEntryAttachment
 from .error_utils import log_error, DatabaseErrorResponse, get_error_message
 from .serializers import (
     UserSerializer,
@@ -36,6 +36,8 @@ from .serializers import (
     CreateUserSerializer,
     EventLogSerializer,
     ChartOfAccountsSerializer,
+    JournalEntrySerializer,
+    JournalEntryAttachmentSerializer,
 )
 from .permissions import IsAdmin
 from .password_utils import (
@@ -1378,3 +1380,354 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
             logger.warning("Failed to log ACCOUNT_DEACTIVATED event", exc_info=True)
         
         return Response(ChartOfAccountsSerializer(account, context={'request': request}).data)
+
+
+class JournalEntryViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Journal Entry management with approval workflow.
+    Managers and Accountants can create entries.
+    Only Managers can approve/reject entries.
+    """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = JournalEntry.objects.all().select_related('created_by', 'reviewed_by').prefetch_related('lines__account', 'attachments')
+    serializer_class = JournalEntrySerializer
+    
+    def get_permissions(self):
+        """Managers and Accountants can create/update. Only Managers can approve/reject."""
+        if self.action in ['approve', 'reject']:
+            return [IsAuthenticated(), IsAdmin()]
+        return [IsAuthenticated()]
+    
+    def get_queryset(self):
+        """Filter based on user role and query parameters."""
+        qs = super().get_queryset()
+        user = self.request.user
+        
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter.upper())
+        
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            qs = qs.filter(entry_date__gte=start_date)
+        if end_date:
+            qs = qs.filter(entry_date__lte=end_date)
+        
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(
+                Q(lines__account__account_name__icontains=search) |
+                Q(lines__debit=search) |
+                Q(lines__credit=search) |
+                Q(description__icontains=search)
+            ).distinct()
+        
+        return qs
+    
+    def _journal_entry_to_dict(self, entry):
+        """Convert journal entry to dictionary for event logging."""
+        return {
+            'id': entry.id,
+            'entry_date': entry.entry_date.isoformat(),
+            'description': entry.description,
+            'status': entry.status,
+            'created_by': entry.created_by.username if entry.created_by else None,
+            'lines': [
+                {
+                    'account': line.account.account_number,
+                    'account_name': line.account.account_name,
+                    'description': line.description,
+                    'debit': str(line.debit),
+                    'credit': str(line.credit),
+                }
+                for line in entry.lines.all()
+            ],
+            'total_debits': str(entry.total_debits()),
+            'total_credits': str(entry.total_credits()),
+        }
+    
+    def perform_create(self, serializer):
+        """Create journal entry and log the event."""
+        entry = serializer.save()
+        
+        try:
+            EventLog.objects.create(
+                action='JOURNAL_ENTRY_CREATED',
+                actor=self.request.user,
+                details=f"Created journal entry {entry.id} for {entry.entry_date}",
+                after_image=self._journal_entry_to_dict(entry),
+                record_type='JournalEntry',
+                record_id=entry.id
+            )
+        except Exception:
+            logger.warning("Failed to log JOURNAL_ENTRY_CREATED event", exc_info=True)
+        
+        try:
+            admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+            manager_emails = list(User.objects.filter(role='MANAGER', is_active=True).values_list('email', flat=True))
+            notification_emails = list(set(admin_emails + manager_emails))
+            
+            if notification_emails:
+                send_mail(
+                    "FlowCounts: New Journal Entry Submitted",
+                    f"A new journal entry has been submitted for approval.\n\n"
+                    f"Entry ID: JE-{entry.id}\n"
+                    f"Date: {entry.entry_date}\n"
+                    f"Created by: {entry.created_by.username if entry.created_by else 'Unknown'}\n"
+                    f"Total Debits: ${entry.total_debits():.2f}\n"
+                    f"Total Credits: ${entry.total_credits():.2f}\n\n"
+                    "Please review and approve/reject this entry.\n\n"
+                    "FlowCounts Team",
+                    settings.DEFAULT_FROM_EMAIL,
+                    notification_emails,
+                    fail_silently=True,
+                )
+        except Exception as e:
+            logger.error(f"Failed to send journal entry notification: {e}")
+    
+    def perform_update(self, serializer):
+        """Update journal entry and log the event."""
+        entry = self.get_object()
+        
+        if entry.status != 'PENDING':
+            raise serializers.ValidationError("Cannot edit an entry that has been approved or rejected.")
+        
+        before_image = self._journal_entry_to_dict(entry)
+        updated_entry = serializer.save()
+        after_image = self._journal_entry_to_dict(updated_entry)
+        
+        try:
+            EventLog.objects.create(
+                action='JOURNAL_ENTRY_UPDATED',
+                actor=self.request.user,
+                details=f"Updated journal entry {updated_entry.id}",
+                before_image=before_image,
+                after_image=after_image,
+                record_type='JournalEntry',
+                record_id=updated_entry.id
+            )
+        except Exception:
+            logger.warning("Failed to log JOURNAL_ENTRY_UPDATED event", exc_info=True)
+    
+    def perform_destroy(self, instance):
+        """Prevent deletion of non-pending entries."""
+        if instance.status != 'PENDING':
+            raise serializers.ValidationError("Cannot delete an entry that has been approved or rejected.")
+        super().perform_destroy(instance)
+    
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        """
+        Approve a journal entry. Only managers can approve.
+        Updates account balances when approved.
+        """
+        entry = self.get_object()
+        
+        if entry.status != 'PENDING':
+            return Response(
+                {"detail": "Only pending entries can be approved."},
+                status=400
+            )
+        
+        before_image = self._journal_entry_to_dict(entry)
+        
+        entry.status = 'APPROVED'
+        entry.reviewed_by = request.user
+        entry.reviewed_at = timezone.now()
+        entry.save()
+        
+        with transaction.atomic():
+            for line in entry.lines.all():
+                account = line.account
+                
+                if line.debit > 0:
+                    account.debit += line.debit
+                    if account.normal_side == 'DEBIT':
+                        account.balance += line.debit
+                    else:
+                        account.balance -= line.debit
+                
+                if line.credit > 0:
+                    account.credit += line.credit
+                    if account.normal_side == 'CREDIT':
+                        account.balance += line.credit
+                    else:
+                        account.balance -= line.credit
+                
+                account.save()
+        
+        after_image = self._journal_entry_to_dict(entry)
+        
+        try:
+            EventLog.objects.create(
+                action='JOURNAL_ENTRY_APPROVED',
+                actor=request.user,
+                details=f"Approved journal entry {entry.id}",
+                before_image=before_image,
+                after_image=after_image,
+                record_type='JournalEntry',
+                record_id=entry.id
+            )
+        except Exception:
+            logger.warning("Failed to log JOURNAL_ENTRY_APPROVED event", exc_info=True)
+        
+        try:
+            if entry.created_by and entry.created_by.email:
+                send_mail(
+                    "FlowCounts: Journal Entry Approved",
+                    f"Your journal entry (JE-{entry.id}) for {entry.entry_date} has been approved by {request.user.username}.\n\n"
+                    f"Total Debits: ${entry.total_debits():.2f}\n"
+                    f"Total Credits: ${entry.total_credits():.2f}\n\n"
+                    "FlowCounts Team",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [entry.created_by.email],
+                    fail_silently=True,
+                )
+        except Exception as e:
+            logger.error(f"Failed to send approval email: {e}")
+        
+        return Response(JournalEntrySerializer(entry, context={'request': request}).data)
+    
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        """
+        Reject a journal entry. Only managers can reject.
+        Requires a rejection reason.
+        """
+        entry = self.get_object()
+        
+        if entry.status != 'PENDING':
+            return Response(
+                {"detail": "Only pending entries can be rejected."},
+                status=400
+            )
+        
+        rejection_reason = request.data.get('rejection_reason', '').strip()
+        if not rejection_reason:
+            return Response(
+                {"detail": "Rejection reason is required."},
+                status=400
+            )
+        
+        before_image = self._journal_entry_to_dict(entry)
+        
+        entry.status = 'REJECTED'
+        entry.reviewed_by = request.user
+        entry.reviewed_at = timezone.now()
+        entry.rejection_reason = rejection_reason
+        entry.save()
+        
+        after_image = self._journal_entry_to_dict(entry)
+        
+        try:
+            EventLog.objects.create(
+                action='JOURNAL_ENTRY_REJECTED',
+                actor=request.user,
+                details=f"Rejected journal entry {entry.id}: {rejection_reason}",
+                before_image=before_image,
+                after_image=after_image,
+                record_type='JournalEntry',
+                record_id=entry.id
+            )
+        except Exception:
+            logger.warning("Failed to log JOURNAL_ENTRY_REJECTED event", exc_info=True)
+        
+        try:
+            if entry.created_by and entry.created_by.email:
+                send_mail(
+                    "FlowCounts: Journal Entry Rejected",
+                    f"Your journal entry (JE-{entry.id}) for {entry.entry_date} has been rejected by {request.user.username}.\n\n"
+                    f"Reason: {rejection_reason}\n\n"
+                    f"Please review and resubmit if necessary.\n\n"
+                    "FlowCounts Team",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [entry.created_by.email],
+                    fail_silently=True,
+                )
+        except Exception as e:
+            logger.error(f"Failed to send rejection email: {e}")
+        
+        return Response(JournalEntrySerializer(entry, context={'request': request}).data)
+    
+    @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def upload_attachment(self, request, pk=None):
+        """Upload an attachment to a journal entry."""
+        entry = self.get_object()
+        
+        if entry.status != 'PENDING':
+            return Response(
+                {"detail": "Cannot add attachments to approved or rejected entries."},
+                status=400
+            )
+        
+        file = request.FILES.get('file')
+        if not file:
+            return Response({"detail": "No file provided."}, status=400)
+        
+        allowed_extensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.jpg', '.jpeg', '.png']
+        file_ext = file.name[file.name.rfind('.'):].lower() if '.' in file.name else ''
+        
+        if file_ext not in allowed_extensions:
+            return Response(
+                {"detail": f"File type {file_ext} not allowed. Allowed types: {', '.join(allowed_extensions)}"},
+                status=400
+            )
+        
+        attachment = JournalEntryAttachment.objects.create(
+            journal_entry=entry,
+            file=file,
+            file_name=file.name,
+            file_size=file.size,
+            uploaded_by=request.user
+        )
+        
+        return Response(JournalEntryAttachmentSerializer(attachment).data, status=201)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def send_email_to_user(request):
+    """Send an email from one user to another (manager or admin)."""
+    recipient = request.data.get('recipient', '').strip()
+    subject = request.data.get('subject', '').strip()
+    message_body = request.data.get('message', '').strip()
+    recipient_type = request.data.get('recipient_type', 'manager').lower()
+    
+    if not recipient or not subject or not message_body:
+        return Response(
+            {"detail": "Recipient, subject, and message are required."},
+            status=400
+        )
+    
+    sender = request.user
+    
+    try:
+        full_subject = f"FlowCounts: {subject}"
+        full_message = (
+            f"From: {sender.first_name} {sender.last_name} ({sender.username})\n"
+            f"Email: {sender.email}\n"
+            f"Role: {sender.role}\n\n"
+            f"Message:\n{message_body}\n\n"
+            f"---\n"
+            f"This email was sent through the FlowCounts application."
+        )
+        
+        send_mail(
+            full_subject,
+            full_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [recipient],
+            fail_silently=False,
+        )
+        
+        logger.info(f"Email sent from {sender.email} to {recipient}")
+        return Response({"detail": "Email sent successfully"})
+        
+    except Exception as e:
+        logger.error(f"Failed to send email: {e}", exc_info=True)
+        return Response(
+            {"detail": "Failed to send email. Please try again later."},
+            status=500
+        )
