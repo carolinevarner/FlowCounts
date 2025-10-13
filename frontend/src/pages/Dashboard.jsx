@@ -106,7 +106,7 @@ export default function Dashboard() {
 
   const getRatioColor = (ratio) => {
     if (ratio >= 100) return "#4f772d";
-    if (ratio >= 50) return "#f4a261";
+    if (ratio >= 50) return "#f08f00";
     return "#c1121f";
   };
 
