@@ -928,6 +928,18 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
             )
             send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [req.email], fail_silently=False)
 
+        try:
+            EventLog.objects.create(
+                action="REQUEST_REJECTED",
+                actor=request.user,
+                target_user=None,
+                details=f"Rejected registration for {req.email}" + (f": {note}" if note else ""),
+                record_type='RegistrationRequest',
+                record_id=req.id
+            )
+        except Exception:
+            logger.warning("Failed to log REQUEST_REJECTED event", exc_info=True)
+
         return Response({"detail": "Request rejected", "email_sent": True})
 
 
