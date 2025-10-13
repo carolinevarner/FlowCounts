@@ -30,7 +30,7 @@ phases:
       - cp Procfile deploy/
 
       - echo "Copying built frontend files..."
-      - cp -r frontend/build/* deploy/frontend_build/
+      - cp -r frontend/dist/* deploy/frontend_build/
       - mkdir -p deploy/core/static/
       - cp -r deploy/frontend_build/* deploy/core/static/
 
