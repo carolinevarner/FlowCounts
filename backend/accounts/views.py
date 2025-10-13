@@ -251,16 +251,42 @@ class FlowTokenView(TokenObtainPairView):
                 # Check if user should be suspended
                 max_attempts = getattr(settings, "MAX_FAILED_LOGINS", 3)
                 if user_obj.failed_attempts >= max_attempts:
+                    # Capture before state
+                    before_state = {
+                        'id': user_obj.id,
+                        'username': user_obj.username,
+                        'email': user_obj.email,
+                        'first_name': user_obj.first_name,
+                        'last_name': user_obj.last_name,
+                        'is_active': user_obj.is_active,
+                        'failed_attempts': user_obj.failed_attempts,
+                    }
+                    
                     # Suspend user
                     user_obj.is_active = False
                     user_obj.save(update_fields=["is_active"])
+                    
+                    # Capture after state
+                    after_state = {
+                        'id': user_obj.id,
+                        'username': user_obj.username,
+                        'email': user_obj.email,
+                        'first_name': user_obj.first_name,
+                        'last_name': user_obj.last_name,
+                        'is_active': user_obj.is_active,
+                        'failed_attempts': user_obj.failed_attempts,
+                    }
                     
                     # Log suspension event
                     EventLog.objects.create(
                         action="USER_SUSPENDED",
                         actor=None,  # System action
                         target_user=user_obj,
-                        details=f"User suspended due to {max_attempts} failed login attempts"
+                        details=f"User suspended due to {max_attempts} failed login attempts",
+                        before_image=before_state,
+                        after_image=after_state,
+                        record_type='User',
+                        record_id=user_obj.id
                     )
                     
                     # Send emails
@@ -364,35 +390,52 @@ class UserAdminViewSet(
     def get_serializer_class(self):
         return CreateUserSerializer if self.action == "create" else UserSerializer
     
+    def _user_to_dict(self, user):
+        """Convert user instance to dictionary for event logging."""
+        return {
+            'id': user.id,
+            'username': user.username,
+            'display_handle': user.display_handle,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'is_active': user.is_active,
+            'address': user.address,
+            'dob': user.dob.isoformat() if user.dob else None,
+            'suspend_from': user.suspend_from.isoformat() if user.suspend_from else None,
+            'suspend_to': user.suspend_to.isoformat() if user.suspend_to else None,
+            'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+        }
+    
     # Ensure PATCH is treated as partial update
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
         
-        # Get the user being updated
+        # Get the user being updated and capture before state
         user = self.get_object()
-        old_role = user.role
+        before_image = self._user_to_dict(user)
         
         # Perform the update
         response = super().update(request, *args, **kwargs)
         
-        # Get the updated user data
+        # Get the updated user data and capture after state
         updated_user = User.objects.get(id=user.id)
+        after_image = self._user_to_dict(updated_user)
         
         # Log the update event
         try:
             changes = []
-            if old_role != updated_user.role:
-                changes.append(f"role changed from {old_role} to {updated_user.role}")
-            
-            # Check for other common changes
-            if request.data.get('first_name') and user.first_name != updated_user.first_name:
-                changes.append(f"first name changed from '{user.first_name}' to '{updated_user.first_name}'")
-            if request.data.get('last_name') and user.last_name != updated_user.last_name:
-                changes.append(f"last name changed from '{user.last_name}' to '{updated_user.last_name}'")
-            if request.data.get('email') and user.email != updated_user.email:
-                changes.append(f"email changed from '{user.email}' to '{updated_user.email}'")
-            if request.data.get('is_active') is not None and user.is_active != updated_user.is_active:
-                status = "activated" if updated_user.is_active else "deactivated"
+            if before_image['role'] != after_image['role']:
+                changes.append(f"role changed from {before_image['role']} to {after_image['role']}")
+            if before_image['first_name'] != after_image['first_name']:
+                changes.append(f"first name changed from '{before_image['first_name']}' to '{after_image['first_name']}'")
+            if before_image['last_name'] != after_image['last_name']:
+                changes.append(f"last name changed from '{before_image['last_name']}' to '{after_image['last_name']}'")
+            if before_image['email'] != after_image['email']:
+                changes.append(f"email changed from '{before_image['email']}' to '{after_image['email']}'")
+            if before_image['is_active'] != after_image['is_active']:
+                status = "activated" if after_image['is_active'] else "deactivated"
                 changes.append(f"user {status}")
             
             if changes:
@@ -401,7 +444,11 @@ class UserAdminViewSet(
                     action="USER_UPDATED",
                     actor=request.user,
                     target_user=updated_user,
-                    details=details
+                    details=details,
+                    before_image=before_image,
+                    after_image=after_image,
+                    record_type='User',
+                    record_id=updated_user.id
                 )
         except Exception:
             logger.warning("Failed to log USER_UPDATED event", exc_info=True)
@@ -447,6 +494,9 @@ class UserAdminViewSet(
                 actor=request.user if request.user.is_authenticated else None,
                 target_user=created_user,
                 details=f"Created user {serializer.data.get('username')} ({serializer.data.get('email','')})",
+                after_image=self._user_to_dict(created_user) if created_user else None,
+                record_type='User',
+                record_id=created_user.id if created_user else None
             )
         except Exception:
             logger.warning("Failed to log USER_CREATED event", exc_info=True)
@@ -500,28 +550,47 @@ class UserAdminViewSet(
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
         user = self.get_object()
+        before_image = self._user_to_dict(user)
         user.is_active = True
         user.suspend_from = None
         user.suspend_to = None
         user.save(update_fields=["is_active", "suspend_from", "suspend_to"])
+        after_image = self._user_to_dict(user)
         EventLog.objects.create(
-            action="USER_ACTIVATED", actor=request.user, target_user=user, details="User activated"
+            action="USER_ACTIVATED", 
+            actor=request.user, 
+            target_user=user, 
+            details="User activated",
+            before_image=before_image,
+            after_image=after_image,
+            record_type='User',
+            record_id=user.id
         )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
     def deactivate(self, request, pk=None):
         user = self.get_object()
+        before_image = self._user_to_dict(user)
         user.is_active = False
         user.save(update_fields=["is_active"])
+        after_image = self._user_to_dict(user)
         EventLog.objects.create(
-            action="USER_DEACTIVATED", actor=request.user, target_user=user, details="User deactivated"
+            action="USER_DEACTIVATED", 
+            actor=request.user, 
+            target_user=user, 
+            details="User deactivated",
+            before_image=before_image,
+            after_image=after_image,
+            record_type='User',
+            record_id=user.id
         )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
     def suspend(self, request, pk=None):
         user = self.get_object()
+        before_image = self._user_to_dict(user)
 
         start_raw = (request.data.get("suspend_from") or "").strip()
         end_raw   = (request.data.get("suspend_to") or "").strip()
@@ -533,10 +602,17 @@ class UserAdminViewSet(
             user.is_active = True
             user.failed_attempts = 0
             user.save(update_fields=["suspend_from", "suspend_to", "is_active", "failed_attempts"])
+            after_image = self._user_to_dict(user)
 
             EventLog.objects.create(
-                action="USER_UNSUSPENDED", actor=request.user, target_user=user,
-                details="User unsuspended"
+                action="USER_UNSUSPENDED", 
+                actor=request.user, 
+                target_user=user,
+                details="User unsuspended",
+                before_image=before_image,
+                after_image=after_image,
+                record_type='User',
+                record_id=user.id
             )
 
             # Notify user of unsuspension
@@ -598,6 +674,8 @@ class UserAdminViewSet(
             user.is_active = not (today <= end)
 
         user.save(update_fields=["suspend_from", "suspend_to", "is_active"])
+        after_image = self._user_to_dict(user)
+        
         # Format suspension details more readably
         today = timezone.localdate()
         if user.suspend_from and user.suspend_to:
@@ -610,8 +688,14 @@ class UserAdminViewSet(
             details = "User suspension cleared"
         
         EventLog.objects.create(
-            action="USER_SUSPENDED", actor=request.user, target_user=user,
-            details=details
+            action="USER_SUSPENDED", 
+            actor=request.user, 
+            target_user=user,
+            details=details,
+            before_image=before_image,
+            after_image=after_image,
+            record_type='User',
+            record_id=user.id
         )
 
         # Send user/admin emails for date-based suspension
@@ -637,6 +721,24 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
         if self.action in ["create"]:
             return [AllowAny()]
         return [IsAuthenticated(), IsAdmin()]
+    
+    def _user_to_dict(self, user):
+        """Convert user instance to dictionary for event logging."""
+        return {
+            'id': user.id,
+            'username': user.username,
+            'display_handle': user.display_handle,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'is_active': user.is_active,
+            'address': user.address,
+            'dob': user.dob.isoformat() if user.dob else None,
+            'suspend_from': user.suspend_from.isoformat() if user.suspend_from else None,
+            'suspend_to': user.suspend_to.isoformat() if user.suspend_to else None,
+            'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+        }
 
     def create(self, request, *args, **kwargs):
         """Create a new registration request and send notification emails."""
@@ -823,8 +925,13 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
 
         try:
             EventLog.objects.create(
-                action="REQUEST_APPROVED", actor=request.user, target_user=user,
-                details=f"Approved registration for {req.email}; created username={user.username}"
+                action="REQUEST_APPROVED", 
+                actor=request.user, 
+                target_user=user,
+                details=f"Approved registration for {req.email}; created username={user.username}",
+                after_image=self._user_to_dict(user),
+                record_type='User',
+                record_id=user.id
             )
         except Exception:
             logger.warning("Failed to log REQUEST_APPROVED event", exc_info=True)

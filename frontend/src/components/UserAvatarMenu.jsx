@@ -63,8 +63,13 @@ export default function UserAvatarMenu() {
 
   return (
     <div className="user-box" ref={menuRef}>
-      <div className="user-name">
-        {[user?.first_name, user?.last_name].filter(Boolean).join(" ")}
+      <div className="user-info">
+        <div className="user-name">
+          {[user?.first_name, user?.last_name].filter(Boolean).join(" ")}
+        </div>
+        <div className="user-username">
+          {user?.display_handle}
+        </div>
       </div>
       <button className="user-avatar" onClick={toggle} aria-label="User menu">
         {avatarUrl

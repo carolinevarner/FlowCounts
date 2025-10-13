@@ -26,12 +26,13 @@ class UserLiteSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     profile_image_url = serializers.SerializerMethodField()
     suspended_now = serializers.SerializerMethodField()
+    display_handle = serializers.SerializerMethodField()
 
     class Meta:
         model = User  
         fields = (
             "id", "username", "email", "first_name", "last_name", "role",
-            "is_active", "profile_image_url", "suspended_now",
+            "is_active", "profile_image_url", "suspended_now", "display_handle",
         )
 
     def get_profile_image_url(self, obj):
@@ -56,6 +57,22 @@ class UserSerializer(serializers.ModelSerializer):
         if end and not start:
             return today <= end
         return False
+
+    def get_display_handle(self, obj):
+        # Generate numbered username based on role
+        role_base = {
+            'ADMIN': 'adminUser',
+            'MANAGER': 'managerUser',
+            'ACCOUNTANT': 'accountantUser',
+        }
+        
+        base = role_base.get(obj.role, 'user')
+        
+        # Get all users with same role ordered by ID, and find this user's position
+        users_with_same_role = User.objects.filter(role=obj.role).order_by('id')
+        position = list(users_with_same_role.values_list('id', flat=True)).index(obj.id) + 1
+        
+        return f"{base}{position}"
 
 
 

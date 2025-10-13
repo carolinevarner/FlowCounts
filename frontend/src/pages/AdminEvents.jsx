@@ -58,6 +58,10 @@ export default function AdminEvents() {
       ACCOUNT_UPDATED: "Account Updated",
       ACCOUNT_ACTIVATED: "Account Activated",
       ACCOUNT_DEACTIVATED: "Account Deactivated",
+      JOURNAL_ENTRY_CREATED: "Journal Entry Created",
+      JOURNAL_ENTRY_UPDATED: "Journal Entry Updated",
+      JOURNAL_ENTRY_APPROVED: "Journal Entry Approved",
+      JOURNAL_ENTRY_REJECTED: "Journal Entry Rejected",
     };
     return labels[action] || action;
   }
@@ -78,6 +82,10 @@ export default function AdminEvents() {
       ACCOUNT_UPDATED: "#1C5C59",
       ACCOUNT_ACTIVATED: "#2196F3",
       ACCOUNT_DEACTIVATED: "#FF9800",
+      JOURNAL_ENTRY_CREATED: "#4f772d",
+      JOURNAL_ENTRY_UPDATED: "#1C5C59",
+      JOURNAL_ENTRY_APPROVED: "#2196F3",
+      JOURNAL_ENTRY_REJECTED: "#c1121f",
     };
     return colors[action] || "#666";
   }

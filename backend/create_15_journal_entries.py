@@ -232,3 +232,4 @@ for key, acc in accounts.items():
         print(f"  {acc.account_name:30} | Balance: ${acc.balance:10.2f}")
 print("\nYou can now view these in the Journal and Ledger pages!")
 
+
