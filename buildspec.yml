@@ -8,7 +8,8 @@ phases:
     commands:
       - echo "Installing Python dependencies..."
       - pip install --upgrade pip
-      - pip install -r backend/requirements.txt
+      - pip install -r requirements.txt --log /var/log/pip_install.log
+      - cat /var/log/pip_install.log
       - echo "Installing Node.js dependencies..."
       - npm ci --prefix frontend
 
@@ -16,11 +17,8 @@ phases:
     commands:
       - echo "Building React frontend..."
       - npm run build --prefix frontend
-      - echo "Copying build output to backend static directory..."
-      - cp -r frontend/dist backend/static
 
 artifacts:
   files:
-    - backend/**/*
-    - Procfile
-    - .ebextensions/**/*
+    - '**/*'
+  discard-paths: no
