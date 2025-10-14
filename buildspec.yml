@@ -4,38 +4,23 @@ phases:
   install:
     runtime-versions:
       python: 3.11
-      nodejs: 20
+      nodejs: 18
     commands:
-      - echo "Installing backend dependencies..."
+      - echo "Installing Python dependencies..."
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt
-
-      - echo "Installing frontend dependencies..."
+      - echo "Installing Node.js dependencies..."
       - npm ci --prefix frontend
 
   build:
     commands:
       - echo "Building React frontend..."
       - npm run build --prefix frontend
-
-      - echo "Preparing deploy directory..."
-      - mkdir -p deploy/core
-      - mkdir -p deploy/core/static
-
-      - echo "Copying backend files..."
-      - cp backend/manage.py deploy/
-      - cp -r backend/* deploy/       # copy all apps including accounts & core
-      - cp backend/requirements.txt deploy/
-      - cp Procfile deploy/
-
-      - echo "Copying built frontend files..."
-      - cp -r frontend/dist/* deploy/core/static/
-
-      - echo "Copying .ebextensions if exists..."
-      - if [ -d ".ebextensions" ]; then cp -r .ebextensions deploy/.ebextensions; fi
+      - echo "Copying build output to backend static directory..."
+      - cp -r frontend/build backend/static
 
 artifacts:
   files:
-    - '**/*'
-  base-directory: deploy
-  name: BuildOutput
+    - backend/**/*
+    - Procfile
+    - .ebextensions/**/*
