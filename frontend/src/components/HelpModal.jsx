@@ -354,7 +354,7 @@ export default function HelpModal({ onClose, page = "general", userRole = "" }) 
                     marginBottom: "8px",
                     border: "none",
                     borderRadius: "8px",
-                    backgroundColor: activeTab === tabKey ? "#1C5C59" : "transparent",
+                    backgroundColor: activeTab === tabKey ? "#1C302F" : "transparent",
                     color: activeTab === tabKey ? "white" : "#333",
                     cursor: "pointer",
                     textAlign: "left",
