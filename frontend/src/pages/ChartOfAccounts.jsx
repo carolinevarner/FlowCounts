@@ -393,22 +393,60 @@ function AccountFormModal({ account, onClose, onSaved, onOpenDeactivate }) {
 
           <div className="form-group">
             <label>Account Subcategory *</label>
-            <input
-              type="text"
+            <select
               value={form.account_subcategory}
               onChange={(e) => setField("account_subcategory", e.target.value)}
               disabled={saving}
-              placeholder="e.g. Current Assets"
               style={{
                 padding: "8px 12px",
                 fontSize: 13,
                 borderRadius: "6px",
                 border: "1px solid #b8b6b6",
+                backgroundColor: "#fff",
+                cursor: "pointer",
                 outline: "none",
                 fontFamily: "sans-serif",
                 width: "100%"
               }}
-            />
+            >
+              <option value="">Select Subcategory</option>
+              {form.account_category === 'ASSET' && (
+                <>
+                  <option value="Current Assets">Current Assets</option>
+                  <option value="Fixed Assets">Fixed Assets</option>
+                  <option value="Intangible Assets">Intangible Assets</option>
+                  <option value="Other Assets">Other Assets</option>
+                </>
+              )}
+              {form.account_category === 'LIABILITY' && (
+                <>
+                  <option value="Current Liabilities">Current Liabilities</option>
+                  <option value="Long-term Liabilities">Long-term Liabilities</option>
+                  <option value="Other Liabilities">Other Liabilities</option>
+                </>
+              )}
+              {form.account_category === 'EQUITY' && (
+                <>
+                  <option value="Owner's Equity">Owner's Equity</option>
+                  <option value="Retained Earnings">Retained Earnings</option>
+                  <option value="Other Equity">Other Equity</option>
+                </>
+              )}
+              {form.account_category === 'REVENUE' && (
+                <>
+                  <option value="Operating Revenue">Operating Revenue</option>
+                  <option value="Non-operating Revenue">Non-operating Revenue</option>
+                  <option value="Other Revenue">Other Revenue</option>
+                </>
+              )}
+              {form.account_category === 'EXPENSE' && (
+                <>
+                  <option value="Operating Expenses">Operating Expenses</option>
+                  <option value="Cost of Goods Sold">Cost of Goods Sold</option>
+                  <option value="Other Expenses">Other Expenses</option>
+                </>
+              )}
+            </select>
           </div>
 
           <div className="form-row">
