@@ -204,12 +204,54 @@ export default function HelpModal({ onClose, page = "general", userRole = "" }) 
             <p>Each log entry includes event ID, timestamp, action type, user/actor, record type, record ID, and detailed description.</p>
           </>
         )
+      },
+      accounts: {
+        title: "Accounts",
+        icon: "💼",
+        content: (
+          <>
+            <h3>Accounts Management</h3>
+            <p>The Accounts page allows you to manage all financial accounts in the system.</p>
+            <h4>Account Information:</h4>
+            <ul>
+              <li><strong>Account Number:</strong> Unique identifier for each account</li>
+              <li><strong>Account Name:</strong> Descriptive name of the account</li>
+              <li><strong>Category:</strong> Asset, Liability, Equity, Revenue, or Expense</li>
+              <li><strong>Normal Side:</strong> Debit or Credit (determines increase direction)</li>
+              <li><strong>Balance:</strong> Current account balance</li>
+              <li><strong>Status:</strong> Active or Inactive</li>
+            </ul>
+            <h4>Admin Actions:</h4>
+            <ul>
+              <li>Create new accounts with number, name, category, and description</li>
+              <li>Edit existing account details</li>
+              <li>Activate or deactivate accounts</li>
+              <li>View account ledger by clicking account number</li>
+              <li>Add comments to accounts for notes or updates</li>
+            </ul>
+            <h4>Features:</h4>
+            <ul>
+              <li>Use calendar icon to filter accounts by creation date</li>
+              <li>Filter by category (All, Assets, Liabilities, etc.)</li>
+              <li>Filter by status (Active/Inactive)</li>
+              <li>Search by account name or number</li>
+              <li>Sort by clicking column headers</li>
+            </ul>
+            <h4>Best Practices:</h4>
+            <ul>
+              <li>Deactivate accounts instead of deleting to preserve history</li>
+              <li>Use clear, descriptive account names</li>
+              <li>Follow standard numbering conventions for your industry</li>
+              <li>Add comments when making significant changes</li>
+            </ul>
+          </>
+        )
       }
     };
 
     const availablePages = isAdmin 
-      ? ["dashboard", "chartOfAccounts", "ledger", "journalEntry", "journalList", "users", "events"]
-      : ["dashboard", "chartOfAccounts", "ledger", "journalEntry", "journalList"];
+      ? ["dashboard", "chartOfAccounts", "accounts", "ledger", "users", "events"]
+      : ["dashboard", "chartOfAccounts", "accounts", "ledger", "journalEntry", "journalList"];
 
     const filteredContent = {};
     availablePages.forEach(key => {
@@ -265,7 +307,7 @@ export default function HelpModal({ onClose, page = "general", userRole = "" }) 
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span style={{ fontSize: "32px" }}>❓</span>
-            <h2 style={{ margin: 0, color: "#1C5C59", fontFamily: "Playfair Display" }}>FlowCounts Help Center</h2>
+            <h2 style={{ margin: 0, color: "#000", fontFamily: "Playfair Display" }}>FlowCounts Help Center</h2>
           </div>
           <button
             onClick={onClose}
