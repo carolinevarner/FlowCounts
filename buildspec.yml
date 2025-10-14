@@ -20,20 +20,16 @@ phases:
 
       - echo "Preparing deploy directory..."
       - mkdir -p deploy/core
-      - mkdir -p deploy/core/accounts
-      - mkdir -p deploy/frontend_build
       - mkdir -p deploy/core/static
 
       - echo "Copying backend files..."
       - cp backend/manage.py deploy/
-      - cp -r backend/core deploy/core
-      - cp -r backend/accounts deploy/core/accounts
+      - cp -r backend/core/* deploy/core/         # flatten core folder
       - cp backend/requirements.txt deploy/
       - cp Procfile deploy/
 
       - echo "Copying built frontend files..."
-      - cp -r frontend/dist/* deploy/frontend_build/
-      - cp -r deploy/frontend_build/* deploy/core/static/
+      - cp -r frontend/dist/* deploy/core/static/
 
       - echo "Copying .ebextensions..."
       - if [ -d ".ebextensions" ]; then cp -r .ebextensions deploy/.ebextensions; fi
