@@ -495,3 +495,29 @@ table, thead, tbody, tr, td, th {
   margin: 10px 0;
   font-family: sans-serif;
 }
+
+}
+
+.error {
+  padding: 12px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  color: #c00;
+  font-size: 14px;
+  margin: 10px 0;
+  font-family: sans-serif;
+}
+
+.field input:disabled {
+  background: #e9ecef;
+  cursor: not-allowed;
+  color: #6c757d;
+}
+
+.error {
+  color: crimson;
+  font-size: 14px;
+  margin: 10px 0;
+  font-family: sans-serif;
+}

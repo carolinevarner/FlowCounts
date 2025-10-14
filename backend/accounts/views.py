@@ -1714,31 +1714,31 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
                     )
             except Exception as e:
                 logger.error(f"Failed to send accountant confirmation email: {e}")
+        
+        try:
+            admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+            manager_emails = list(User.objects.filter(role='MANAGER', is_active=True).values_list('email', flat=True))
+            notification_emails = list(set(admin_emails + manager_emails))
             
-            try:
-                admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
-                manager_emails = list(User.objects.filter(role='MANAGER', is_active=True).values_list('email', flat=True))
-                notification_emails = list(set(admin_emails + manager_emails))
-                
-                if notification_emails:
-                    send_mail(
+            if notification_emails:
+                send_mail(
                         "FlowCounts: New Journal Entry Submitted for Approval",
                         f"A new journal entry has been submitted and requires your approval.\n\n"
-                        f"Entry ID: JE-{entry.id}\n"
-                        f"Date: {entry.entry_date}\n"
+                    f"Entry ID: JE-{entry.id}\n"
+                    f"Date: {entry.entry_date}\n"
                         f"Description: {entry.description or 'N/A'}\n"
-                        f"Created by: {entry.created_by.username if entry.created_by else 'Unknown'}\n"
-                        f"Total Debits: ${entry.total_debits():.2f}\n"
+                    f"Created by: {entry.created_by.username if entry.created_by else 'Unknown'}\n"
+                    f"Total Debits: ${entry.total_debits():.2f}\n"
                         f"Total Credits: ${entry.total_credits():.2f}\n"
                         f"Status: PENDING APPROVAL\n\n"
                         "Please log in to review and approve or reject this entry.\n\n"
-                        "FlowCounts Team",
-                        settings.DEFAULT_FROM_EMAIL,
-                        notification_emails,
+                    "FlowCounts Team",
+                    settings.DEFAULT_FROM_EMAIL,
+                    notification_emails,
                         fail_silently=False,
-                    )
-            except Exception as e:
-                logger.error(f"Failed to send journal entry notification: {e}")
+                )
+        except Exception as e:
+            logger.error(f"Failed to send journal entry notification: {e}")
     
     def perform_update(self, serializer):
         """Update journal entry and log the event."""

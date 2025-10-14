@@ -972,7 +972,7 @@ export default function Accounts() {
         <button
           onClick={() => setShowHelpModal(true)}
           className="auth-linkbtn"
-          style={{
+          style={{ 
             height: "30px",
             padding: "0 12px",
             fontSize: 14,
