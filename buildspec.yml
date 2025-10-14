@@ -17,7 +17,7 @@ phases:
       - echo "Building React frontend..."
       - npm run build --prefix frontend
       - echo "Copying build output to backend static directory..."
-      - cp -r frontend/build backend/static
+      - cp -r frontend/dist backend/static
 
 artifacts:
   files:
