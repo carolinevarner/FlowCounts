@@ -236,10 +236,22 @@ export default function Ledger() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
     fetchAccountDetails();
   }, [accountId]);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (showDatePicker) {
+        setShowDatePicker(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showDatePicker]);
 
   async function fetchAccountDetails() {
     try {
@@ -275,6 +287,14 @@ export default function Ledger() {
 
   const filteredTransactions = useMemo(() => {
     let filtered = transactions;
+
+    if (selectedDate) {
+      filtered = filtered.filter((tx) => {
+        if (!tx.date) return false;
+        const txDate = new Date(tx.date).toISOString().split('T')[0];
+        return txDate === selectedDate;
+      });
+    }
 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
@@ -338,7 +358,7 @@ export default function Ledger() {
     }
 
     return filtered;
-  }, [transactions, searchTerm, filter, sortConfig]);
+  }, [transactions, searchTerm, filter, sortConfig, selectedDate]);
 
   if (loading) {
     return <div style={{ padding: "12px 16px" }}>Loading ledger...</div>;
@@ -380,6 +400,109 @@ export default function Ledger() {
         flexWrap: "wrap"
       }}>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDatePicker(!showDatePicker);
+              }}
+              style={{
+                padding: "6px 10px",
+                fontSize: 16,
+                borderRadius: "6px",
+                border: "1px solid #b8b6b6",
+                backgroundColor: "#fff",
+                cursor: "pointer",
+                height: "30px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "40px",
+                color: "#000"
+              }}
+              title={selectedDate ? `Transactions on: ${new Date(selectedDate).toLocaleDateString()}` : "Select a date to filter transactions"}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+              </svg>
+            </button>
+            {showDatePicker && (
+              <div 
+                style={{
+                  position: "absolute",
+                  top: "35px",
+                  left: 0,
+                  background: "white",
+                  border: "1px solid #b8b6b6",
+                  borderRadius: "6px",
+                  padding: "12px",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+                  zIndex: 1000,
+                  minWidth: 220
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ marginBottom: 8, fontSize: 12, fontWeight: "bold", color: "#333" }}>
+                  View transactions on:
+                </div>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    setShowDatePicker(false);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "6px 8px",
+                    fontSize: 12,
+                    borderRadius: "4px",
+                    border: "1px solid #b8b6b6"
+                  }}
+                />
+                <div style={{ marginTop: 8, fontSize: 11, color: "#666", textAlign: "center" }}>
+                  {selectedDate ? `Selected: ${new Date(selectedDate).toLocaleDateString()}` : "No date selected - Showing all"}
+                </div>
+                <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
+                  <button
+                    onClick={() => {
+                      setSelectedDate(new Date().toISOString().split('T')[0]);
+                      setShowDatePicker(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      backgroundColor: "#f5f5f5",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedDate("");
+                      setShowDatePicker(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      backgroundColor: "#f5f5f5",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
