@@ -20,12 +20,14 @@ phases:
 
       - echo "Preparing deploy directory..."
       - mkdir -p deploy/core
+      - mkdir -p deploy/core/accounts
       - mkdir -p deploy/frontend_build
       - mkdir -p deploy/core/static
 
       - echo "Copying backend files..."
       - cp backend/manage.py deploy/
       - cp -r backend/core deploy/core
+      - cp -r backend/accounts deploy/core/accounts
       - cp backend/requirements.txt deploy/
       - cp Procfile deploy/
 
