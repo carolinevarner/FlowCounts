@@ -379,15 +379,19 @@ class JournalEntryLineSerializer(serializers.ModelSerializer):
     def validate(self, data):
         debit = data.get('debit', 0)
         credit = data.get('credit', 0)
+        account = data.get('account')
+        
+        if not account:
+            raise serializers.ValidationError("Please select an account for this line.")
         
         if debit < 0 or credit < 0:
-            raise serializers.ValidationError("Debit and credit amounts cannot be negative.")
+            raise serializers.ValidationError("Debit and credit amounts cannot be negative. Please enter positive values or zero.")
         
         if debit > 0 and credit > 0:
-            raise serializers.ValidationError("A line cannot have both debit and credit amounts.")
+            raise serializers.ValidationError("A journal entry line cannot have both debit and credit amounts. Please enter only one amount per line.")
         
         if debit == 0 and credit == 0:
-            raise serializers.ValidationError("A line must have either a debit or credit amount.")
+            raise serializers.ValidationError("Each line must have either a debit or credit amount. Please enter an amount greater than zero.")
         
         return data
 
@@ -457,25 +461,31 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         return obj.is_balanced()
     
     def validate_lines(self, lines):
+        if not lines or len(lines) == 0:
+            raise serializers.ValidationError("Journal entry must have at least one line. Please add debit and credit entries.")
+        
         if len(lines) < 2:
-            raise serializers.ValidationError("A journal entry must have at least 2 lines (one debit and one credit).")
+            raise serializers.ValidationError("A journal entry must have at least 2 lines (minimum one debit and one credit). Please add more lines.")
+        
+        accounts_used = [line.get('account') for line in lines if line.get('account')]
+        if not accounts_used:
+            raise serializers.ValidationError("All lines must have an account selected. Please select an account for each line.")
         
         has_debit = any(line.get('debit', 0) > 0 for line in lines)
         has_credit = any(line.get('credit', 0) > 0 for line in lines)
         
         if not has_debit:
-            raise serializers.ValidationError("Journal entry must have at least one debit entry.")
+            raise serializers.ValidationError("Journal entry must have at least one debit entry. Please add a line with a debit amount.")
         if not has_credit:
-            raise serializers.ValidationError("Journal entry must have at least one credit entry.")
+            raise serializers.ValidationError("Journal entry must have at least one credit entry. Please add a line with a credit amount.")
         
         total_debits = sum(line.get('debit', 0) for line in lines)
         total_credits = sum(line.get('credit', 0) for line in lines)
         
-        if total_debits != total_credits:
-            raise serializers.ValidationError(
-                f"Total debits (${total_debits:.2f}) must equal total credits (${total_credits:.2f}). "
-                f"Difference: ${abs(total_debits - total_credits):.2f}"
-            )
+        if abs(total_debits - total_credits) > 0.01:
+            raise serializers.ValidationError({
+                'lines': f"Journal entry is out of balance! Total debits (${total_debits:.2f}) must equal total credits (${total_credits:.2f}). Difference: ${abs(total_debits - total_credits):.2f}. Please adjust your amounts to balance the entry."
+            })
         
         return lines
     
@@ -485,6 +495,13 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         
         if request and hasattr(request, 'user'):
             validated_data['created_by'] = request.user
+            
+            if request.user.role in ['ADMIN', 'MANAGER']:
+                validated_data['status'] = 'APPROVED'
+                validated_data['reviewed_by'] = request.user
+                validated_data['reviewed_at'] = timezone.now()
+            else:
+                validated_data['status'] = 'PENDING'
         
         journal_entry = JournalEntry.objects.create(**validated_data)
         

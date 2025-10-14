@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
+import HelpModal from '../components/HelpModal';
+import '../styles/auth.css';
 
 export default function JournalList() {
   const navigate = useNavigate();
@@ -22,6 +24,8 @@ export default function JournalList() {
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [additionalFilter, setAdditionalFilter] = useState('all');
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -142,6 +146,23 @@ export default function JournalList() {
   const filteredEntries = useMemo(() => {
     let filtered = [...entries];
 
+    if (additionalFilter === 'my_entries' && userRole === 'ACCOUNTANT') {
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      filtered = filtered.filter(entry => entry.created_by === currentUser.id);
+    } else if (additionalFilter === 'adjusting') {
+      filtered = filtered.filter(entry => 
+        entry.description?.toLowerCase().includes('adjusting')
+      );
+    } else if (additionalFilter === 'regular') {
+      filtered = filtered.filter(entry => 
+        !entry.description?.toLowerCase().includes('adjusting')
+      );
+    } else if (additionalFilter === 'large') {
+      filtered = filtered.filter(entry => entry.total_debits > 1000);
+    } else if (additionalFilter === 'small') {
+      filtered = filtered.filter(entry => entry.total_debits <= 1000);
+    }
+
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(entry => {
@@ -159,8 +180,18 @@ export default function JournalList() {
 
     if (sortConfig.key) {
       filtered.sort((a, b) => {
-        let aVal = a[sortConfig.key];
-        let bVal = b[sortConfig.key];
+        let aVal, bVal;
+        
+        if (sortConfig.key === 'type') {
+          aVal = a.description?.toLowerCase().includes('adjusting') ? 'adjusting' : 'regular';
+          bVal = b.description?.toLowerCase().includes('adjusting') ? 'adjusting' : 'regular';
+        } else if (sortConfig.key === 'created_by_username') {
+          aVal = (a.created_by_username || '').toLowerCase();
+          bVal = (b.created_by_username || '').toLowerCase();
+        } else {
+          aVal = a[sortConfig.key];
+          bVal = b[sortConfig.key];
+        }
 
         if (sortConfig.key === 'entry_date' || sortConfig.key === 'created_at') {
           aVal = new Date(aVal);
@@ -174,7 +205,7 @@ export default function JournalList() {
     }
 
     return filtered;
-  }, [entries, searchTerm, sortConfig]);
+  }, [entries, searchTerm, sortConfig, additionalFilter, userRole]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -193,140 +224,163 @@ export default function JournalList() {
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center", 
-        marginBottom: 20,
-        flexWrap: "wrap",
-        gap: 20
+        marginBottom: 20
       }}>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flex: "1 1 auto" }}>
-          <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>
-            Journal Entries
-          </h2>
+        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>
+          Journal Entries
+        </h2>
+        <button
+          onClick={() => setShowHelpModal(true)}
+          className="auth-linkbtn"
+          style={{
+            height: "30px",
+            padding: "0 12px",
+            fontSize: 14,
+            width: "auto",
+            minWidth: "80px"
+          }}
+          title="Get help with this page"
+        >
+          Help
+        </button>
+      </div>
+
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        marginBottom: 20, 
+        gap: 20,
+        flexWrap: "wrap"
+      }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {(userRole === 'MANAGER' || userRole === 'ACCOUNTANT') && (
             <button
               onClick={() => navigate(`/${rolePrefix}/journal/new`)}
-              className="auth-button primary"
+              className="auth-button secondary"
               style={{
                 fontSize: 12,
-                padding: '6px 8px',
+                padding: '6px 12px',
                 borderRadius: "6px",
                 backgroundColor: '#1C5C59',
                 color: 'white',
                 border: 'none',
-                cursor: 'pointer',
-                height: "30px",
-                lineHeight: "1",
-                fontWeight: "500",
-                width: "auto",
-                minWidth: "150px"
+                cursor: 'pointer'
               }}
               title="Create a new journal entry"
             >
-              + Create Journal Entry
+              + Create Entry
             </button>
           )}
-        </div>
-      </div>
 
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 20 }}>
-        <select
-          value={activeTab}
-          onChange={(e) => handleTabChange(e.target.value)}
-          style={{ 
-            padding: "6px 12px", 
-            fontSize: 12,
-            borderRadius: "6px",
-            border: "1px solid #b8b6b6",
-            backgroundColor: "#fff",
-            cursor: "pointer",
-            outline: "none",
-            fontFamily: "sans-serif",
-            minWidth: 150,
-            height: "30px",
-            lineHeight: "1"
-          }}
-          title="Filter journal entries by status"
-        >
-          <option value="ALL">All Entries</option>
-          <option value="APPROVED">Approved</option>
-          <option value="PENDING">Needs Approval</option>
-          <option value="REJECTED">Rejected</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Search by ID, date, amount, account, or description..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ 
-            padding: "6px 12px", 
-            fontSize: 12,
-            borderRadius: "6px",
-            border: "1px solid #b8b6b6",
-            outline: "none",
-            fontFamily: "sans-serif",
-            width: "25vw",
-            minWidth: 200,
-            maxWidth: 400,
-            height: "30px",
-            lineHeight: "1",
-            boxSizing: "border-box"
-          }}
-          title="Search journal entries"
-        />
-
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            placeholder="Start Date"
-            style={{
-              padding: "6px 12px",
-              fontSize: 12,
-              borderRadius: "6px",
-              border: "1px solid #b8b6b6",
-              outline: "none",
-              height: "30px",
-              lineHeight: "1"
-            }}
-            title="Filter by start date"
-          />
-          <span style={{ color: '#666', fontSize: 12 }}>to</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            placeholder="End Date"
-            style={{
-              padding: "6px 12px",
-              fontSize: 12,
-              borderRadius: "6px",
-              border: "1px solid #b8b6b6",
-              outline: "none",
-              height: "30px",
-              lineHeight: "1"
-            }}
-            title="Filter by end date"
-          />
-          {(startDate || endDate) && (
-            <button
-              onClick={() => { setStartDate(''); setEndDate(''); }}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              placeholder="Start Date"
               style={{
-                padding: '6px 12px',
-                backgroundColor: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
+                padding: "6px 12px",
                 fontSize: 12,
+                borderRadius: "6px",
+                border: "1px solid #b8b6b6",
+                outline: "none",
                 height: "30px",
                 lineHeight: "1"
               }}
-              title="Clear date filters"
-            >
-              Clear
-            </button>
-          )}
+              title="Filter by start date"
+            />
+            <span style={{ color: '#666', fontSize: 12 }}>to</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              placeholder="End Date"
+              style={{
+                padding: "6px 12px",
+                fontSize: 12,
+                borderRadius: "6px",
+                border: "1px solid #b8b6b6",
+                outline: "none",
+                height: "30px",
+                lineHeight: "1"
+              }}
+              title="Filter by end date"
+            />
+            {(startDate || endDate) && (
+              <button
+                onClick={() => { setStartDate(''); setEndDate(''); }}
+                style={{
+                  padding: '6px 12px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  height: "30px",
+                  lineHeight: "1"
+                }}
+                title="Clear date filters"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flex: "0 0 auto" }}>
+          <select
+            value={additionalFilter}
+            onChange={(e) => setAdditionalFilter(e.target.value)}
+            style={{ 
+              padding: "6px 12px", 
+              fontSize: 12,
+              borderRadius: "6px",
+              border: "1px solid #b8b6b6",
+              backgroundColor: "#fff",
+              cursor: "pointer",
+              outline: "none",
+              fontFamily: "sans-serif",
+              minWidth: 150,
+              height: "30px",
+              lineHeight: "1"
+            }}
+            title="Additional filters"
+          >
+            <option value="all">All Types</option>
+            {userRole === 'ACCOUNTANT' && <option value="my_entries">My Entries</option>}
+            <optgroup label="By Entry Type">
+              <option value="regular">Regular</option>
+              <option value="adjusting">Adjusting</option>
+            </optgroup>
+            <optgroup label="By Amount">
+              <option value="large">Over $1,000</option>
+              <option value="small">Under $1,000</option>
+            </optgroup>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Search entries..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ 
+              padding: "6px 12px", 
+              fontSize: 12,
+              borderRadius: "6px",
+              border: "1px solid #b8b6b6",
+              outline: "none",
+              fontFamily: "sans-serif",
+              width: "18vw",
+              minWidth: 160,
+              maxWidth: 280,
+              height: "30px",
+              lineHeight: "1",
+              boxSizing: "border-box"
+            }}
+            title="Search journal entries"
+          />
         </div>
       </div>
 
@@ -344,16 +398,54 @@ export default function JournalList() {
         </div>
       )}
 
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-          Loading journal entries...
+      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        <div style={{ 
+          display: "flex", 
+          borderBottom: "2px solid #e0e0e0",
+          backgroundColor: "#f8f9fa"
+        }}>
+          {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              style={{
+                flex: 1,
+                padding: "10px 20px",
+                border: "none",
+                backgroundColor: activeTab === tab ? "#1C302F" : "transparent",
+                color: activeTab === tab ? "white" : "#333",
+                cursor: "pointer",
+                fontWeight: activeTab === tab ? "600" : "500",
+                fontSize: "14px",
+                transition: "all 0.2s",
+                borderBottom: activeTab === tab ? "3px solid #1C302F" : "3px solid transparent"
+              }}
+              onMouseOver={(e) => {
+                if (activeTab !== tab) {
+                  e.currentTarget.style.backgroundColor = "#e0e0e0";
+                }
+              }}
+              onMouseOut={(e) => {
+                if (activeTab !== tab) {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }
+              }}
+            >
+              {tab === 'ALL' ? 'All Entries' : tab === 'PENDING' ? 'Pending' : tab === 'APPROVED' ? 'Approved' : 'Rejected'}
+            </button>
+          ))}
         </div>
-      ) : filteredEntries.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666', fontSize: '14px' }}>
-          No journal entries found
-        </div>
-      ) : (
-          <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading journal entries...
+          </div>
+        ) : filteredEntries.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666', fontSize: '14px' }}>
+            No journal entries found
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto", maxWidth: "100%", paddingTop: "16px" }}>
             <table style={{ width: "100%", tableLayout: "auto", borderCollapse: "collapse", background: "white" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid #000" }}>
@@ -368,32 +460,42 @@ export default function JournalList() {
                       color: "#000",
                       cursor: "pointer",
                       userSelect: "none",
-                      width: "100px"
+                      width: "120px"
                     }}
                   >
                     Date{getSortIndicator('entry_date')}
                   </th>
-                  <th style={{ 
-                    padding: "10px 12px", 
-                    textAlign: "left", 
-                    fontWeight: "bold", 
-                    fontSize: "0.8em",
-                    background: "white",
-                    color: "#000",
-                    width: "80px"
-                  }}>
-                    Type
+                  <th 
+                    onClick={() => handleSort('type')}
+                    style={{ 
+                      padding: "10px 12px", 
+                      textAlign: "left", 
+                      fontWeight: "bold", 
+                      fontSize: "0.8em",
+                      background: "white",
+                      color: "#000",
+                      width: "80px",
+                      cursor: "pointer",
+                      userSelect: "none"
+                    }}
+                  >
+                    Type{getSortIndicator('type')}
                   </th>
-                  <th style={{ 
-                    padding: "10px 12px", 
-                    textAlign: "left", 
-                    fontWeight: "bold", 
-                    fontSize: "0.8em",
-                    background: "white",
-                    color: "#000",
-                    width: "100px"
-                  }}>
-                    Creator
+                  <th 
+                    onClick={() => handleSort('created_by_username')}
+                    style={{ 
+                      padding: "10px 12px", 
+                      textAlign: "left", 
+                      fontWeight: "bold", 
+                      fontSize: "0.8em",
+                      background: "white",
+                      color: "#000",
+                      width: "100px",
+                      cursor: "pointer",
+                      userSelect: "none"
+                    }}
+                  >
+                    Creator{getSortIndicator('created_by_username')}
                   </th>
                   <th style={{ 
                     padding: "10px 12px", 
@@ -541,6 +643,20 @@ export default function JournalList() {
                   const entryType = getEntryType();
                   const typeColor = getTypeColor(entryType);
 
+                  const getStatusColor = (status) => {
+                    if (status === 'APPROVED') return '#4f772d';
+                    if (status === 'PENDING') return '#FF9800';
+                    if (status === 'REJECTED') return '#c1121f';
+                    return '#666';
+                  };
+
+                  const getStatusLabel = (status) => {
+                    if (status === 'APPROVED') return 'Approved';
+                    if (status === 'PENDING') return 'Pending';
+                    if (status === 'REJECTED') return 'Rejected';
+                    return status;
+                  };
+
                   return (
                     <tr key={entry.id}>
                       <td style={{ 
@@ -550,16 +666,19 @@ export default function JournalList() {
                         fontSize: "0.85em",
                         verticalAlign: 'top'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <div style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: typeColor,
-                            marginRight: '8px',
-                            flexShrink: 0
-                          }} />
-                          {formatDate(entry.entry_date)}
+                        <div>{formatDate(entry.entry_date)}</div>
+                        <div style={{ marginTop: 4 }}>
+                          <span style={{
+                            display: "inline-block",
+                            padding: "2px 8px",
+                            borderRadius: "12px",
+                            fontSize: "0.7em",
+                            fontWeight: "500",
+                            backgroundColor: getStatusColor(entry.status),
+                            color: "white"
+                          }}>
+                            {getStatusLabel(entry.status)}
+                          </span>
                         </div>
                       </td>
                       <td style={{ 
@@ -593,10 +712,11 @@ export default function JournalList() {
                     </tr>
                   );
                 })}
-              </tbody>
-            </table>
+          </tbody>
+        </table>
           </div>
         )}
+      </div>
 
       {showRejectionModal && (
         <div 
@@ -673,6 +793,10 @@ export default function JournalList() {
             </div>
           </div>
         </div>
+      )}
+
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} page="journalList" userRole={userRole} />
       )}
     </div>
   );

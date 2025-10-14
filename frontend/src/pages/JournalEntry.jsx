@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
+import HelpModal from '../components/HelpModal';
+import '../styles/auth.css';
 
 export default function JournalEntry() {
   const navigate = useNavigate();
@@ -19,13 +21,25 @@ export default function JournalEntry() {
   ]);
   const [attachments, setAttachments] = useState([]);
   const [existingAttachments, setExistingAttachments] = useState([]);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
     fetchAccounts();
+    fetchUserRole();
     if (isEditMode) {
       fetchJournalEntry();
     }
   }, [id]);
+
+  const fetchUserRole = async () => {
+    try {
+      const res = await api.get('/auth/me/');
+      setUserRole(res.data.role);
+    } catch (err) {
+      console.error('Failed to fetch user role:', err);
+    }
+  };
 
   const fetchAccounts = async () => {
     try {
@@ -225,15 +239,26 @@ export default function JournalEntry() {
       if (err.response?.data) {
         const errorData = err.response.data;
         if (typeof errorData === 'object') {
-          const errorMessages = Object.entries(errorData)
-            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
-            .join('\n');
-          setError(errorMessages);
+          let errorMessages = [];
+          
+          for (const [key, value] of Object.entries(errorData)) {
+            if (key === 'lines' && typeof value === 'object' && !Array.isArray(value)) {
+              for (const [lineKey, lineValue] of Object.entries(value)) {
+                const message = Array.isArray(lineValue) ? lineValue.join(', ') : lineValue;
+                errorMessages.push(message);
+              }
+            } else {
+              const message = Array.isArray(value) ? value.join(', ') : value;
+              errorMessages.push(key === 'non_field_errors' || key === 'detail' ? message : `${key}: ${message}`);
+            }
+          }
+          
+          setError(errorMessages.join('\n'));
         } else {
           setError(errorData.detail || 'Failed to save journal entry');
         }
       } else {
-        setError('Failed to save journal entry');
+        setError('Failed to save journal entry. Please check your internet connection and try again.');
       }
     } finally {
       setLoading(false);
@@ -257,43 +282,35 @@ export default function JournalEntry() {
   const isBalanced = Math.abs(totalDebits - totalCredits) < 0.01;
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="main-body">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600", color: "#1C302F" }}>
+        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600", color: "#000" }}>
           {isEditMode ? 'Edit Journal Entry' : 'Create Journal Entry'}
         </h2>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => setShowHelpModal(true)}
+          className="auth-linkbtn"
           style={{
-            padding: '8px 16px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px'
+            height: "30px",
+            padding: "0 12px",
+            fontSize: 14,
+            width: "auto",
+            minWidth: "80px"
           }}
+          title="Get help with this page"
         >
-          ← Back
+          Help
         </button>
       </div>
 
       {error && (
-        <div style={{
-          padding: '12px',
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
-          borderRadius: '6px',
-          marginBottom: '16px',
-          color: '#c00',
-          whiteSpace: 'pre-line'
-        }}>
+        <div className="error" style={{ whiteSpace: 'pre-line', marginBottom: '16px' }}>
           <strong>Error:</strong> {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '24px' }}>
+        <div className="card" style={{ marginBottom: '24px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
@@ -334,9 +351,9 @@ export default function JournalEntry() {
           </div>
         </div>
 
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '24px' }}>
+        <div className="card" style={{ marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ margin: 0, fontSize: '1.1em', color: '#1C302F' }}>Journal Entry Lines</h3>
+            <h3 style={{ margin: 0, fontSize: '1.1em', color: '#000', fontFamily: 'Playfair Display', fontWeight: '600' }}>Journal Entry Lines</h3>
             <button
               type="button"
               onClick={addLine}
@@ -485,8 +502,8 @@ export default function JournalEntry() {
           </div>
         </div>
 
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '24px' }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1em', color: '#1C302F' }}>Attachments</h3>
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1em', color: '#000', fontFamily: 'Playfair Display', fontWeight: '600' }}>Attachments</h3>
           <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
             Allowed file types: PDF, Word, Excel, CSV, JPG, PNG
           </p>
@@ -590,6 +607,10 @@ export default function JournalEntry() {
           </button>
         </div>
       </form>
+
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} page="journalEntry" userRole={userRole} />
+      )}
     </div>
   );
 }

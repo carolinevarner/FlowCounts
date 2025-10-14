@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api";
+import HelpModal from "../components/HelpModal";
 import "../styles/auth.css";
 import "../styles/layout.css";
 
@@ -7,6 +8,7 @@ export default function AdminEvents() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   async function loadEvents() {
     setLoading(true);
@@ -197,9 +199,25 @@ export default function AdminEvents() {
 
   return (
     <div className="main-body">
-      <h2 style={{ marginTop: 0, marginBottom: 24, fontFamily: "Playfair Display", fontSize: "1.8em", fontWeight: "600", color: "#000000" }}>
-        Event Log
-      </h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.8em", fontWeight: "600", color: "#000000" }}>
+          Event Log
+        </h2>
+        <button
+          onClick={() => setShowHelpModal(true)}
+          className="auth-linkbtn"
+          style={{
+            height: "30px",
+            padding: "0 12px",
+            fontSize: 14,
+            width: "auto",
+            minWidth: "80px"
+          }}
+          title="Get help with this page"
+        >
+          Help
+        </button>
+      </div>
 
       {events.length === 0 ? (
         <div className="card" style={{ textAlign: "center", padding: "60px 40px", background: "#f8f9fa" }}>
@@ -329,6 +347,10 @@ export default function AdminEvents() {
             </div>
           ))}
         </div>
+      )}
+
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} page="events" userRole="ADMIN" />
       )}
     </div>
   );

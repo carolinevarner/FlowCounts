@@ -438,6 +438,42 @@ class UserAdminViewSet(
                     record_type='User',
                     record_id=updated_user.id
                 )
+                
+                if before_image['role'] != after_image['role']:
+                    try:
+                        if updated_user.email:
+                            send_mail(
+                                "FlowCounts Role Updated",
+                                f"Hello {updated_user.first_name or updated_user.username},\n\n"
+                                f"Your role in FlowCounts has been updated by an administrator.\n\n"
+                                f"Previous Role: {before_image['role']}\n"
+                                f"New Role: {after_image['role']}\n\n"
+                                f"Your permissions have been updated accordingly.\n\n"
+                                "FlowCounts Team",
+                                settings.DEFAULT_FROM_EMAIL,
+                                [updated_user.email],
+                                fail_silently=False,
+                            )
+                    except Exception as e:
+                        logger.error(f"Failed to send role change email: {e}")
+                    
+                    try:
+                        admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+                        if admin_emails and request.user.email not in admin_emails:
+                            send_mail(
+                                "FlowCounts: User Role Changed",
+                                f"A user's role has been changed.\n\n"
+                                f"User: {updated_user.username} ({updated_user.email})\n"
+                                f"Name: {updated_user.first_name} {updated_user.last_name}\n"
+                                f"Previous Role: {before_image['role']}\n"
+                                f"New Role: {after_image['role']}\n"
+                                f"Changed by: {request.user.username}\n\n",
+                                settings.DEFAULT_FROM_EMAIL,
+                                admin_emails,
+                                fail_silently=False,
+                            )
+                    except Exception as e:
+                        logger.error(f"Failed to send admin notification: {e}")
         except Exception:
             logger.warning("Failed to log USER_UPDATED event", exc_info=True)
         
@@ -533,7 +569,8 @@ class UserAdminViewSet(
         user.is_active = True
         user.suspend_from = None
         user.suspend_to = None
-        user.save(update_fields=["is_active", "suspend_from", "suspend_to"])
+        user.failed_attempts = 0
+        user.save(update_fields=["is_active", "suspend_from", "suspend_to", "failed_attempts"])
         after_image = self._user_to_dict(user)
         EventLog.objects.create(
             action="USER_ACTIVATED", 
@@ -545,6 +582,40 @@ class UserAdminViewSet(
             record_type='User',
             record_id=user.id
         )
+        
+        try:
+            if user.email:
+                send_mail(
+                    "FlowCounts Account Activated",
+                    f"Hello {user.first_name or user.username},\n\n"
+                    f"Your FlowCounts account has been activated by an administrator.\n\n"
+                    f"You can now log in to the system.\n\n"
+                    "FlowCounts Team",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+        except Exception as e:
+            logger.error(f"Failed to send activation email: {e}")
+        
+        try:
+            admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+            if admin_emails:
+                send_mail(
+                    "FlowCounts: User Activated",
+                    f"A user account has been activated.\n\n"
+                    f"User: {user.username} ({user.email})\n"
+                    f"Name: {user.first_name} {user.last_name}\n"
+                    f"Role: {user.role}\n"
+                    f"Activated by: {request.user.username}\n\n"
+                    "The user can now access the system.",
+                    settings.DEFAULT_FROM_EMAIL,
+                    admin_emails,
+                    fail_silently=False,
+                )
+        except Exception as e:
+            logger.error(f"Failed to send admin notification: {e}")
+        
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
@@ -564,6 +635,41 @@ class UserAdminViewSet(
             record_type='User',
             record_id=user.id
         )
+        
+        try:
+            if user.email:
+                send_mail(
+                    "FlowCounts Account Deactivated",
+                    f"Hello {user.first_name or user.username},\n\n"
+                    f"Your FlowCounts account has been deactivated by an administrator.\n\n"
+                    f"You will not be able to access the system until your account is reactivated.\n\n"
+                    f"If you have questions, please contact your administrator.\n\n"
+                    "FlowCounts Team",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+        except Exception as e:
+            logger.error(f"Failed to send deactivation email: {e}")
+        
+        try:
+            admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+            if admin_emails:
+                send_mail(
+                    "FlowCounts: User Deactivated",
+                    f"A user account has been deactivated.\n\n"
+                    f"User: {user.username} ({user.email})\n"
+                    f"Name: {user.first_name} {user.last_name}\n"
+                    f"Role: {user.role}\n"
+                    f"Deactivated by: {request.user.username}\n\n"
+                    "The user can no longer access the system.",
+                    settings.DEFAULT_FROM_EMAIL,
+                    admin_emails,
+                    fail_silently=False,
+                )
+        except Exception as e:
+            logger.error(f"Failed to send admin notification: {e}")
+        
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
@@ -1232,6 +1338,38 @@ def forgot_password(request):
     except Exception:
         logger.warning("Failed to log PASSWORD_RESET event", exc_info=True)
     
+    try:
+        if user.email:
+            send_mail(
+                "FlowCounts Password Reset Successful",
+                f"Hello {user.first_name or user.username},\n\n"
+                f"Your FlowCounts password has been successfully reset.\n\n"
+                f"If you did not make this change, please contact your administrator immediately.\n\n"
+                "FlowCounts Team",
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+    except Exception as e:
+        logger.error(f"Failed to send password reset confirmation email: {e}")
+    
+    try:
+        admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+        if admin_emails:
+            send_mail(
+                "FlowCounts: Password Reset Alert",
+                f"A user has reset their password via security questions.\n\n"
+                f"User: {user.username} ({user.email})\n"
+                f"Name: {user.first_name} {user.last_name}\n"
+                f"Reset Time: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                "If this was not authorized, please take appropriate action.",
+                settings.DEFAULT_FROM_EMAIL,
+                admin_emails,
+                fail_silently=False,
+            )
+    except Exception as e:
+        logger.error(f"Failed to send admin notification: {e}")
+    
     return Response({"detail": "Password reset successfully."})
 
 @api_view(["POST"])
@@ -1555,28 +1693,52 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
         except Exception:
             logger.warning("Failed to log JOURNAL_ENTRY_CREATED event", exc_info=True)
         
-        try:
-            admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
-            manager_emails = list(User.objects.filter(role='MANAGER', is_active=True).values_list('email', flat=True))
-            notification_emails = list(set(admin_emails + manager_emails))
+        if entry.status == 'PENDING':
+            try:
+                if entry.created_by and entry.created_by.email:
+                    send_mail(
+                        "FlowCounts: Journal Entry Submitted Successfully",
+                        f"Hello {entry.created_by.first_name or entry.created_by.username},\n\n"
+                        f"Your journal entry has been successfully submitted for manager approval.\n\n"
+                        f"Entry ID: JE-{entry.id}\n"
+                        f"Date: {entry.entry_date}\n"
+                        f"Description: {entry.description or 'N/A'}\n"
+                        f"Total Debits: ${entry.total_debits():.2f}\n"
+                        f"Total Credits: ${entry.total_credits():.2f}\n"
+                        f"Status: PENDING APPROVAL\n\n"
+                        "You will be notified once a manager reviews your entry.\n\n"
+                        "FlowCounts Team",
+                        settings.DEFAULT_FROM_EMAIL,
+                        [entry.created_by.email],
+                        fail_silently=False,
+                    )
+            except Exception as e:
+                logger.error(f"Failed to send accountant confirmation email: {e}")
             
-            if notification_emails:
-                send_mail(
-                    "FlowCounts: New Journal Entry Submitted",
-                    f"A new journal entry has been submitted for approval.\n\n"
-                    f"Entry ID: JE-{entry.id}\n"
-                    f"Date: {entry.entry_date}\n"
-                    f"Created by: {entry.created_by.username if entry.created_by else 'Unknown'}\n"
-                    f"Total Debits: ${entry.total_debits():.2f}\n"
-                    f"Total Credits: ${entry.total_credits():.2f}\n\n"
-                    "Please review and approve/reject this entry.\n\n"
-                    "FlowCounts Team",
-                    settings.DEFAULT_FROM_EMAIL,
-                    notification_emails,
-                    fail_silently=True,
-                )
-        except Exception as e:
-            logger.error(f"Failed to send journal entry notification: {e}")
+            try:
+                admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+                manager_emails = list(User.objects.filter(role='MANAGER', is_active=True).values_list('email', flat=True))
+                notification_emails = list(set(admin_emails + manager_emails))
+                
+                if notification_emails:
+                    send_mail(
+                        "FlowCounts: New Journal Entry Submitted for Approval",
+                        f"A new journal entry has been submitted and requires your approval.\n\n"
+                        f"Entry ID: JE-{entry.id}\n"
+                        f"Date: {entry.entry_date}\n"
+                        f"Description: {entry.description or 'N/A'}\n"
+                        f"Created by: {entry.created_by.username if entry.created_by else 'Unknown'}\n"
+                        f"Total Debits: ${entry.total_debits():.2f}\n"
+                        f"Total Credits: ${entry.total_credits():.2f}\n"
+                        f"Status: PENDING APPROVAL\n\n"
+                        "Please log in to review and approve or reject this entry.\n\n"
+                        "FlowCounts Team",
+                        settings.DEFAULT_FROM_EMAIL,
+                        notification_emails,
+                        fail_silently=False,
+                    )
+            except Exception as e:
+                logger.error(f"Failed to send journal entry notification: {e}")
     
     def perform_update(self, serializer):
         """Update journal entry and log the event."""

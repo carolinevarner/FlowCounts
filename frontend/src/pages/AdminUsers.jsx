@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api";
+import HelpModal from "../components/HelpModal";
 
 // function useClickAway(close) {
 //   const ref = useRef(null);
@@ -557,6 +558,7 @@ export default function AdminUsers() {
   const [creating, setCreating] = useState(false);
   const [suspending, setSuspending] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   
 
@@ -681,7 +683,24 @@ export default function AdminUsers() {
       ) : (
         <>
           <div className="card" style={{ marginBottom: 16 }}>
-            <h2 style={{ fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Pending Access Requests</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>User Management</h2>
+              <button
+                onClick={() => setShowHelpModal(true)}
+                className="auth-linkbtn"
+                style={{
+                  height: "30px",
+                  padding: "0 12px",
+                  fontSize: 14,
+                  width: "auto",
+                  minWidth: "80px"
+                }}
+                title="Get help with this page"
+              >
+                Help
+              </button>
+            </div>
+            <h3 style={{ fontFamily: "Playfair Display", fontSize: "1.2em", fontWeight: "600", marginTop: 0 }}>Pending Access Requests</h3>
             {pending.length === 0 ? (
               <div className="muted">No pending requests.</div>
             ) : (
@@ -887,6 +906,10 @@ export default function AdminUsers() {
         }}
       />
     )}
+
+    {showHelpModal && (
+      <HelpModal onClose={() => setShowHelpModal(false)} page="users" userRole="ADMIN" />
+    )}
   </>
-);
+  );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
+import HelpModal from "../components/HelpModal";
 import "../styles/auth.css";
 import "../styles/layout.css";
 
@@ -238,9 +239,12 @@ export default function Ledger() {
   const [filter, setFilter] = useState("all");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
     fetchAccountDetails();
+    fetchUserRole();
   }, [accountId]);
 
   useEffect(() => {
@@ -252,6 +256,15 @@ export default function Ledger() {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showDatePicker]);
+
+  async function fetchUserRole() {
+    try {
+      const res = await api.get("/auth/me/");
+      setUserRole(res.data.role);
+    } catch (err) {
+      console.error("Failed to fetch user role:", err);
+    }
+  }
 
   async function fetchAccountDetails() {
     try {
@@ -389,6 +402,20 @@ export default function Ledger() {
         <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>
           {account.account_number} - {account.account_name}
         </h2>
+        <button
+          onClick={() => setShowHelpModal(true)}
+          className="auth-linkbtn"
+          style={{
+            height: "30px",
+            padding: "0 12px",
+            fontSize: 14,
+            width: "auto",
+            minWidth: "80px"
+          }}
+          title="Get help with this page"
+        >
+          Help
+        </button>
       </div>
 
       <div style={{ 
@@ -717,6 +744,10 @@ export default function Ledger() {
           Back to Accounts
         </button>
       </div>
+
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} page="ledger" userRole={userRole} />
+      )}
     </div>
   );
 }

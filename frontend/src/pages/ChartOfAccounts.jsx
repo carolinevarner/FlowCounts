@@ -904,17 +904,16 @@ export default function ChartOfAccounts() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Chart of Accounts</h2>
         <button
-          className="auth-button secondary"
           onClick={() => setShowHelpModal(true)}
-          style={{ 
-            fontSize: 12, 
-            padding: '6px 12px', 
-            backgroundColor: '#f08f00', 
-            color: 'white', 
-            border: 'none',
-            maxWidth: '80px'
+          className="auth-linkbtn"
+          style={{
+            height: "30px",
+            padding: "0 12px",
+            fontSize: 14,
+            width: "auto",
+            minWidth: "80px"
           }}
-          title="Get help and information about FlowCounts"
+          title="Get help with this page"
         >
           Help
         </button>
@@ -1409,7 +1408,7 @@ export default function ChartOfAccounts() {
       )}
 
       {showHelpModal && (
-        <HelpModal onClose={() => setShowHelpModal(false)} />
+        <HelpModal onClose={() => setShowHelpModal(false)} page="chartOfAccounts" userRole={userRole} />
       )}
     </div>
   );
