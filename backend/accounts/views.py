@@ -1944,13 +1944,16 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def send_email_to_user(request):
-    """Send an email from one user to another (manager or admin)."""
+    """Send an email from one user to another (manager, admin, or accountant)."""
     recipient = request.data.get('recipient', '').strip()
     subject = request.data.get('subject', '').strip()
     message_body = request.data.get('message', '').strip()
     recipient_type = request.data.get('recipient_type', 'manager').lower()
     
+    logger.info(f"Email request from {request.user.username}: recipient={recipient}, subject={subject}")
+    
     if not recipient or not subject or not message_body:
+        logger.warning(f"Missing required fields: recipient={recipient}, subject={subject}, message={bool(message_body)}")
         return Response(
             {"detail": "Recipient, subject, and message are required."},
             status=400
@@ -1969,7 +1972,9 @@ def send_email_to_user(request):
             f"This email was sent through the FlowCounts application."
         )
         
-        send_mail(
+        logger.info(f"Attempting to send email from {sender.email} to {recipient}")
+        
+        result = send_mail(
             full_subject,
             full_message,
             settings.DEFAULT_FROM_EMAIL,
@@ -1977,13 +1982,13 @@ def send_email_to_user(request):
             fail_silently=False,
         )
         
-        logger.info(f"Email sent from {sender.email} to {recipient}")
+        logger.info(f"Email sent successfully from {sender.email} to {recipient}, result: {result}")
         return Response({"detail": "Email sent successfully"})
         
     except Exception as e:
-        logger.error(f"Failed to send email: {e}", exc_info=True)
+        logger.error(f"Failed to send email from {sender.email} to {recipient}: {e}", exc_info=True)
         return Response(
-            {"detail": "Failed to send email. Please try again later."},
+            {"detail": f"Failed to send email: {str(e)}"},
             status=500
         )
 
@@ -1991,11 +1996,11 @@ def send_email_to_user(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_managers_and_admins(request):
-    """Get list of managers and administrators for email functionality."""
+    """Get list of managers, administrators, and accountants for email functionality."""
     try:
-        # Get all managers and admins
+        # Get all managers, admins, and accountants
         managers = User.objects.filter(
-            role__in=['MANAGER', 'ADMIN'], 
+            role__in=['MANAGER', 'ADMIN', 'ACCOUNTANT'], 
             is_active=True
         ).values('id', 'first_name', 'last_name', 'email', 'role', 'username')
         
@@ -2013,6 +2018,6 @@ def get_managers_and_admins(request):
     except Exception as e:
         logger.error(f"Failed to get managers and admins: {e}", exc_info=True)
         return Response(
-            {"detail": "Failed to retrieve managers and administrators."},
+            {"detail": "Failed to retrieve managers, administrators, and accountants."},
             status=500
         )

@@ -1,7 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../api";
+import EmailModal from "./EmailModal";
 
 export default function HelpModal({ onClose, page = "general", userRole = "" }) {
   const [activeTab, setActiveTab] = useState(page);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [managersAndAdmins, setManagersAndAdmins] = useState({ managers: [], admin_emails: [] });
+
+  useEffect(() => {
+    fetchManagersAndAdmins();
+  }, []);
+
+  async function fetchManagersAndAdmins() {
+    try {
+      const response = await api.get('/auth/managers-admins/');
+      setManagersAndAdmins(response.data);
+    } catch (err) {
+      console.error('Failed to fetch managers and admins:', err);
+    }
+  }
+
+  function handleSendEmail() {
+    setShowEmailModal(true);
+  }
+
+  function handleCloseEmailModal() {
+    setShowEmailModal(false);
+  }
 
   const getHelpContent = () => {
     const isAdmin = userRole === "ADMIN";
@@ -402,15 +427,48 @@ export default function HelpModal({ onClose, page = "general", userRole = "" }) 
           padding: "16px 24px",
           borderTop: "1px solid #e0e0e0",
           backgroundColor: "#f8f9fa",
-          textAlign: "center",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           fontSize: "12px",
           color: "#666"
         }}>
           <p style={{ margin: 0 }}>
-            Need more help? Contact your system administrator.
+            Need more help? Send an email to your team.
           </p>
+          <button
+            onClick={handleSendEmail}
+            style={{
+              padding: "8px 16px",
+              fontSize: "12px",
+              backgroundColor: "#1C5C59",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px"
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#164845"}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#1C5C59"}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/>
+            </svg>
+            Send Email
+          </button>
         </div>
       </div>
+
+      {showEmailModal && (
+        <EmailModal 
+          onClose={handleCloseEmailModal}
+          recipientType="manager"
+          managersAndAdmins={managersAndAdmins}
+          senderRole={userRole}
+        />
+      )}
     </div>
   );
 }

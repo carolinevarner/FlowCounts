@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import HelpModal from "../components/HelpModal";
+import EmailModal from "../components/EmailModal";
 import "../styles/auth.css";
 import "../styles/layout.css";
 
@@ -190,7 +191,6 @@ function DeactivateAccountModal({ account, onClose, onDeactivated }) {
   );
 }
 
-// Modal for Add/Edit Account (Admin only)
 function AccountFormModal({ account, onClose, onSaved, onOpenDeactivate }) {
   const isEdit = !!account;
   const [form, setForm] = useState({
@@ -224,7 +224,6 @@ function AccountFormModal({ account, onClose, onSaved, onOpenDeactivate }) {
     if (!form.account_subcategory.trim()) return "Account subcategory is required.";
     if (!form.order) return "Order is required.";
     
-    // Validate account number is numeric only
     if (!/^\d+$/.test(form.account_number)) {
       return "Account number must be numeric only (no decimals or alphanumeric).";
     }
@@ -672,10 +671,13 @@ export default function ChartOfAccounts() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [managersAndAdmins, setManagersAndAdmins] = useState({ managers: [], admin_emails: [] });
 
   useEffect(() => {
     fetchUserRole();
     fetchAccounts();
+    fetchManagersAndAdmins();
   }, []);
 
   useEffect(() => {
@@ -695,6 +697,23 @@ export default function ChartOfAccounts() {
     } catch (err) {
       console.error("Failed to fetch user role:", err);
     }
+  }
+
+  async function fetchManagersAndAdmins() {
+    try {
+      const response = await api.get('/auth/managers-admins/');
+      setManagersAndAdmins(response.data);
+    } catch (err) {
+      console.error('Failed to fetch managers and admins:', err);
+    }
+  }
+
+  function handleSendEmail() {
+    setShowEmailModal(true);
+  }
+
+  function handleCloseEmailModal() {
+    setShowEmailModal(false);
   }
 
   async function fetchAccounts() {
@@ -1070,6 +1089,32 @@ export default function ChartOfAccounts() {
               </div>
             )}
           </div>
+
+          {/* Email button for admins */}
+          {isAdmin && (
+              <button
+                onClick={handleSendEmail}
+                style={{
+                  padding: "6px 10px",
+                  fontSize: 16,
+                  borderRadius: "6px",
+                  border: "1px solid #b8b6b6",
+                  backgroundColor: "#fff",
+                  cursor: "pointer",
+                  height: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: "40px",
+                  color: "#000"
+                }}
+                title="Send email to manager or administrator"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/>
+                </svg>
+              </button>
+          )}
 
           {isAdmin && (
             <button 
@@ -1447,6 +1492,15 @@ export default function ChartOfAccounts() {
 
       {showHelpModal && (
         <HelpModal onClose={() => setShowHelpModal(false)} page="chartOfAccounts" userRole={userRole} />
+      )}
+
+      {showEmailModal && (
+        <EmailModal 
+          onClose={handleCloseEmailModal}
+          recipientType="manager"
+          managersAndAdmins={managersAndAdmins}
+          senderRole={userRole}
+        />
       )}
     </div>
   );

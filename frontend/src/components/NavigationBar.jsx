@@ -6,7 +6,6 @@ export default function NavigationBar({ userRole = "ACCOUNTANT" }) {
   const location = useLocation();
   const [hoveredButton, setHoveredButton] = useState(null);
 
-  // Determine the base path based on user role
   const basePath = `/${userRole.toLowerCase()}`;
 
   const navigationButtons = [
@@ -84,7 +83,6 @@ export default function NavigationBar({ userRole = "ACCOUNTANT" }) {
     }
   ];
 
-  // Filter buttons based on user role
   const availableButtons = navigationButtons.filter(btn => 
     btn.availableFor.includes(userRole)
   );

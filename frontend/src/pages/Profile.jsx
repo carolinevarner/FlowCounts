@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
-import EmailModal from '../components/EmailModal';
 
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [managersAndAdmins, setManagersAndAdmins] = useState({ managers: [], admin_emails: [] });
 
   useEffect(() => {
     fetchUserData();
-    fetchManagersAndAdmins();
   }, []);
 
   async function fetchUserData() {
@@ -24,22 +20,6 @@ export default function Profile() {
     }
   }
 
-  async function fetchManagersAndAdmins() {
-    try {
-      const response = await api.get('/auth/managers-admins/');
-      setManagersAndAdmins(response.data);
-    } catch (err) {
-      console.error('Failed to fetch managers and admins:', err);
-    }
-  }
-
-  function handleSendEmail() {
-    setShowEmailModal(true);
-  }
-
-  function handleCloseEmailModal() {
-    setShowEmailModal(false);
-  }
 
   if (loading) {
     return <div style={{ padding: 24 }}>Loading...</div>;
@@ -49,11 +29,6 @@ export default function Profile() {
     return <div style={{ padding: 24 }}>Error loading profile</div>;
   }
 
-  // Debug information
-  console.log('Profile Debug - User:', user);
-  console.log('Profile Debug - User Role:', user.role);
-  console.log('Profile Debug - Is Accountant:', user.role === 'ACCOUNTANT');
-  console.log('Profile Debug - Managers and Admins:', managersAndAdmins);
 
   return (
     <div style={{ padding: 24 }}>
@@ -143,49 +118,6 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Email functionality for accountant users */}
-      {user.role === 'ACCOUNTANT' && (
-        <div style={{ 
-          background: '#fff3cd', 
-          padding: 20, 
-          borderRadius: 8, 
-          marginBottom: 24,
-          border: '1px solid #ffeaa7'
-        }}>
-          <h3 style={{ marginTop: 0, color: '#856404' }}>Contact Management</h3>
-          <p style={{ color: '#856404', marginBottom: 16 }}>
-            As an accountant, you can send emails to managers or administrators for support, questions, or reports.
-          </p>
-          
-          <button 
-            onClick={handleSendEmail}
-            style={{
-              background: '#007bff',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontSize: 14,
-              fontWeight: 500
-            }}
-            onMouseOver={(e) => e.target.style.background = '#0056b3'}
-            onMouseOut={(e) => e.target.style.background = '#007bff'}
-          >
-            📧 Send Email to Manager/Administrator
-          </button>
-
-          {/* Show available contacts */}
-          <div style={{ marginTop: 16, fontSize: 14, color: '#6c757d' }}>
-            <div style={{ marginBottom: 8 }}>
-              <strong>Available Managers:</strong> {managersAndAdmins.managers.filter(m => m.role === 'MANAGER').length}
-            </div>
-            <div>
-              <strong>Available Administrators:</strong> {managersAndAdmins.managers.filter(m => m.role === 'ADMIN').length}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Other role users see basic profile info */}
       {user.role !== 'ACCOUNTANT' && (
@@ -203,13 +135,6 @@ export default function Profile() {
         </div>
       )}
 
-      {showEmailModal && (
-        <EmailModal 
-          onClose={handleCloseEmailModal}
-          recipientType="manager"
-          managersAndAdmins={managersAndAdmins}
-        />
-      )}
     </div>
   );
 }

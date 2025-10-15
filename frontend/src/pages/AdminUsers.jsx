@@ -2,18 +2,6 @@ import { useEffect, useState } from "react";
 import api from "../api";
 import HelpModal from "../components/HelpModal";
 
-// function useClickAway(close) {
-//   const ref = useRef(null);
-//   useEffect(() => {
-//     const onClick = (e) => {
-//       if (ref.current && !ref.current.contains(e.target)) close();
-//     };
-//     document.addEventListener("mousedown", onClick);
-//     return () => document.removeEventListener("mousedown", onClick);
-//   }, [close]);
-//   return ref;
-// }
-
 function normalizedEmailFromRow(row) {
   const email = (row?.email || row?.user?.email || "").trim();
   return email;
@@ -258,7 +246,6 @@ function SuspendUserModal({ user, onClose, onSuspended }) {
 
   function validate() {
     if (isSuspended) {
-      // For unsuspend, no validation needed
       return "";
     }
     
@@ -559,11 +546,6 @@ export default function AdminUsers() {
   const [suspending, setSuspending] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
-
-  
-
-  // const [openMenuFor, setOpenMenuFor] = useState(null);
-  // const menuRef = useClickAway(() => setOpenMenuFor(null));
 
   function RowActions({ row }) {
     const onSend = () => {

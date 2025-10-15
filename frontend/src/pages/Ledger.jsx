@@ -15,8 +15,6 @@ function formatCurrency(value) {
   }).format(value);
 }
 
-// Removed generateSampleTransactions function - now using real journal entry data
-
 export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
@@ -63,7 +61,6 @@ export default function Ledger() {
       const response = await api.get(`/chart-of-accounts/${accountId}/`);
       setAccount(response.data);
       
-      // Fetch real journal entry data for this account
       const ledgerResponse = await api.get(`/chart-of-accounts/${accountId}/ledger_entries/`);
       setTransactions(ledgerResponse.data);
     } catch (err) {

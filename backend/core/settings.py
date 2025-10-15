@@ -145,6 +145,8 @@ SIMPLE_JWT = {
 }
 
 ADMIN_NOTIFICATION_EMAILS = ["varner4262@gmail.com"]
+
+# Email configuration
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
@@ -153,7 +155,6 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = "varner4262@gmail.com"
 EMAIL_HOST_PASSWORD = "fokfddazweldxgpx"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
@@ -167,8 +168,6 @@ PASSWORD_MAX_AGE_DAYS = 90
 PASSWORD_EXPIRY_WARNING_DAYS = 3
 MAX_FAILED_LOGINS = 3   
 
-from pathlib import Path
-BASE_DIR = Path(__file__).resolve().parent.parent
 PUBLIC_ORIGIN = "http://127.0.0.1:8000"
 
 AUTHENTICATION_BACKENDS = [
@@ -176,21 +175,11 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-# Email configuration for production
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-EMAIL_HOST_USER = "varner4262@gmail.com"
-EMAIL_HOST_PASSWORD = "fokfddazweldxgpx"
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 ALLOWED_HOSTS = [
     "flowcounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
     "FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
-    "localhost",
     "127.0.0.1",
+    "localhost",
     "*",  # Allow all hosts for development (remove this in production)
 ]
 

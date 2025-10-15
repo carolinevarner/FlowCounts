@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api from "../api";
 
-// Use the same security questions as the forgot password page
 const SECURITY_QUESTIONS = [
   "What is your favorite color?",
   "What was the name of your first pet?",
@@ -74,7 +73,6 @@ export default function Signup() {
     e.preventDefault();
     setError("");
 
-    // Validate password requirements
     const passwordErrors = validatePassword(form.password);
     if (passwordErrors.length > 0) {
       setError(passwordErrors.join(". ") + ".");

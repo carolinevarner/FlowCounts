@@ -44,7 +44,7 @@ export default function ForgotPassword() {
   });
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
-  const [step, setStep] = useState(1); // 1: email/username, 2: security questions
+  const [step, setStep] = useState(1); 
 
   function onCancel() {
     setForm({
@@ -75,12 +75,10 @@ export default function ForgotPassword() {
     try {
       const response = await api.post("/auth/get-username/", {
         email: form.email,
-        username: form.userId,  // Send what user entered for verification
+        username: form.userId,  
       });
       
-      // Identity verified, proceed to step 2
       setStep(2);
-      // Use the actual security questions from the backend
       setQuestions(response.data.security_questions);
     } catch (err) {
       if (err.response?.status === 404) {
@@ -98,7 +96,6 @@ export default function ForgotPassword() {
     setError("");
     setOk("");
 
-    // Validate password requirements
     const passwordErrors = validatePassword(form.newPassword);
     if (passwordErrors.length > 0) {
       setError(passwordErrors.join(". ") + ".");

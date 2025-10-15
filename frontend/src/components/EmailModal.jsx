@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import api from '../api';
+import '../styles/auth.css';
 
-export default function EmailModal({ onClose, recipientType = 'manager', managersAndAdmins = { managers: [], admin_emails: [] } }) {
+export default function EmailModal({ onClose, recipientType = 'manager', managersAndAdmins = { managers: [], admin_emails: [] }, senderRole = 'ACCOUNTANT' }) {
   const [recipient, setRecipient] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -20,18 +21,28 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
 
     setSending(true);
     try {
-      await api.post('/api/auth/send-email/', {
+      console.log('Sending email with data:', {
         recipient,
         subject,
         message,
         recipient_type: recipientType
       });
+      
+      const response = await api.post('/auth/send-email/', {
+        recipient,
+        subject,
+        message,
+        recipient_type: recipientType
+      });
+      
+      console.log('Email sent successfully:', response.data);
       setSuccess(true);
       setTimeout(() => {
         onClose();
       }, 2000);
     } catch (err) {
       console.error('Failed to send email:', err);
+      console.error('Error response:', err.response?.data);
       setError(err.response?.data?.detail || 'Failed to send email');
     } finally {
       setSending(false);
@@ -39,37 +50,12 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          padding: '24px',
-          maxWidth: '600px',
-          width: '90%',
-          maxHeight: '80vh',
-          overflow: 'auto'
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, color: '#1C302F' }}>
-            Send Email to {recipientType === 'manager' ? 'Manager' : 'Administrator'}
-          </h3>
+          <h2 style={{ margin: 0, color: '#000000' }}>
+            Send Email to Team Member
+          </h2>
           <button
             onClick={onClose}
             style={{
@@ -77,8 +63,18 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
               border: 'none',
               fontSize: '24px',
               cursor: 'pointer',
-              color: '#666'
+              color: '#666',
+              padding: '0',
+              width: '30px',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              transition: 'background-color 0.2s'
             }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
             ×
           </button>
@@ -110,52 +106,54 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
               </div>
             )}
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+            <div className="form-group">
+              <label>
                 Recipient <span style={{ color: 'red' }}>*</span>
               </label>
               <select
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  backgroundColor: 'white'
-                }}
               >
                 <option value="">Select a recipient...</option>
-                {/* Managers */}
+                {/* Managers - visible to both admins and accountants */}
                 {managersAndAdmins.managers.filter(m => m.role === 'MANAGER').map((manager) => (
                   <option key={manager.id} value={manager.email}>
                     {manager.first_name} {manager.last_name} (Manager) - {manager.email}
                   </option>
                 ))}
-                {/* Administrators */}
-                {managersAndAdmins.managers.filter(m => m.role === 'ADMIN').map((admin) => (
+                {/* Accountants - only visible to admins */}
+                {senderRole === 'ADMIN' && managersAndAdmins.managers.filter(m => m.role === 'ACCOUNTANT').map((accountant) => (
+                  <option key={accountant.id} value={accountant.email}>
+                    {accountant.first_name} {accountant.last_name} (Accountant) - {accountant.email}
+                  </option>
+                ))}
+                {/* Administrators - only visible to accountants (not admins messaging themselves) */}
+                {senderRole === 'ACCOUNTANT' && managersAndAdmins.managers.filter(m => m.role === 'ADMIN').map((admin) => (
                   <option key={admin.id} value={admin.email}>
                     {admin.first_name} {admin.last_name} (Administrator) - {admin.email}
                   </option>
                 ))}
-                {/* Additional admin emails from settings */}
-                {managersAndAdmins.admin_emails.map((email, index) => (
+                {/* Additional admin emails from settings - only visible to accountants */}
+                {senderRole === 'ACCOUNTANT' && managersAndAdmins.admin_emails.map((email, index) => (
                   <option key={`admin-email-${index}`} value={email}>
                     Administrator - {email}
                   </option>
                 ))}
               </select>
-              {managersAndAdmins.managers.length === 0 && managersAndAdmins.admin_emails.length === 0 && (
+              {((senderRole === 'ADMIN' && managersAndAdmins.managers.filter(m => m.role === 'MANAGER' || m.role === 'ACCOUNTANT').length === 0) ||
+                (senderRole === 'ACCOUNTANT' && (managersAndAdmins.managers.filter(m => m.role === 'MANAGER' || m.role === 'ADMIN').length === 0 && managersAndAdmins.admin_emails.length === 0))) && (
                 <div style={{ marginTop: '8px', fontSize: '12px', color: '#6c757d' }}>
-                  No managers or administrators found. Please contact support.
+                  {senderRole === 'ADMIN' 
+                    ? 'No managers or accountants found. Please contact support.'
+                    : 'No managers or administrators found. Please contact support.'
+                  }
                 </div>
               )}
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+            <div className="form-group">
+              <label>
                 Subject <span style={{ color: 'red' }}>*</span>
               </label>
               <input
@@ -164,18 +162,11 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Email subject"
                 required
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px'
-                }}
               />
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+            <div className="form-group">
+              <label>
                 Message <span style={{ color: 'red' }}>*</span>
               </label>
               <textarea
@@ -184,30 +175,20 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
                 placeholder="Enter your message here..."
                 required
                 rows="6"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  resize: 'vertical'
-                }}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div className="form-actions">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={sending}
+                className="auth-button secondary"
                 style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#6c757d',
+                  backgroundColor: '#c1121f',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '6px',
-                  cursor: sending ? 'not-allowed' : 'pointer',
-                  fontSize: '14px'
+                  fontSize: 13
                 }}
               >
                 Cancel
@@ -215,18 +196,16 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
               <button
                 type="submit"
                 disabled={sending}
+                className="auth-button"
                 style={{
-                  padding: '10px 20px',
-                  backgroundColor: sending ? '#ccc' : '#1C5C59',
+                  backgroundColor: '#1C5C59',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '6px',
-                  cursor: sending ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500'
+                  fontSize: 13,
+                  opacity: sending ? 0.5 : 1
                 }}
               >
-                {sending ? 'Sending...' : 'Send Email'}
+                {sending ? 'Sending...' : '↑ Send Email'}
               </button>
             </div>
           </form>
