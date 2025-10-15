@@ -1986,3 +1986,33 @@ def send_email_to_user(request):
             {"detail": "Failed to send email. Please try again later."},
             status=500
         )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_managers_and_admins(request):
+    """Get list of managers and administrators for email functionality."""
+    try:
+        # Get all managers and admins
+        managers = User.objects.filter(
+            role__in=['MANAGER', 'ADMIN'], 
+            is_active=True
+        ).values('id', 'first_name', 'last_name', 'email', 'role', 'username')
+        
+        # Get admin emails from settings
+        admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
+        
+        # Format the response
+        result = {
+            'managers': list(managers),
+            'admin_emails': admin_emails
+        }
+        
+        return Response(result)
+        
+    except Exception as e:
+        logger.error(f"Failed to get managers and admins: {e}", exc_info=True)
+        return Response(
+            {"detail": "Failed to retrieve managers and administrators."},
+            status=500
+        )

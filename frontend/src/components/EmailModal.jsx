@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import api from '../api';
 
-export default function EmailModal({ onClose, recipientType = 'manager' }) {
+export default function EmailModal({ onClose, recipientType = 'manager', managersAndAdmins = { managers: [], admin_emails: [] } }) {
   const [recipient, setRecipient] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -112,22 +112,46 @@ export default function EmailModal({ onClose, recipientType = 'manager' }) {
 
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                Recipient Email <span style={{ color: 'red' }}>*</span>
+                Recipient <span style={{ color: 'red' }}>*</span>
               </label>
-              <input
-                type="email"
+              <select
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                placeholder="manager@example.com"
                 required
                 style={{
                   width: '100%',
                   padding: '10px',
                   border: '1px solid #ddd',
                   borderRadius: '6px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  backgroundColor: 'white'
                 }}
-              />
+              >
+                <option value="">Select a recipient...</option>
+                {/* Managers */}
+                {managersAndAdmins.managers.filter(m => m.role === 'MANAGER').map((manager) => (
+                  <option key={manager.id} value={manager.email}>
+                    {manager.first_name} {manager.last_name} (Manager) - {manager.email}
+                  </option>
+                ))}
+                {/* Administrators */}
+                {managersAndAdmins.managers.filter(m => m.role === 'ADMIN').map((admin) => (
+                  <option key={admin.id} value={admin.email}>
+                    {admin.first_name} {admin.last_name} (Administrator) - {admin.email}
+                  </option>
+                ))}
+                {/* Additional admin emails from settings */}
+                {managersAndAdmins.admin_emails.map((email, index) => (
+                  <option key={`admin-email-${index}`} value={email}>
+                    Administrator - {email}
+                  </option>
+                ))}
+              </select>
+              {managersAndAdmins.managers.length === 0 && managersAndAdmins.admin_emails.length === 0 && (
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#6c757d' }}>
+                  No managers or administrators found. Please contact support.
+                </div>
+              )}
             </div>
 
             <div style={{ marginBottom: '16px' }}>
@@ -211,6 +235,7 @@ export default function EmailModal({ onClose, recipientType = 'manager' }) {
     </div>
   );
 }
+
 
 
 

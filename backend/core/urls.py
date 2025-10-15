@@ -18,6 +18,7 @@ from accounts.views import (
     ChartOfAccountsViewSet,
     JournalEntryViewSet,
     send_email_to_user,
+    get_managers_and_admins,
 )
 from accounts.error_views import ErrorMessageViewSet, ErrorLogViewSet
 
@@ -39,6 +40,7 @@ urlpatterns = [
     path("api/auth/get-username/", get_username_by_email, name="get-username"),
     path("api/auth/forgot-password/", forgot_password, name="forgot-password"),
     path("api/auth/send-email/", send_email_to_user, name="send-email"),
+    path("api/auth/managers-admins/", get_managers_and_admins, name="get-managers-admins"),
 ]
 
 # Serve media files in development
