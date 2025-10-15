@@ -209,15 +209,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Static files
 STATIC_URL = '/static/'
 
-# Where collectstatic will put files
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Extra static files (like your frontend build)
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/dist'),
+    os.path.join(BASE_DIR, '../frontend/dist'),
 ]
 
-# WhiteNoise for production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = "/media/"
