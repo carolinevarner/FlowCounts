@@ -64,10 +64,11 @@ PASSWORD_HASHERS = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'frontend', 'dist')],
+        'DIRS': [os.path.join(BASE_DIR, 'frontend/build')],  # React build folder
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -206,15 +207,18 @@ CORS_ALLOWED_ORIGINS = [
 # Allow all origins for development (remove this in production)
 CORS_ALLOW_ALL_ORIGINS = True
 
-# Static files
+# URL for static files
 STATIC_URL = '/static/'
 
+# Folder where collectstatic will put all static files for production
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Additional directories to look for static files (React build static)
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '..', 'frontend', 'dist', 'assets'),
+    os.path.join(BASE_DIR, 'frontend/build', 'static'),
 ]
 
+# Use Whitenoise to serve static files efficiently
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = "/media/"
