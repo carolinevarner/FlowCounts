@@ -6,18 +6,14 @@ phases:
       python: 3.11
       nodejs: 18
     commands:
-      - echo "Installing Python dependencies..."
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt --log /var/log/pip_install.log
       - cat /var/log/pip_install.log
-      - echo "Installing Node.js dependencies..."
       - npm ci --prefix frontend
 
   build:
     commands:
-      - echo "Building React frontend..."
       - npm run build --prefix frontend
-      - echo "Copying build output into backend static directory..."
       - mkdir -p backend/static
       - cp -r frontend/dist/* backend/static/
 
