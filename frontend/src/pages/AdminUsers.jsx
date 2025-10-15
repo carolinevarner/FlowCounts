@@ -682,9 +682,10 @@ export default function AdminUsers() {
         <div>Loading…</div>
       ) : (
         <>
+        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600", padding: "12px 24px", maxWidth: "100%" }}>User Management</h2>
           <div className="card" style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>User Management</h2>
+              <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>Pending Access Requests</h2>
               <button
                 onClick={() => setShowHelpModal(true)}
                 className="auth-linkbtn"
@@ -700,7 +701,7 @@ export default function AdminUsers() {
                 Help
               </button>
             </div>
-            <h3 style={{ fontFamily: "Playfair Display", fontSize: "1.2em", fontWeight: "600", marginTop: 0 }}>Pending Access Requests</h3>
+            {/* <h3 style={{ fontFamily: "Playfair Display", fontSize: "1.2em", fontWeight: "600", marginTop: 0 }}>Pending Access Requests</h3> */}
             {pending.length === 0 ? (
               <div className="muted">No pending requests.</div>
             ) : (

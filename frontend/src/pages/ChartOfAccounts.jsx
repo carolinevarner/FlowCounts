@@ -703,7 +703,7 @@ export default function ChartOfAccounts() {
     try {
       const res = await api.get("/chart-of-accounts/");
       setAccounts(res.data);
-    } catch (err) {
+    } catch {
       setError("Failed to load accounts.");
     } finally {
       setLoading(false);
