@@ -217,6 +217,54 @@ def create_default_error_messages():
         ('USER_SUSPENSION_FAILED', 'USER_ACTION', 'Suspension Failed',
          'Failed to suspend user. Please try again.',
          'User suspension operation failed.'),
+        
+        ('JOURNAL_MIN_LINES', 'VALIDATION', 'Minimum Lines Required',
+         'A journal entry must have at least 2 lines (minimum one debit and one credit). Please add more lines.',
+         'Journal entry does not have minimum required lines.'),
+        
+        ('JOURNAL_NO_LINES', 'VALIDATION', 'No Lines Added',
+         'Journal entry must have at least one line. Please add debit and credit entries.',
+         'Journal entry has no lines.'),
+        
+        ('JOURNAL_NO_ACCOUNT', 'VALIDATION', 'Account Required',
+         'All lines must have an account selected. Please select an account for each line.',
+         'Journal entry line missing account selection.'),
+        
+        ('JOURNAL_NO_DEBIT', 'VALIDATION', 'Debit Entry Required',
+         'Journal entry must have at least one debit entry. Please add a line with a debit amount.',
+         'Journal entry does not have any debit entries.'),
+        
+        ('JOURNAL_NO_CREDIT', 'VALIDATION', 'Credit Entry Required',
+         'Journal entry must have at least one credit entry. Please add a line with a credit amount.',
+         'Journal entry does not have any credit entries.'),
+        
+        ('JOURNAL_OUT_OF_BALANCE', 'VALIDATION', 'Journal Entry Out of Balance',
+         'Journal entry is out of balance! Total debits must equal total credits. Please adjust your amounts to balance the entry.',
+         'Journal entry debits and credits do not match.'),
+        
+        ('JOURNAL_LINE_NO_ACCOUNT', 'VALIDATION', 'Account Required',
+         'Please select an account for this line.',
+         'Journal entry line missing account selection.'),
+        
+        ('JOURNAL_LINE_NEGATIVE', 'VALIDATION', 'Negative Amount Not Allowed',
+         'Debit and credit amounts cannot be negative. Please enter positive values or zero.',
+         'Journal entry line has negative amount.'),
+        
+        ('JOURNAL_LINE_BOTH_AMOUNTS', 'VALIDATION', 'Debit or Credit Only',
+         'A journal entry line cannot have both debit and credit amounts. Please enter only one amount per line.',
+         'Journal entry line has both debit and credit amounts.'),
+        
+        ('JOURNAL_LINE_NO_AMOUNT', 'VALIDATION', 'Amount Required',
+         'Each line must have either a debit or credit amount. Please enter an amount greater than zero.',
+         'Journal entry line has no debit or credit amount.'),
+        
+        ('JOURNAL_EDIT_NOT_PENDING', 'VALIDATION', 'Cannot Edit Entry',
+         'Cannot edit an entry that has been approved or rejected.',
+         'User attempted to edit non-pending journal entry.'),
+        
+        ('USER_INACTIVE_SUSPENDED', 'AUTH', 'Account Inactive',
+         'User is inactive/suspended',
+         'User account is not active or has been suspended.'),
     ]
     
     for code, error_type, title, message, technical_details in default_errors:

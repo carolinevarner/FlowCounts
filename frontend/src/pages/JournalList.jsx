@@ -22,6 +22,7 @@ export default function JournalList() {
   const [endDate, setEndDate] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'entry_date', direction: 'desc' });
   const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -86,14 +87,17 @@ export default function JournalList() {
     return ' ⌄';
   };
 
-  const handleApprove = async (entry) => {
-    if (!confirm(`Are you sure you want to approve journal entry JE-${entry.id}?`)) {
-      return;
-    }
+  const handleApproveClick = (entry) => {
+    setSelectedEntry(entry);
+    setShowApprovalModal(true);
+  };
 
+  const handleApproveSubmit = async () => {
     try {
-      await api.post(`/journal-entries/${entry.id}/approve/`);
+      await api.post(`/journal-entries/${selectedEntry.id}/approve/`);
       alert('Journal entry approved successfully!');
+      setShowApprovalModal(false);
+      setSelectedEntry(null);
       fetchEntries();
     } catch (err) {
       console.error('Failed to approve entry:', err);
@@ -227,7 +231,7 @@ export default function JournalList() {
         marginBottom: 20
       }}>
         <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>
-          Journal Entries
+          Journalize
         </h2>
         <button
           onClick={() => setShowHelpModal(true)}
@@ -550,22 +554,36 @@ export default function JournalList() {
                       return <div style={{ fontSize: '0.85em', color: '#666' }}>No account lines</div>;
                     }
 
+                    const debitLines = entry.lines.filter(line => parseFloat(line.debit) > 0);
+                    const creditLines = entry.lines.filter(line => parseFloat(line.credit) > 0);
+
                     return (
                       <div style={{ fontSize: '0.85em' }}>
-                        {entry.lines.map((line, index) => (
-                          <div key={index} style={{ marginBottom: index < entry.lines.length - 1 ? '4px' : '0' }}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              <span style={{ fontWeight: '500' }}>
-                                {line.account?.account_number} - {line.account?.account_name}
-                              </span>
-                            </div>
-                            {index === entry.lines.length - 1 && entry.description && (
-                              <div style={{ marginTop: '4px', fontStyle: 'italic', color: '#555' }}>
-                                Description: {entry.description}
-                              </div>
-                            )}
+                        {debitLines.map((line, index) => (
+                          <div key={`debit-${index}`} style={{ marginBottom: '4px' }}>
+                            <span style={{ fontWeight: 'bold', color: '#1C5C59' }}>
+                              {line.account_number}
+                            </span>
+                            <span style={{ fontWeight: 'bold' }}>
+                              {' '}- {line.account_name}
+                            </span>
                           </div>
                         ))}
+                        {creditLines.map((line, index) => (
+                          <div key={`credit-${index}`} style={{ marginBottom: '4px', paddingLeft: '30px' }}>
+                            <span style={{ fontWeight: 'bold', color: '#1C5C59' }}>
+                              {line.account_number}
+                            </span>
+                            <span style={{ fontWeight: 'bold' }}>
+                              {' '}- {line.account_name}
+                            </span>
+                          </div>
+                        ))}
+                        {entry.description && (
+                          <div style={{ marginTop: '8px', fontStyle: 'italic', color: '#555' }}>
+                            <span style={{ fontWeight: 'bold' }}>Description:</span> {entry.description}
+                          </div>
+                        )}
                       </div>
                     );
                   };
@@ -596,6 +614,9 @@ export default function JournalList() {
                       );
                     }
 
+                    const debitLines = entry.lines.filter(line => parseFloat(line.debit) > 0);
+                    const creditLines = entry.lines.filter(line => parseFloat(line.credit) > 0);
+
                     return (
                       <>
                         <td style={{ 
@@ -606,15 +627,35 @@ export default function JournalList() {
                           fontSize: "0.85em",
                           verticalAlign: 'top'
                         }}>
-                          <div style={{ fontSize: '0.85em' }}>
-                            {entry.lines.map((line, index) => (
-                              <div key={index} style={{ 
-                                marginBottom: index < entry.lines.length - 1 ? '4px' : '0',
-                                color: line.debit > 0 ? '#000' : 'transparent'
-                              }}>
-                                {line.debit > 0 ? formatCurrency(line.debit) : ''}
-                              </div>
-                            ))}
+                          <div style={{ display: 'flex', flexDirection: 'column', minHeight: entry.status === 'PENDING' && (userRole === 'ADMIN' || userRole === 'MANAGER') ? '100px' : 'auto' }}>
+                            <div>
+                              {debitLines.map((line, index) => (
+                                <div key={index} style={{ marginBottom: '4px' }}>
+                                  {formatCurrency(line.debit)}
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
+                              {entry.status === 'PENDING' && (userRole === 'ADMIN' || userRole === 'MANAGER') && (
+                                <button
+                                  onClick={() => handleApproveClick(entry)}
+                                  style={{
+                                    padding: '0px 12px',
+                                    backgroundColor: '#1C5C59',
+                                    color: 'white',
+                                    border: '2px solid #1C5C59',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: 14,
+                                    fontWeight: '500',
+                                    width: '100%',
+                                    height: '30px'
+                                  }}
+                                >
+                                  Approve
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td style={{ 
@@ -625,15 +666,38 @@ export default function JournalList() {
                           fontSize: "0.85em",
                           verticalAlign: 'top'
                         }}>
-                          <div style={{ fontSize: '0.85em' }}>
-                            {entry.lines.map((line, index) => (
-                              <div key={index} style={{ 
-                                marginBottom: index < entry.lines.length - 1 ? '4px' : '0',
-                                color: line.credit > 0 ? '#000' : 'transparent'
-                              }}>
-                                {line.credit > 0 ? formatCurrency(line.credit) : ''}
-                              </div>
-                            ))}
+                          <div style={{ display: 'flex', flexDirection: 'column', minHeight: entry.status === 'PENDING' && (userRole === 'ADMIN' || userRole === 'MANAGER') ? '100px' : 'auto' }}>
+                            <div>
+                              {debitLines.map((_, index) => (
+                                <div key={`spacer-${index}`} style={{ marginBottom: '4px', height: '1.2em' }}></div>
+                              ))}
+                              {creditLines.map((line, index) => (
+                                <div key={index} style={{ marginBottom: '4px' }}>
+                                  {formatCurrency(line.credit)}
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
+                              {entry.status === 'PENDING' && (userRole === 'ADMIN' || userRole === 'MANAGER') && (
+                                <button
+                                  onClick={() => handleRejectClick(entry)}
+                                  style={{
+                                    padding: '0px 12px',
+                                    backgroundColor: 'white',
+                                    color: '#1C5C59',
+                                    border: '2px solid #1C5C59',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: 14,
+                                    fontWeight: '8000',
+                                    width: '100%',
+                                    height: '30px'
+                                  }}
+                                >
+                                  <strong>Reject</strong>
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </td>
                       </>
@@ -718,60 +782,130 @@ export default function JournalList() {
         )}
       </div>
 
+      {showApprovalModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '24px',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ margin: '0 0 16px 0', fontFamily: 'Playfair Display', fontSize: '1.3em' }}>
+              Approve Journal Entry
+            </h3>
+            <p style={{ marginBottom: '16px', color: '#666' }}>
+              Are you sure you want to approve journal entry JE-{selectedEntry?.id}?
+            </p>
+            <p style={{ marginBottom: '20px', color: '#666', fontSize: '14px' }}>
+              This action will update the account balances and cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowApprovalModal(false);
+                  setSelectedEntry(null);
+                }}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#c00',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApproveSubmit}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#4f772d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Confirm Approval
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showRejectionModal && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}
-          onClick={() => setShowRejectionModal(false)}
-        >
-          <div 
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '24px',
-              maxWidth: '500px',
-              width: '90%'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 style={{ marginTop: 0, color: '#1C302F' }}>Reject Journal Entry</h3>
-            <p>Please provide a reason for rejecting JE-{selectedEntry?.id}:</p>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '24px',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ margin: '0 0 16px 0', fontFamily: 'Playfair Display', fontSize: '1.3em' }}>
+              Reject Journal Entry
+            </h3>
+            <p style={{ marginBottom: '16px', color: '#666' }}>
+              Please provide a reason for rejecting journal entry JE-{selectedEntry?.id}:
+            </p>
             <textarea
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Enter rejection reason..."
-              rows="4"
-              required
+              placeholder="Enter rejection reason (required)..."
+              rows="5"
               style={{
                 width: '100%',
                 padding: '10px',
                 border: '1px solid #ddd',
                 borderRadius: '6px',
                 fontSize: '14px',
-                marginBottom: '16px',
+                fontFamily: 'inherit',
                 resize: 'vertical'
               }}
             />
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
               <button
-                onClick={() => setShowRejectionModal(false)}
+                onClick={() => {
+                  setShowRejectionModal(false);
+                  setSelectedEntry(null);
+                  setRejectionReason('');
+                }}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: '#6c757d',
+                  backgroundColor: '#c00',
                   color: 'white',
                   border: 'none',
                   borderRadius: '6px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  fontSize: '14px'
                 }}
               >
                 Cancel
@@ -781,14 +915,15 @@ export default function JournalList() {
                 disabled={!rejectionReason.trim()}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: !rejectionReason.trim() ? '#ccc' : '#dc3545',
+                  backgroundColor: (!rejectionReason.trim()) ? '#ccc' : '#c00',
                   color: 'white',
                   border: 'none',
                   borderRadius: '6px',
-                  cursor: !rejectionReason.trim() ? 'not-allowed' : 'pointer'
+                  cursor: (!rejectionReason.trim()) ? 'not-allowed' : 'pointer',
+                  fontSize: '14px'
                 }}
               >
-                Reject Entry
+                Confirm Rejection
               </button>
             </div>
           </div>

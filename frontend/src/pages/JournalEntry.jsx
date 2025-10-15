@@ -14,10 +14,13 @@ export default function JournalEntry() {
   const [accounts, setAccounts] = useState([]);
   
   const [entryDate, setEntryDate] = useState(new Date().toISOString().split('T')[0]);
+  const [entryType, setEntryType] = useState('Regular');
   const [description, setDescription] = useState('');
-  const [lines, setLines] = useState([
-    { account: '', description: '', debit: '', credit: '', order: 0 },
-    { account: '', description: '', debit: '', credit: '', order: 1 }
+  const [debitLines, setDebitLines] = useState([
+    { account: '', description: '', debit: '', order: 0 }
+  ]);
+  const [creditLines, setCreditLines] = useState([
+    { account: '', description: '', credit: '', order: 1 }
   ]);
   const [attachments, setAttachments] = useState([]);
   const [existingAttachments, setExistingAttachments] = useState([]);
@@ -63,14 +66,25 @@ export default function JournalEntry() {
       }
 
       setEntryDate(entry.entry_date);
+      setEntryType(entry.description?.toLowerCase().includes('adjusting') ? 'Adjusting' : 'Regular');
       setDescription(entry.description);
-      setLines(entry.lines.map(line => ({
+      
+      const debits = entry.lines.filter(line => parseFloat(line.debit) > 0).map((line, idx) => ({
         account: line.account,
         description: line.description,
         debit: line.debit || '',
+        order: idx
+      }));
+      
+      const credits = entry.lines.filter(line => parseFloat(line.credit) > 0).map((line, idx) => ({
+        account: line.account,
+        description: line.description,
         credit: line.credit || '',
-        order: line.order
-      })));
+        order: debits.length + idx
+      }));
+      
+      setDebitLines(debits.length > 0 ? debits : [{ account: '', description: '', debit: '', order: 0 }]);
+      setCreditLines(credits.length > 0 ? credits : [{ account: '', description: '', credit: '', order: 1 }]);
       setExistingAttachments(entry.attachments || []);
     } catch (err) {
       console.error('Failed to fetch journal entry:', err);
@@ -80,23 +94,56 @@ export default function JournalEntry() {
     }
   };
 
-  const addLine = () => {
-    setLines([...lines, { account: '', description: '', debit: '', credit: '', order: lines.length }]);
+  const getSelectedAccounts = () => {
+    const debitAccounts = debitLines.filter(line => line.account).map(line => line.account);
+    const creditAccounts = creditLines.filter(line => line.account).map(line => line.account);
+    return [...debitAccounts, ...creditAccounts];
   };
 
-  const removeLine = (index) => {
-    if (lines.length <= 2) {
-      setError('A journal entry must have at least 2 lines');
+  const getAvailableAccounts = (currentLineAccount) => {
+    const selectedAccounts = getSelectedAccounts();
+    return accounts.filter(acc => 
+      !selectedAccounts.includes(acc.id.toString()) || acc.id.toString() === currentLineAccount
+    );
+  };
+
+  const addDebitLine = () => {
+    setDebitLines([...debitLines, { account: '', description: '', debit: '', order: debitLines.length }]);
+  };
+
+  const addCreditLine = () => {
+    setCreditLines([...creditLines, { account: '', description: '', credit: '', order: creditLines.length }]);
+  };
+
+  const removeDebitLine = (index) => {
+    if (debitLines.length <= 1) {
+      setError('A journal entry must have at least 1 debit line');
       return;
     }
-    const newLines = lines.filter((_, i) => i !== index);
-    setLines(newLines.map((line, i) => ({ ...line, order: i })));
+    const newLines = debitLines.filter((_, i) => i !== index);
+    setDebitLines(newLines.map((line, i) => ({ ...line, order: i })));
   };
 
-  const updateLine = (index, field, value) => {
-    const newLines = [...lines];
+  const removeCreditLine = (index) => {
+    if (creditLines.length <= 1) {
+      setError('A journal entry must have at least 1 credit line');
+      return;
+    }
+    const newLines = creditLines.filter((_, i) => i !== index);
+    setCreditLines(newLines.map((line, i) => ({ ...line, order: i })));
+  };
+
+  const updateDebitLine = (index, field, value) => {
+    const newLines = [...debitLines];
     newLines[index][field] = value;
-    setLines(newLines);
+    setDebitLines(newLines);
+    setError('');
+  };
+
+  const updateCreditLine = (index, field, value) => {
+    const newLines = [...creditLines];
+    newLines[index][field] = value;
+    setCreditLines(newLines);
     setError('');
   };
 
@@ -121,8 +168,8 @@ export default function JournalEntry() {
   };
 
   const calculateTotals = () => {
-    const totalDebits = lines.reduce((sum, line) => sum + (parseFloat(line.debit) || 0), 0);
-    const totalCredits = lines.reduce((sum, line) => sum + (parseFloat(line.credit) || 0), 0);
+    const totalDebits = debitLines.reduce((sum, line) => sum + (parseFloat(line.debit) || 0), 0);
+    const totalCredits = creditLines.reduce((sum, line) => sum + (parseFloat(line.credit) || 0), 0);
     return { totalDebits, totalCredits };
   };
 
@@ -132,49 +179,57 @@ export default function JournalEntry() {
       return false;
     }
 
-    if (lines.length < 2) {
-      setError('A journal entry must have at least 2 lines');
+    if (debitLines.length < 1 || creditLines.length < 1) {
+      setError('A journal entry must have at least 1 debit line and 1 credit line');
       return false;
     }
 
-    for (const line of lines) {
+    for (const line of debitLines) {
       if (!line.account) {
-        setError('All lines must have an account selected');
+        setError('All debit lines must have an account selected');
         return false;
       }
 
       const debit = parseFloat(line.debit) || 0;
+
+      if (debit <= 0) {
+        setError('All debit lines must have a debit amount greater than 0');
+        return false;
+      }
+
+      if (debit < 0) {
+        setError('Debit amounts cannot be negative');
+        return false;
+      }
+    }
+
+    for (const line of creditLines) {
+      if (!line.account) {
+        setError('All credit lines must have an account selected');
+        return false;
+      }
+
       const credit = parseFloat(line.credit) || 0;
 
-      if (debit < 0 || credit < 0) {
-        setError('Debit and credit amounts cannot be negative');
+      if (credit <= 0) {
+        setError('All credit lines must have a credit amount greater than 0');
         return false;
       }
 
-      if (debit > 0 && credit > 0) {
-        setError('A line cannot have both debit and credit amounts');
+      if (credit < 0) {
+        setError('Credit amounts cannot be negative');
         return false;
       }
+    }
 
-      if (debit === 0 && credit === 0) {
-        setError('Each line must have either a debit or credit amount');
-        return false;
-      }
+    const selectedAccounts = getSelectedAccounts();
+    const uniqueAccounts = new Set(selectedAccounts);
+    if (selectedAccounts.length !== uniqueAccounts.size) {
+      setError('Cannot use the same account twice in a journal entry');
+      return false;
     }
 
     const { totalDebits, totalCredits } = calculateTotals();
-    const hasDebit = lines.some(line => parseFloat(line.debit) > 0);
-    const hasCredit = lines.some(line => parseFloat(line.credit) > 0);
-
-    if (!hasDebit) {
-      setError('Journal entry must have at least one debit entry');
-      return false;
-    }
-
-    if (!hasCredit) {
-      setError('Journal entry must have at least one credit entry');
-      return false;
-    }
 
     if (Math.abs(totalDebits - totalCredits) > 0.01) {
       setError(`Total debits ($${totalDebits.toFixed(2)}) must equal total credits ($${totalCredits.toFixed(2)}). Difference: $${Math.abs(totalDebits - totalCredits).toFixed(2)}`);
@@ -195,22 +250,29 @@ export default function JournalEntry() {
     setError('');
 
     try {
-      const sortedLines = [...lines].sort((a, b) => {
-        const aDebit = parseFloat(a.debit) || 0;
-        const bDebit = parseFloat(b.debit) || 0;
-        return (bDebit > 0 ? 1 : 0) - (aDebit > 0 ? 1 : 0);
-      });
-
-      const payload = {
-        entry_date: entryDate,
-        description,
-        lines: sortedLines.map((line, idx) => ({
+      const allLines = [
+        ...debitLines.map((line, idx) => ({
           account: parseInt(line.account),
           description: line.description,
           debit: parseFloat(line.debit) || 0,
-          credit: parseFloat(line.credit) || 0,
+          credit: 0,
           order: idx
+        })),
+        ...creditLines.map((line, idx) => ({
+          account: parseInt(line.account),
+          description: line.description,
+          debit: 0,
+          credit: parseFloat(line.credit) || 0,
+          order: debitLines.length + idx
         }))
+      ];
+
+      const payload = {
+        entry_date: entryDate,
+        description: entryType === 'Adjusting' && !description.toLowerCase().includes('adjusting') 
+          ? `${description ? description + ' - ' : ''}Adjusting Entry` 
+          : description,
+        lines: allLines
       };
 
       let entryId;
@@ -268,11 +330,10 @@ export default function JournalEntry() {
   const handleReset = () => {
     if (confirm('Are you sure you want to reset this form? All unsaved changes will be lost.')) {
       setEntryDate(new Date().toISOString().split('T')[0]);
+      setEntryType('Regular');
       setDescription('');
-      setLines([
-        { account: '', description: '', debit: '', credit: '', order: 0 },
-        { account: '', description: '', debit: '', credit: '', order: 1 }
-      ]);
+      setDebitLines([{ account: '', description: '', debit: '', order: 0 }]);
+      setCreditLines([{ account: '', description: '', credit: '', order: 1 }]);
       setAttachments([]);
       setError('');
     }
@@ -282,9 +343,9 @@ export default function JournalEntry() {
   const isBalanced = Math.abs(totalDebits - totalCredits) < 0.01;
 
   return (
-    <div className="main-body">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600", color: "#000" }}>
+    <div style={{ padding: "12px 16px", maxWidth: "100%", boxSizing: "border-box" }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>
           {isEditMode ? 'Edit Journal Entry' : 'Create Journal Entry'}
         </h2>
         <button
@@ -304,14 +365,29 @@ export default function JournalEntry() {
       </div>
 
       {error && (
-        <div className="error" style={{ whiteSpace: 'pre-line', marginBottom: '16px' }}>
+        <div style={{ 
+          whiteSpace: 'pre-line', 
+          marginBottom: 16,
+          padding: '12px',
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '6px',
+          color: '#c00'
+        }}>
           <strong>Error:</strong> {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="card" style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+        <div style={{ 
+          backgroundColor: 'white',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: 20,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
                 Entry Date <span style={{ color: 'red' }}>*</span>
@@ -326,9 +402,32 @@ export default function JournalEntry() {
                   padding: '10px',
                   border: '1px solid #ddd',
                   borderRadius: '6px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  cursor: 'pointer'
                 }}
               />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                Entry Type <span style={{ color: 'red' }}>*</span>
+              </label>
+              <select
+                value={entryType}
+                onChange={(e) => setEntryType(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  backgroundColor: '#fff'
+                }}
+              >
+                <option value="Regular">Regular</option>
+                <option value="Adjusting">Adjusting</option>
+              </select>
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
@@ -351,75 +450,117 @@ export default function JournalEntry() {
           </div>
         </div>
 
-        <div className="card" style={{ marginBottom: '24px' }}>
+        <div style={{ 
+          backgroundColor: 'white',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: 20,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ margin: 0, fontSize: '1.1em', color: '#000', fontFamily: 'Playfair Display', fontWeight: '600' }}>Journal Entry Lines</h3>
-            <button
-              type="button"
-              onClick={addLine}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#1C5C59',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              + Add Line
-            </button>
+            <h3 style={{ margin: 0, fontSize: '1.1em', fontFamily: 'Playfair Display', fontWeight: '600' }}>Journal Entry Lines</h3>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={addDebitLine}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#1C5C59',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                + Add Debit
+              </button>
+              <button
+                type="button"
+                onClick={addCreditLine}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#1C5C59',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                + Add Credit
+              </button>
+            </div>
           </div>
 
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
               <thead>
                 <tr style={{ backgroundColor: '#1C302F', color: 'white' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', width: '5%' }}>#</th>
-                  <th style={{ padding: '12px', textAlign: 'left', width: '30%' }}>Account <span style={{ color: '#ffcccb' }}>*</span></th>
-                  <th style={{ padding: '12px', textAlign: 'left', width: '25%' }}>Description</th>
-                  <th style={{ padding: '12px', textAlign: 'right', width: '15%' }}>Debit</th>
-                  <th style={{ padding: '12px', textAlign: 'right', width: '15%' }}>Credit</th>
-                  <th style={{ padding: '12px', textAlign: 'center', width: '10%' }}>Actions</th>
+                  <th style={{ padding: '12px', textAlign: 'left', width: '50%' }}>Accounts</th>
+                  <th style={{ padding: '12px', textAlign: 'right', width: '25%' }}>Debit</th>
+                  <th style={{ padding: '12px', textAlign: 'right', width: '25%' }}>Credit</th>
                 </tr>
               </thead>
               <tbody>
-                {lines.map((line, index) => (
-                  <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '12px' }}>{index + 1}</td>
+                {debitLines.map((line, index) => (
+                  <tr key={`debit-${index}`} style={{ borderBottom: '1px solid #eee' }}>
                     <td style={{ padding: '12px' }}>
-                      <select
-                        value={line.account}
-                        onChange={(e) => updateLine(index, 'account', e.target.value)}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <select
+                          value={line.account}
+                          onChange={(e) => updateDebitLine(index, 'account', e.target.value)}
+                          required
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <option value="">Select Account</option>
+                          {getAvailableAccounts(line.account).map(acc => (
+                            <option key={acc.id} value={acc.id}>
+                              {acc.account_number} - {acc.account_name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => removeDebitLine(index)}
+                          disabled={debitLines.length <= 1}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: debitLines.length <= 1 ? '#ccc' : '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: debitLines.length <= 1 ? 'not-allowed' : 'pointer',
+                            fontSize: '12px'
+                          }}
+                        >
+                          −
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={line.debit}
+                        onChange={(e) => updateDebitLine(index, 'debit', e.target.value)}
+                        placeholder="0.00"
                         required
                         style={{
                           width: '100%',
                           padding: '8px',
                           border: '1px solid #ddd',
                           borderRadius: '4px',
-                          fontSize: '14px'
-                        }}
-                      >
-                        <option value="">Select Account</option>
-                        {accounts.map(acc => (
-                          <option key={acc.id} value={acc.id}>
-                            {acc.account_number} - {acc.account_name}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <input
-                        type="text"
-                        value={line.description}
-                        onChange={(e) => updateLine(index, 'description', e.target.value)}
-                        placeholder="Optional"
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          border: '1px solid #ddd',
-                          borderRadius: '4px',
-                          fontSize: '14px'
+                          fontSize: '14px',
+                          textAlign: 'right'
                         }}
                       />
                     </td>
@@ -428,17 +569,79 @@ export default function JournalEntry() {
                         type="number"
                         step="0.01"
                         min="0"
-                        value={line.debit}
-                        onChange={(e) => updateLine(index, 'debit', e.target.value)}
-                        disabled={line.credit > 0}
-                        placeholder="0.00"
+                        value=""
+                        disabled
                         style={{
                           width: '100%',
                           padding: '8px',
-                          border: '1px solid #ddd',
+                          border: '1px solid #eee',
                           borderRadius: '4px',
                           fontSize: '14px',
-                          textAlign: 'right'
+                          textAlign: 'right',
+                          backgroundColor: '#f8f9fa',
+                          color: '#999'
+                        }}
+                      />
+                    </td>
+                  </tr>
+                ))}
+                {creditLines.map((line, index) => (
+                  <tr key={`credit-${index}`} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '40px' }}>
+                        <select
+                          value={line.account}
+                          onChange={(e) => updateCreditLine(index, 'account', e.target.value)}
+                          required
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            fontSize: '14px'
+                          }}
+                        >
+                          <option value="">Select Account</option>
+                          {getAvailableAccounts(line.account).map(acc => (
+                            <option key={acc.id} value={acc.id}>
+                              {acc.account_number} - {acc.account_name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => removeCreditLine(index)}
+                          disabled={creditLines.length <= 1}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: creditLines.length <= 1 ? '#ccc' : '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: creditLines.length <= 1 ? 'not-allowed' : 'pointer',
+                            fontSize: '12px'
+                          }}
+                        >
+                          −
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value=""
+                        disabled
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          border: '1px solid #eee',
+                          borderRadius: '4px',
+                          fontSize: '14px',
+                          textAlign: 'right',
+                          backgroundColor: '#f8f9fa',
+                          color: '#999'
                         }}
                       />
                     </td>
@@ -448,9 +651,9 @@ export default function JournalEntry() {
                         step="0.01"
                         min="0"
                         value={line.credit}
-                        onChange={(e) => updateLine(index, 'credit', e.target.value)}
-                        disabled={line.debit > 0}
+                        onChange={(e) => updateCreditLine(index, 'credit', e.target.value)}
                         placeholder="0.00"
+                        required
                         style={{
                           width: '100%',
                           padding: '8px',
@@ -461,40 +664,15 @@ export default function JournalEntry() {
                         }}
                       />
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <button
-                        type="button"
-                        onClick={() => removeLine(index)}
-                        disabled={lines.length <= 2}
-                        style={{
-                          padding: '6px 12px',
-                          backgroundColor: lines.length <= 2 ? '#ccc' : '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: lines.length <= 2 ? 'not-allowed' : 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Remove
-                      </button>
-                    </td>
                   </tr>
                 ))}
-                <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 'bold', fontSize: '1.1em' }}>
-                  <td colSpan="3" style={{ padding: '12px', textAlign: 'right' }}>Totals:</td>
+                <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 'bold' }}>
+                  <td style={{ padding: '12px', textAlign: 'right' }}>Totals:</td>
                   <td style={{ padding: '12px', textAlign: 'right', color: totalDebits > 0 ? '#1C5C59' : '#666' }}>
                     ${totalDebits.toFixed(2)}
                   </td>
                   <td style={{ padding: '12px', textAlign: 'right', color: totalCredits > 0 ? '#1C5C59' : '#666' }}>
                     ${totalCredits.toFixed(2)}
-                  </td>
-                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                    {isBalanced ? (
-                      <span style={{ color: '#28a745', fontSize: '18px' }}>✓</span>
-                    ) : (
-                      <span style={{ color: '#dc3545', fontSize: '18px' }}>✗</span>
-                    )}
                   </td>
                 </tr>
               </tbody>
@@ -502,8 +680,45 @@ export default function JournalEntry() {
           </div>
         </div>
 
-        <div className="card" style={{ marginBottom: '24px' }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1em', color: '#000', fontFamily: 'Playfair Display', fontWeight: '600' }}>Attachments</h3>
+        <div style={{ 
+          backgroundColor: isBalanced ? '#d4edda' : '#f8d7da',
+          border: isBalanced ? '1px solid #c3e6cb' : '1px solid #f5c6cb',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: 20,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1em', fontFamily: 'Playfair Display', fontWeight: '600' }}>Entry Balance</h3>
+            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontWeight: '500', marginRight: '8px' }}>Total Debits:</span>
+                <span style={{ fontSize: '1.1em', fontWeight: 'bold', color: '#1C5C59' }}>${totalDebits.toFixed(2)}</span>
+              </div>
+              <div>
+                <span style={{ fontWeight: '500', marginRight: '8px' }}>Total Credits:</span>
+                <span style={{ fontSize: '1.1em', fontWeight: 'bold', color: '#1C5C59' }}>${totalCredits.toFixed(2)}</span>
+              </div>
+              <div>
+                {isBalanced ? (
+                  <span style={{ color: '#28a745', fontSize: '16px', fontWeight: 'bold' }}>✓ Balanced</span>
+                ) : (
+                  <span style={{ color: '#dc3545', fontSize: '16px', fontWeight: 'bold' }}>✗ Not Balanced</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ 
+          backgroundColor: 'white',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: 20,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1em', fontFamily: 'Playfair Display', fontWeight: '600' }}>Attachments</h3>
           <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
             Allowed file types: PDF, Word, Excel, CSV, JPG, PNG
           </p>
@@ -614,4 +829,3 @@ export default function JournalEntry() {
     </div>
   );
 }
-

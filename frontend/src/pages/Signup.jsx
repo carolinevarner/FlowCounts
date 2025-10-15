@@ -126,7 +126,7 @@ export default function Signup() {
   return (
     <AuthLayout title="FlowCounts" subtitle="Leave the Numbers to Us, Focus on Your Business!">
       <form onSubmit={onSubmit} className="auth-row">
-        {error && <div style={{ color: "crimson" }}>{error}</div>}
+        {error && <div style={{ color: "#c00" }}>{error}</div>}
 
         <div className="auth-grid-2">
           <input

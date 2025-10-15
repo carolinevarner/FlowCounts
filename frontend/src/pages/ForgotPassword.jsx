@@ -132,7 +132,7 @@ export default function ForgotPassword() {
   return (
     <AuthLayout title="FlowCounts" subtitle="Forgot Your Password? No Worries!">
       <form onSubmit={step === 1 ? verifyIdentity : onSubmit} className="auth-row">
-        {error && <div style={{ color: "crimson" }}>{error}</div>}
+        {error && <div style={{ color: "#c00" }}>{error}</div>}
         {ok && <div style={{ color: "green" }}>{ok}</div>}
 
         {step === 1 ? (

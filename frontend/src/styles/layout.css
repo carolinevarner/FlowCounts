@@ -496,8 +496,6 @@ table, thead, tbody, tr, td, th {
   font-family: sans-serif;
 }
 
-}
-
 .error {
   padding: 12px;
   background-color: #fee;
@@ -516,7 +514,7 @@ table, thead, tbody, tr, td, th {
 }
 
 .error {
-  color: crimson;
+  color: #c00;
   font-size: 14px;
   margin: 10px 0;
   font-family: sans-serif;

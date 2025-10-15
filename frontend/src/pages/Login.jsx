@@ -62,7 +62,7 @@ export default function Login() {
   return (
     <AuthLayout title="FlowCounts" subtitle="Welcome to FlowCounts!">
       <form onSubmit={onSubmit} className="auth-row">
-        {error && <div style={{ color: "crimson" }}>{error}</div>}
+        {error && <div style={{ color: "#c00" }}>{error}</div>}
 
         <input
           className="auth-input"

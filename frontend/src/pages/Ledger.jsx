@@ -15,217 +15,7 @@ function formatCurrency(value) {
   }).format(value);
 }
 
-function generateSampleTransactions(account) {
-  const transactions = [];
-  const initialBalance = parseFloat(account.initial_balance || 0);
-  const currentBalance = parseFloat(account.balance || 0);
-  const totalDebits = parseFloat(account.debit || 0);
-  const totalCredits = parseFloat(account.credit || 0);
-  
-  let runningBalance = 0;
-  let transactionId = 1;
-  
-  transactions.push({
-    id: 0,
-    date: "",
-    reference: "",
-    description: "",
-    debit: 0,
-    credit: 0,
-    balance: 0
-  });
-  
-  if (initialBalance !== 0) {
-    transactions.push({
-      id: transactionId++,
-      date: "2024-01-01",
-      reference: transactionId - 1,
-      description: "Opening Balance",
-      debit: account.normal_side === "DEBIT" && initialBalance > 0 ? initialBalance : 0,
-      credit: account.normal_side === "CREDIT" && initialBalance > 0 ? initialBalance : 0,
-      balance: initialBalance
-    });
-    runningBalance = initialBalance;
-  }
-
-  const netChange = currentBalance - initialBalance;
-  const remainingDebits = totalDebits - (account.normal_side === "DEBIT" && initialBalance > 0 ? initialBalance : 0);
-  const remainingCredits = totalCredits - (account.normal_side === "CREDIT" && initialBalance > 0 ? initialBalance : 0);
-
-  if (account.account_category === "ASSET") {
-    const assetTypes = {
-      "cash": ["Cash Deposit", "Cash Withdrawal", "Petty Cash", "Bank Transfer"],
-      "accounts receivable": ["Sales on Credit", "Payment Received", "Bad Debt Write-off", "Collection"],
-      "inventory": ["Inventory Purchase", "Inventory Sale", "Inventory Adjustment", "Damaged Goods"],
-      "equipment": ["Equipment Purchase", "Equipment Sale", "Depreciation", "Maintenance"],
-      "prepaid": ["Prepaid Insurance", "Prepaid Rent", "Prepaid Utilities", "Prepaid Services"]
-    };
-    
-    const subcategory = (account.account_subcategory || '').toLowerCase();
-    const descriptions = assetTypes[subcategory] || ["Asset Purchase", "Asset Sale", "Asset Adjustment", "Asset Depreciation"];
-    
-    if (remainingDebits > 0) {
-      const splitDebits = Math.max(1, Math.min(4, Math.ceil(remainingDebits / 1000)));
-      const debitPerTransaction = remainingDebits / splitDebits;
-      
-      for (let i = 0; i < splitDebits; i++) {
-        transactions.push({
-          id: transactionId++,
-          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
-          reference: transactionId - 1,
-          description: descriptions[i] || descriptions[0],
-          debit: i === splitDebits - 1 ? remainingDebits - (debitPerTransaction * (splitDebits - 1)) : debitPerTransaction,
-          credit: 0,
-          balance: runningBalance + (debitPerTransaction * (i + 1))
-        });
-        runningBalance += debitPerTransaction;
-      }
-    }
-    
-    if (remainingCredits > 0) {
-      const splitCredits = Math.max(1, Math.min(3, Math.ceil(remainingCredits / 1000)));
-      const creditPerTransaction = remainingCredits / splitCredits;
-      
-      for (let i = 0; i < splitCredits; i++) {
-        transactions.push({
-          id: transactionId++,
-          date: `2024-01-${String(i + 10).padStart(2, '0')}`,
-          reference: transactionId - 1,
-          description: descriptions[i + 2] || "Asset Reduction",
-          debit: 0,
-          credit: i === splitCredits - 1 ? remainingCredits - (creditPerTransaction * (splitCredits - 1)) : creditPerTransaction,
-          balance: runningBalance - (creditPerTransaction * (i + 1))
-        });
-        runningBalance -= creditPerTransaction;
-      }
-    }
-  } else if (account.account_category === "LIABILITY") {
-    const liabilityTypes = {
-      "accounts payable": ["Vendor Invoice", "Payment Made", "Credit Memo", "Adjustment"],
-      "notes payable": ["Loan Received", "Loan Payment", "Interest Accrual", "Principal Payment"],
-      "accrued": ["Accrued Expenses", "Expense Payment", "Accrual Adjustment", "Settlement"]
-    };
-    
-    const subcategory = (account.account_subcategory || '').toLowerCase();
-    const descriptions = liabilityTypes[subcategory] || ["Liability Incurred", "Liability Payment", "Liability Adjustment"];
-    
-    if (remainingCredits > 0) {
-      const splitCredits = Math.max(1, Math.min(3, Math.ceil(remainingCredits / 1000)));
-      const creditPerTransaction = remainingCredits / splitCredits;
-      
-      for (let i = 0; i < splitCredits; i++) {
-        transactions.push({
-          id: transactionId++,
-          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
-          reference: transactionId - 1,
-          description: descriptions[i] || descriptions[0],
-          debit: 0,
-          credit: i === splitCredits - 1 ? remainingCredits - (creditPerTransaction * (splitCredits - 1)) : creditPerTransaction,
-          balance: runningBalance + (creditPerTransaction * (i + 1))
-        });
-        runningBalance += creditPerTransaction;
-      }
-    }
-    
-    if (remainingDebits > 0) {
-      const splitDebits = Math.max(1, Math.min(3, Math.ceil(remainingDebits / 1000)));
-      const debitPerTransaction = remainingDebits / splitDebits;
-      
-      for (let i = 0; i < splitDebits; i++) {
-        transactions.push({
-          id: transactionId++,
-          date: `2024-01-${String(i + 10).padStart(2, '0')}`,
-          reference: transactionId - 1,
-          description: descriptions[i + 1] || "Liability Payment",
-          debit: i === splitDebits - 1 ? remainingDebits - (debitPerTransaction * (splitDebits - 1)) : debitPerTransaction,
-          credit: 0,
-          balance: runningBalance - (debitPerTransaction * (i + 1))
-        });
-        runningBalance -= debitPerTransaction;
-      }
-    }
-  } else if (account.account_category === "EQUITY") {
-    const equityTypes = ["Owner Investment", "Owner Withdrawal", "Retained Earnings", "Dividend Payment"];
-    
-    if (remainingCredits > 0) {
-      const splitCredits = Math.max(1, Math.min(2, Math.ceil(remainingCredits / 2000)));
-      const creditPerTransaction = remainingCredits / splitCredits;
-      
-      for (let i = 0; i < splitCredits; i++) {
-        transactions.push({
-          id: transactionId++,
-          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
-          reference: transactionId - 1,
-          description: equityTypes[i] || equityTypes[0],
-          debit: 0,
-          credit: i === splitCredits - 1 ? remainingCredits - (creditPerTransaction * (splitCredits - 1)) : creditPerTransaction,
-          balance: runningBalance + (creditPerTransaction * (i + 1))
-        });
-        runningBalance += creditPerTransaction;
-      }
-    }
-    
-    if (remainingDebits > 0) {
-      const splitDebits = Math.max(1, Math.min(2, Math.ceil(remainingDebits / 2000)));
-      const debitPerTransaction = remainingDebits / splitDebits;
-      
-      for (let i = 0; i < splitDebits; i++) {
-        transactions.push({
-          id: transactionId++,
-          date: `2024-01-${String(i + 10).padStart(2, '0')}`,
-          reference: transactionId - 1,
-          description: equityTypes[i + 2] || equityTypes[1],
-          debit: i === splitDebits - 1 ? remainingDebits - (debitPerTransaction * (splitDebits - 1)) : debitPerTransaction,
-          credit: 0,
-          balance: runningBalance - (debitPerTransaction * (i + 1))
-        });
-        runningBalance -= debitPerTransaction;
-      }
-    }
-  } else if (account.account_category === "REVENUE") {
-    const revenueTypes = ["Sales Revenue", "Service Revenue", "Interest Income", "Other Income"];
-    
-    if (remainingCredits > 0) {
-      const splitCredits = Math.max(1, Math.min(4, Math.ceil(remainingCredits / 500)));
-      const creditPerTransaction = remainingCredits / splitCredits;
-      
-      for (let i = 0; i < splitCredits; i++) {
-        transactions.push({
-          id: transactionId++,
-          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
-          reference: transactionId - 1,
-          description: revenueTypes[i] || revenueTypes[0],
-          debit: 0,
-          credit: i === splitCredits - 1 ? remainingCredits - (creditPerTransaction * (splitCredits - 1)) : creditPerTransaction,
-          balance: runningBalance + (creditPerTransaction * (i + 1))
-        });
-        runningBalance += creditPerTransaction;
-      }
-    }
-  } else if (account.account_category === "EXPENSE") {
-    const expenseTypes = ["Office Supplies", "Utilities", "Rent Expense", "Insurance Expense", "Professional Fees"];
-    
-    if (remainingDebits > 0) {
-      const splitDebits = Math.max(1, Math.min(5, Math.ceil(remainingDebits / 300)));
-      const debitPerTransaction = remainingDebits / splitDebits;
-      
-      for (let i = 0; i < splitDebits; i++) {
-        transactions.push({
-          id: transactionId++,
-          date: `2024-01-${String(i + 5).padStart(2, '0')}`,
-          reference: transactionId - 1,
-          description: expenseTypes[i] || expenseTypes[0],
-          debit: i === splitDebits - 1 ? remainingDebits - (debitPerTransaction * (splitDebits - 1)) : debitPerTransaction,
-          credit: 0,
-          balance: runningBalance + (debitPerTransaction * (i + 1))
-        });
-        runningBalance += debitPerTransaction;
-      }
-    }
-  }
-
-  return transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
-}
+// Removed generateSampleTransactions function - now using real journal entry data
 
 export default function Ledger() {
   const { accountId } = useParams();
@@ -273,8 +63,9 @@ export default function Ledger() {
       const response = await api.get(`/chart-of-accounts/${accountId}/`);
       setAccount(response.data);
       
-      const sampleTransactions = generateSampleTransactions(response.data);
-      setTransactions(sampleTransactions);
+      // Fetch real journal entry data for this account
+      const ledgerResponse = await api.get(`/chart-of-accounts/${accountId}/ledger_entries/`);
+      setTransactions(ledgerResponse.data);
     } catch (err) {
       console.error("Error fetching account:", err);
       setError(err?.response?.data?.detail || "Failed to load account details");
@@ -313,9 +104,10 @@ export default function Ledger() {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (tx) =>
-          tx.description.toLowerCase().includes(term) ||
-          tx.reference.toString().includes(term) ||
-          new Date(tx.date).toLocaleDateString().includes(term)
+          (tx.description && tx.description.toLowerCase().includes(term)) ||
+          (tx.reference && tx.reference.toString().includes(term)) ||
+          (tx.created_by && tx.created_by.toLowerCase().includes(term)) ||
+          (tx.date && new Date(tx.date).toLocaleDateString().includes(term))
       );
     }
 
@@ -351,10 +143,6 @@ export default function Ledger() {
           case 'credit':
             aValue = a.credit || 0;
             bValue = b.credit || 0;
-            break;
-          case 'balance':
-            aValue = a.balance || 0;
-            bValue = b.balance || 0;
             break;
           default:
             return 0;
@@ -639,22 +427,12 @@ export default function Ledger() {
               }}>
                 Credit
               </th>
-              <th style={{ 
-                padding: "10px 12px", 
-                textAlign: "right", 
-                fontWeight: "bold", 
-                fontSize: "0.8em",
-                background: "white",
-                color: "#000"
-              }}>
-                Balance
-              </th>
             </tr>
           </thead>
           <tbody>
             {filteredTransactions.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: "center", padding: 20, borderBottom: "1px solid #ddd" }}>
+                <td colSpan={5} style={{ textAlign: "center", padding: 20, borderBottom: "1px solid #ddd" }}>
                   No transactions found for this account.
                 </td>
               </tr>
@@ -676,7 +454,35 @@ export default function Ledger() {
                     fontSize: "0.85em",
                     color: "#1C5C59"
                   }}>
-                    {tx.reference || ""}
+                    {tx.journal_entry_id ? (
+                      <button
+                        onClick={() => navigate(`/${userRole.toLowerCase()}/journal/view/${tx.journal_entry_id}`)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#1C5C59",
+                          textDecoration: "none",
+                          cursor: "pointer",
+                          fontSize: "inherit",
+                          fontFamily: "inherit",
+                          padding: 0,
+                          fontWeight: "normal"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.textDecoration = "underline";
+                          e.target.style.fontWeight = "bold";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.textDecoration = "none";
+                          e.target.style.fontWeight = "normal";
+                        }}
+                        title="Click to view journal entry details"
+                      >
+                        {tx.reference || ""}
+                      </button>
+                    ) : (
+                      tx.reference || ""
+                    )}
                   </td>
                   <td style={{ 
                     padding: "10px 12px", 
@@ -703,16 +509,6 @@ export default function Ledger() {
                     fontSize: "0.85em"
                   }}>
                     {tx.credit > 0 ? formatCurrency(tx.credit) : ""}
-                  </td>
-                  <td style={{ 
-                    padding: "10px 12px", 
-                    borderBottom: "1px solid #ddd", 
-                    textAlign: "right",
-                    fontWeight: "normal",
-                    fontSize: "0.85em",
-                    color: "#000"
-                  }}>
-                    {formatCurrency(tx.balance)}
                   </td>
                 </tr>
               ))
@@ -741,7 +537,7 @@ export default function Ledger() {
           }}
           title="Go back to Chart of Accounts"
         >
-          Back to Accounts
+          ← Back to Accounts
         </button>
       </div>
 

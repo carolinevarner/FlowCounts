@@ -377,21 +377,27 @@ class JournalEntryLineSerializer(serializers.ModelSerializer):
         ]
     
     def validate(self, data):
+        from .error_utils import get_error_message
+        
         debit = data.get('debit', 0)
         credit = data.get('credit', 0)
         account = data.get('account')
         
         if not account:
-            raise serializers.ValidationError("Please select an account for this line.")
+            error_msg = get_error_message('JOURNAL_LINE_NO_ACCOUNT')
+            raise serializers.ValidationError(error_msg['message'])
         
         if debit < 0 or credit < 0:
-            raise serializers.ValidationError("Debit and credit amounts cannot be negative. Please enter positive values or zero.")
+            error_msg = get_error_message('JOURNAL_LINE_NEGATIVE')
+            raise serializers.ValidationError(error_msg['message'])
         
         if debit > 0 and credit > 0:
-            raise serializers.ValidationError("A journal entry line cannot have both debit and credit amounts. Please enter only one amount per line.")
+            error_msg = get_error_message('JOURNAL_LINE_BOTH_AMOUNTS')
+            raise serializers.ValidationError(error_msg['message'])
         
         if debit == 0 and credit == 0:
-            raise serializers.ValidationError("Each line must have either a debit or credit amount. Please enter an amount greater than zero.")
+            error_msg = get_error_message('JOURNAL_LINE_NO_AMOUNT')
+            raise serializers.ValidationError(error_msg['message'])
         
         return data
 
@@ -461,30 +467,38 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         return obj.is_balanced()
     
     def validate_lines(self, lines):
+        from .error_utils import get_error_message
+        
         if not lines or len(lines) == 0:
-            raise serializers.ValidationError("Journal entry must have at least one line. Please add debit and credit entries.")
+            error_msg = get_error_message('JOURNAL_NO_LINES')
+            raise serializers.ValidationError(error_msg['message'])
         
         if len(lines) < 2:
-            raise serializers.ValidationError("A journal entry must have at least 2 lines (minimum one debit and one credit). Please add more lines.")
+            error_msg = get_error_message('JOURNAL_MIN_LINES')
+            raise serializers.ValidationError(error_msg['message'])
         
         accounts_used = [line.get('account') for line in lines if line.get('account')]
         if not accounts_used:
-            raise serializers.ValidationError("All lines must have an account selected. Please select an account for each line.")
+            error_msg = get_error_message('JOURNAL_NO_ACCOUNT')
+            raise serializers.ValidationError(error_msg['message'])
         
         has_debit = any(line.get('debit', 0) > 0 for line in lines)
         has_credit = any(line.get('credit', 0) > 0 for line in lines)
         
         if not has_debit:
-            raise serializers.ValidationError("Journal entry must have at least one debit entry. Please add a line with a debit amount.")
+            error_msg = get_error_message('JOURNAL_NO_DEBIT')
+            raise serializers.ValidationError(error_msg['message'])
         if not has_credit:
-            raise serializers.ValidationError("Journal entry must have at least one credit entry. Please add a line with a credit amount.")
+            error_msg = get_error_message('JOURNAL_NO_CREDIT')
+            raise serializers.ValidationError(error_msg['message'])
         
         total_debits = sum(line.get('debit', 0) for line in lines)
         total_credits = sum(line.get('credit', 0) for line in lines)
         
         if abs(total_debits - total_credits) > 0.01:
+            error_msg = get_error_message('JOURNAL_OUT_OF_BALANCE')
             raise serializers.ValidationError({
-                'lines': f"Journal entry is out of balance! Total debits (${total_debits:.2f}) must equal total credits (${total_credits:.2f}). Difference: ${abs(total_debits - total_credits):.2f}. Please adjust your amounts to balance the entry."
+                'lines': f"{error_msg['message']} Total debits: ${total_debits:.2f}, Total credits: ${total_credits:.2f}, Difference: ${abs(total_debits - total_credits):.2f}"
             })
         
         return lines

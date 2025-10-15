@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
+import '../styles/layout.css';
 
 export default function JournalView() {
   const navigate = useNavigate();
@@ -10,6 +11,9 @@ export default function JournalView() {
   const [error, setError] = useState('');
   const [userRole, setUserRole] = useState('');
   const [rolePrefix, setRolePrefix] = useState('manager');
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -62,9 +66,50 @@ export default function JournalView() {
       case 'APPROVED':
         return { bg: '#d4edda', color: '#155724' };
       case 'REJECTED':
-        return { bg: '#f8d7da', color: '#721c24' };
+        return { bg: '#fee', color: '#c00' };
       default:
         return { bg: '#fff3cd', color: '#856404' };
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!window.confirm('Are you sure you want to approve this journal entry?')) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await api.post(`/journal-entries/${id}/approve/`);
+      alert('Journal entry approved successfully');
+      fetchJournalEntry();
+    } catch (err) {
+      console.error('Failed to approve journal entry:', err);
+      alert(err?.response?.data?.detail || 'Failed to approve journal entry');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectionReason.trim()) {
+      alert('Please enter a rejection reason');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await api.post(`/journal-entries/${id}/reject/`, {
+        rejection_reason: rejectionReason
+      });
+      alert('Journal entry rejected');
+      setShowRejectModal(false);
+      setRejectionReason('');
+      fetchJournalEntry();
+    } catch (err) {
+      console.error('Failed to reject journal entry:', err);
+      alert(err?.response?.data?.detail || 'Failed to reject journal entry');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -93,7 +138,7 @@ export default function JournalView() {
           style={{
             marginTop: '16px',
             padding: '10px 20px',
-            backgroundColor: '#6c757d',
+            backgroundColor: '#28a745',
             color: 'white',
             border: 'none',
             borderRadius: '6px',
@@ -109,11 +154,11 @@ export default function JournalView() {
   const statusColors = getStatusColor(entry.status);
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="main-body">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600", color: "#1C302F" }}>
-            Journal Entry JE-{entry.id}
+          <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600", color: "#000" }}>
+            Journal Entry {entry.id}
           </h2>
           <span style={{
             padding: '6px 12px',
@@ -127,6 +172,42 @@ export default function JournalView() {
           </span>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
+          {entry.status === 'PENDING' && (userRole === 'ADMIN' || userRole === 'MANAGER') && (
+            <>
+              <button
+                onClick={handleApprove}
+                disabled={submitting}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: submitting ? '#ccc' : '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: submitting ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                {submitting ? 'Processing...' : 'Approve'}
+              </button>
+              <button
+                onClick={() => setShowRejectModal(true)}
+                disabled={submitting}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: submitting ? '#ccc' : '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: submitting ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Reject
+              </button>
+            </>
+          )}
           {entry.status === 'PENDING' && (
             <button
               onClick={() => navigate(`/${rolePrefix}/journal/edit/${entry.id}`)}
@@ -148,7 +229,7 @@ export default function JournalView() {
             onClick={() => navigate(-1)}
             style={{
               padding: '10px 20px',
-              backgroundColor: '#6c757d',
+              backgroundColor: '#1C5C59',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -163,7 +244,7 @@ export default function JournalView() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <div className="card">
           <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1em', color: '#1C302F' }}>Entry Details</h3>
           <div style={{ display: 'grid', gap: '12px' }}>
             <div>
@@ -185,7 +266,7 @@ export default function JournalView() {
           </div>
         </div>
 
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <div className="card">
           <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1em', color: '#1C302F' }}>Review Information</h3>
           <div style={{ display: 'grid', gap: '12px' }}>
             {entry.reviewed_by_username && (
@@ -206,10 +287,10 @@ export default function JournalView() {
                 <div style={{ 
                   fontSize: '14px', 
                   padding: '12px', 
-                  backgroundColor: '#f8d7da', 
-                  border: '1px solid #f5c6cb',
+                  backgroundColor: '#fee', 
+                  border: '1px solid #fcc',
                   borderRadius: '6px',
-                  color: '#721c24'
+                  color: '#c00'
                 }}>
                   {entry.rejection_reason}
                 </div>
@@ -224,7 +305,7 @@ export default function JournalView() {
         </div>
       </div>
 
-      <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '24px' }}>
+      <div className="card" style={{ marginBottom: '24px' }}>
         <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1em', color: '#1C302F' }}>Journal Entry Lines</h3>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -248,7 +329,7 @@ export default function JournalView() {
                   <td style={{ 
                     padding: '12px', 
                     textAlign: 'right',
-                    color: line.debit > 0 ? '#1C5C59' : '#999',
+                    color: line.debit > 0 ? '#000' : '#999',
                     fontWeight: line.debit > 0 ? '500' : 'normal'
                   }}>
                     {line.debit > 0 ? formatCurrency(line.debit) : '-'}
@@ -256,7 +337,7 @@ export default function JournalView() {
                   <td style={{ 
                     padding: '12px', 
                     textAlign: 'right',
-                    color: line.credit > 0 ? '#1C5C59' : '#999',
+                    color: line.credit > 0 ? '#000' : '#999',
                     fontWeight: line.credit > 0 ? '500' : 'normal'
                   }}>
                     {line.credit > 0 ? formatCurrency(line.credit) : '-'}
@@ -265,10 +346,10 @@ export default function JournalView() {
               ))}
               <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 'bold', fontSize: '1.1em' }}>
                 <td colSpan="4" style={{ padding: '12px', textAlign: 'right' }}>Totals:</td>
-                <td style={{ padding: '12px', textAlign: 'right', color: '#1C5C59' }}>
+                <td style={{ padding: '12px', textAlign: 'right', color: '#000' }}>
                   {formatCurrency(entry.total_debits)}
                 </td>
-                <td style={{ padding: '12px', textAlign: 'right', color: '#1C5C59' }}>
+                <td style={{ padding: '12px', textAlign: 'right', color: '#000' }}>
                   {formatCurrency(entry.total_credits)}
                 </td>
               </tr>
@@ -290,7 +371,7 @@ export default function JournalView() {
       </div>
 
       {entry.attachments && entry.attachments.length > 0 && (
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <div className="card">
           <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1em', color: '#1C302F' }}>Attachments ({entry.attachments.length})</h3>
           <div style={{ display: 'grid', gap: '12px' }}>
             {entry.attachments.map((attachment, index) => (
@@ -333,6 +414,87 @@ export default function JournalView() {
                 </a>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {showRejectModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '24px',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ margin: '0 0 16px 0', fontFamily: 'Playfair Display', fontSize: '1.3em' }}>
+              Reject Journal Entry
+            </h3>
+            <p style={{ marginBottom: '16px', color: '#666' }}>
+              Please provide a reason for rejecting this journal entry:
+            </p>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Enter rejection reason (required)..."
+              rows="5"
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #ddd',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                resize: 'vertical'
+              }}
+            />
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectionReason('');
+                }}
+                disabled={submitting}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: submitting ? 'not-allowed' : 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={submitting || !rejectionReason.trim()}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: (submitting || !rejectionReason.trim()) ? '#ccc' : '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: (submitting || !rejectionReason.trim()) ? 'not-allowed' : 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                {submitting ? 'Rejecting...' : 'Confirm Rejection'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -131,10 +131,12 @@ export default function AdminEvents() {
                   {change.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </td>
                 <td style={{ color: "#c1121f", borderLeft: "1px solid #eee" }}>
-                  {change.before !== null && change.before !== undefined ? String(change.before) : 'N/A'}
+                  {change.before !== null && change.before !== undefined ? 
+                    (Array.isArray(change.before) ? change.before.join(', ') : String(change.before)) : 'N/A'}
                 </td>
                 <td style={{ color: "#4f772d", borderLeft: "1px solid #eee" }}>
-                  {change.after !== null && change.after !== undefined ? String(change.after) : 'N/A'}
+                  {change.after !== null && change.after !== undefined ? 
+                    (Array.isArray(change.after) ? change.after.join(', ') : String(change.after)) : 'N/A'}
                 </td>
               </tr>
             ))}
@@ -169,7 +171,8 @@ export default function AdminEvents() {
                   {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </td>
                 <td style={{ borderLeft: "1px solid #eee" }}>
-                  {value !== null && value !== undefined ? String(value) : 'N/A'}
+                  {value !== null && value !== undefined ? 
+                    (Array.isArray(value) ? value.join(', ') : String(value)) : 'N/A'}
                 </td>
               </tr>
             ))}

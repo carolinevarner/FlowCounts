@@ -39,7 +39,7 @@ from .serializers import (
     JournalEntrySerializer,
     JournalEntryAttachmentSerializer,
 )
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsManagerOrAdmin
 from .password_utils import (
     save_password_to_history,
     set_password_expiration,
@@ -345,7 +345,7 @@ class FlowTokenView(TokenObtainPairView):
             )
             return DatabaseErrorResponse.create_response('AUTH_INVALID_CREDENTIALS', status=400)
         if not user.is_active:
-            return Response({"detail": "User is inactive/suspended"}, status=403)
+            return DatabaseErrorResponse.create_response('USER_INACTIVE_SUSPENDED', status_code=403)
         
         if is_suspended_now(user):
             until = user.suspend_to or user.suspend_from
@@ -1609,6 +1609,35 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
             logger.warning("Failed to log ACCOUNT_DEACTIVATED event", exc_info=True)
         
         return Response(ChartOfAccountsSerializer(account, context={'request': request}).data)
+    
+    @action(detail=True, methods=['get'])
+    def ledger_entries(self, request, pk=None):
+        """
+        Get journal entry lines for this account to display in ledger.
+        """
+        account = self.get_object()
+        
+        # Get all journal entry lines for this account from approved entries
+        lines = JournalEntryLine.objects.filter(
+            account=account,
+            journal_entry__status='APPROVED'
+        ).select_related('journal_entry', 'journal_entry__created_by').order_by('journal_entry__entry_date', 'journal_entry__created_at')
+        
+        # Format the data for ledger display
+        ledger_data = []
+        for line in lines:
+            ledger_data.append({
+                'id': line.id,
+                'date': line.journal_entry.entry_date.isoformat(),
+                'reference': str(line.journal_entry.id),
+                'journal_entry_id': line.journal_entry.id,
+                'description': line.description or line.journal_entry.description,
+                'debit': float(line.debit),
+                'credit': float(line.credit),
+                'created_by': line.journal_entry.created_by.username if line.journal_entry.created_by else None
+            })
+        
+        return Response(ledger_data)
 
 
 class JournalEntryViewSet(viewsets.ModelViewSet):
@@ -1623,9 +1652,9 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
     serializer_class = JournalEntrySerializer
     
     def get_permissions(self):
-        """Managers and Accountants can create/update. Only Managers can approve/reject."""
+        """Managers and Accountants can create/update. Only Managers and Admins can approve/reject."""
         if self.action in ['approve', 'reject']:
-            return [IsAuthenticated(), IsAdmin()]
+            return [IsAuthenticated(), IsManagerOrAdmin()]
         return [IsAuthenticated()]
     
     def get_queryset(self):
@@ -1664,17 +1693,11 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
             'status': entry.status,
             'created_by': entry.created_by.username if entry.created_by else None,
             'lines': [
-                {
-                    'account': line.account.account_number,
-                    'account_name': line.account.account_name,
-                    'description': line.description,
-                    'debit': str(line.debit),
-                    'credit': str(line.credit),
-                }
+                f"{line.account.account_number} - {line.account.account_name}: ${line.debit} Dr / ${line.credit} Cr"
                 for line in entry.lines.all()
             ],
-            'total_debits': str(entry.total_debits()),
-            'total_credits': str(entry.total_credits()),
+            'total_debits': f"${entry.total_debits()}",
+            'total_credits': f"${entry.total_credits()}",
         }
     
     def perform_create(self, serializer):
@@ -1695,57 +1718,35 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
         
         if entry.status == 'PENDING':
             try:
-                if entry.created_by and entry.created_by.email:
+                manager_emails = list(User.objects.filter(role='MANAGER', is_active=True).values_list('email', flat=True))
+                
+                if manager_emails:
                     send_mail(
-                        "FlowCounts: Journal Entry Submitted Successfully",
-                        f"Hello {entry.created_by.first_name or entry.created_by.username},\n\n"
-                        f"Your journal entry has been successfully submitted for manager approval.\n\n"
+                        "FlowCounts: New Journal Entry Submitted for Approval",
+                        f"A new journal entry has been submitted and requires your approval.\n\n"
                         f"Entry ID: JE-{entry.id}\n"
                         f"Date: {entry.entry_date}\n"
                         f"Description: {entry.description or 'N/A'}\n"
+                        f"Created by: {entry.created_by.username if entry.created_by else 'Unknown'}\n"
                         f"Total Debits: ${entry.total_debits():.2f}\n"
                         f"Total Credits: ${entry.total_credits():.2f}\n"
                         f"Status: PENDING APPROVAL\n\n"
-                        "You will be notified once a manager reviews your entry.\n\n"
+                        "Please log in to review and approve or reject this entry.\n\n"
                         "FlowCounts Team",
                         settings.DEFAULT_FROM_EMAIL,
-                        [entry.created_by.email],
+                        manager_emails,
                         fail_silently=False,
                     )
             except Exception as e:
-                logger.error(f"Failed to send accountant confirmation email: {e}")
-        
-        try:
-            admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", [])
-            manager_emails = list(User.objects.filter(role='MANAGER', is_active=True).values_list('email', flat=True))
-            notification_emails = list(set(admin_emails + manager_emails))
-            
-            if notification_emails:
-                send_mail(
-                        "FlowCounts: New Journal Entry Submitted for Approval",
-                        f"A new journal entry has been submitted and requires your approval.\n\n"
-                    f"Entry ID: JE-{entry.id}\n"
-                    f"Date: {entry.entry_date}\n"
-                        f"Description: {entry.description or 'N/A'}\n"
-                    f"Created by: {entry.created_by.username if entry.created_by else 'Unknown'}\n"
-                    f"Total Debits: ${entry.total_debits():.2f}\n"
-                        f"Total Credits: ${entry.total_credits():.2f}\n"
-                        f"Status: PENDING APPROVAL\n\n"
-                        "Please log in to review and approve or reject this entry.\n\n"
-                    "FlowCounts Team",
-                    settings.DEFAULT_FROM_EMAIL,
-                    notification_emails,
-                        fail_silently=False,
-                )
-        except Exception as e:
-            logger.error(f"Failed to send journal entry notification: {e}")
+                logger.error(f"Failed to send journal entry notification: {e}")
     
     def perform_update(self, serializer):
-        """Update journal entry and log the event."""
+        from .error_utils import get_error_message
         entry = self.get_object()
         
         if entry.status != 'PENDING':
-            raise serializers.ValidationError("Cannot edit an entry that has been approved or rejected.")
+            error_msg = get_error_message('JOURNAL_EDIT_NOT_PENDING')
+            raise serializers.ValidationError(error_msg['message'])
         
         before_image = self._journal_entry_to_dict(entry)
         updated_entry = serializer.save()
@@ -1765,9 +1766,10 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
             logger.warning("Failed to log JOURNAL_ENTRY_UPDATED event", exc_info=True)
     
     def perform_destroy(self, instance):
-        """Prevent deletion of non-pending entries."""
+        from .error_utils import get_error_message
         if instance.status != 'PENDING':
-            raise serializers.ValidationError("Cannot delete an entry that has been approved or rejected.")
+            error_msg = get_error_message('JOURNAL_EDIT_NOT_PENDING')
+            raise serializers.ValidationError(error_msg['message'])
         super().perform_destroy(instance)
     
     @action(detail=True, methods=['post'])
