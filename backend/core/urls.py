@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.decorators.cache import never_cache
+from django.views.generic import TemplateView
 
 # Import your views
 from accounts.views import (
@@ -21,7 +22,7 @@ from accounts.views import (
     get_managers_and_admins,
 )
 from accounts.error_views import ErrorMessageViewSet, ErrorLogViewSet
-from backend.core.views import index  # <-- new import
+from core.views import index 
 
 router = DefaultRouter()
 router.register(r"auth/registration-requests", RegistrationRequestViewSet, basename="registration-requests")
@@ -50,5 +51,5 @@ if settings.DEBUG:
 
 # Catch-all for frontend routes - MUST be last!
 urlpatterns += [
-    re_path(r'^(?!api/|media/).*$', never_cache(index)),  # <-- uses new index view
+    re_path(r'^(?!api/|media/).*$', never_cache(TemplateView.as_view(template_name='index.html'))),
 ]
