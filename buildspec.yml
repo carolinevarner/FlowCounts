@@ -6,21 +6,31 @@ phases:
       python: 3.11
       nodejs: 18
     commands:
+      - echo "Installing backend dependencies..."
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt --log /var/log/pip_install.log
       - cat /var/log/pip_install.log
+
+      - echo "Installing frontend dependencies..."
       - npm ci --prefix frontend
 
   build:
     commands:
+      - echo "Building frontend..."
       - npm run build --prefix frontend
-      - mkdir -p backend/static
-      - cp -r frontend/dist/* backend/static/
+
+      - echo "Creating static directory..."
+      - mkdir -p static
+      - cp -r frontend/dist/* static/
+
+      - echo "Copying backend project files..."
+      - cp backend/manage.py .
+      - cp backend/requirements.txt .
+      - cp backend/db.sqlite3 . || true
+      - cp -r backend/core .
 
 artifacts:
   files:
-    - backend/**/*
-    - .ebextensions/**/*
-    - Procfile
+    - '**/*'
   base-directory: .
   discard-paths: no
