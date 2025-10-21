@@ -19,6 +19,10 @@ import Dashboard from "./pages/Dashboard.jsx";
 import JournalEntry from "./pages/JournalEntry.jsx";
 import JournalList from "./pages/JournalList.jsx";
 import JournalView from "./pages/JournalView.jsx";
+import TrialBalance from "./pages/TrialBalance.jsx";
+import IncomeStatement from "./pages/IncomeStatement.jsx";
+import BalanceSheet from "./pages/BalanceSheet.jsx";
+import RetainedEarnings from "./pages/RetainedEarnings.jsx";
 
 function Blank({ title }) {
   return (
@@ -79,10 +83,10 @@ export default function App() {
         <Route path="journal/new" element={<JournalEntry />} />
         <Route path="journal/edit/:id" element={<JournalEntry />} />
         <Route path="journal/view/:id" element={<JournalView />} />
-        <Route path="trial" element={<Blank title="Manager • Trial Balance" />} />
-        <Route path="income" element={<Blank title="Manager • Income Statement" />} />
-        <Route path="balance" element={<Blank title="Manager • Balance Sheet" />} />
-        <Route path="retained" element={<Blank title="Manager • Statement of Retained Earnings" />} />
+        <Route path="trial" element={<TrialBalance />} />
+        <Route path="income" element={<IncomeStatement />} />
+        <Route path="balance" element={<BalanceSheet />} />
+        <Route path="retained" element={<RetainedEarnings />} />
       </Route>
 
       <Route
@@ -102,10 +106,10 @@ export default function App() {
         <Route path="journal/new" element={<JournalEntry />} />
         <Route path="journal/edit/:id" element={<JournalEntry />} />
         <Route path="journal/view/:id" element={<JournalView />} />
-        <Route path="trial" element={<Blank title="Accountant • Trial Balance" />} />
-        <Route path="income" element={<Blank title="Accountant • Income Statement" />} />
-        <Route path="balance" element={<Blank title="Accountant • Balance Sheet" />} />
-        <Route path="retained" element={<Blank title="Accountant • Statement of Retained Earnings" />} />
+        <Route path="trial" element={<TrialBalance />} />
+        <Route path="income" element={<IncomeStatement />} />
+        <Route path="balance" element={<BalanceSheet />} />
+        <Route path="retained" element={<RetainedEarnings />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

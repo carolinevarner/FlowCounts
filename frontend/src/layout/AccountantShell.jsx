@@ -11,7 +11,6 @@ const LINKS = [
   { to: "/accountant/income", label: "Income Statement" },
   { to: "/accountant/balance", label: "Balance Sheet" },
   { to: "/accountant/retained", label: "Statement of Retained Earnings" },
-  { to: "/profile", label: "Profile" },
 ];
 
 export default function AccountantShell() {

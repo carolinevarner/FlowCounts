@@ -248,7 +248,9 @@ class ErrorLogSerializer(serializers.ModelSerializer):
 class ChartOfAccountsSerializer(serializers.ModelSerializer):
     created_by_username = serializers.SerializerMethodField()
     updated_by_username = serializers.SerializerMethodField()
+    closed_by_username = serializers.SerializerMethodField()
     can_deactivate = serializers.SerializerMethodField()
+    can_be_closed = serializers.SerializerMethodField()
     
     class Meta:
         model = ChartOfAccounts
@@ -276,9 +278,15 @@ class ChartOfAccountsSerializer(serializers.ModelSerializer):
             'is_active',
             'deactivate_from',
             'deactivate_to',
+            'is_closed',
+            'closed_at',
+            'closed_by',
+            'closed_by_username',
+            'closure_reason',
             'can_deactivate',
+            'can_be_closed',
         ]
-        read_only_fields = ['created_at', 'created_by', 'updated_at', 'updated_by', 'can_deactivate']
+        read_only_fields = ['created_at', 'created_by', 'updated_at', 'updated_by', 'closed_at', 'closed_by', 'can_deactivate', 'can_be_closed']
     
     def _get_display_username(self, user):
         if not user:
@@ -304,8 +312,14 @@ class ChartOfAccountsSerializer(serializers.ModelSerializer):
     def get_updated_by_username(self, obj):
         return self._get_display_username(obj.updated_by)
     
+    def get_closed_by_username(self, obj):
+        return self._get_display_username(obj.closed_by)
+    
     def get_can_deactivate(self, obj):
         return obj.can_deactivate()
+    
+    def get_can_be_closed(self, obj):
+        return obj.can_be_closed()
     
     def validate_account_number(self, value):
         if not value:

@@ -259,6 +259,18 @@ class ChartOfAccounts(models.Model):
     deactivate_from = models.DateField(blank=True, null=True)
     deactivate_to = models.DateField(blank=True, null=True)
     
+    # Account closure fields
+    is_closed = models.BooleanField(default=False)
+    closed_at = models.DateTimeField(blank=True, null=True)
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='accounts_closed'
+    )
+    closure_reason = models.TextField(blank=True, help_text="Reason for closing this account")
+    
     class Meta:
         ordering = ['order', 'account_number']
         verbose_name = 'Chart of Account'
@@ -281,6 +293,22 @@ class ChartOfAccounts(models.Model):
             return self.deactivate_from <= today
         
         return False
+    
+    def close_account(self, closed_by_user, reason):
+        """Close an account with a reason."""
+        if self.is_closed:
+            raise ValueError("Account is already closed")
+        
+        self.is_closed = True
+        self.closed_at = timezone.now()
+        self.closed_by = closed_by_user
+        self.closure_reason = reason
+        self.is_active = False  # Also deactivate when closing
+        self.save()
+    
+    def can_be_closed(self):
+        """Check if account can be closed (balance should be zero)."""
+        return self.balance == 0
 
 
 class JournalEntry(models.Model):

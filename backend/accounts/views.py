@@ -2,8 +2,9 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from datetime import datetime
 from datetime import date
+from decimal import Decimal
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
@@ -1495,6 +1496,10 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
             'is_active': account.is_active,
             'deactivate_from': account.deactivate_from.isoformat() if account.deactivate_from else None,
             'deactivate_to': account.deactivate_to.isoformat() if account.deactivate_to else None,
+            'is_closed': account.is_closed,
+            'closed_at': account.closed_at.isoformat() if account.closed_at else None,
+            'closed_by': account.closed_by.username if account.closed_by else None,
+            'closure_reason': account.closure_reason,
             'created_at': account.created_at.isoformat() if account.created_at else None,
             'created_by': account.created_by.username if account.created_by else None,
         }
@@ -1993,6 +1998,87 @@ def send_email_to_user(request):
         )
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def close_account(request):
+    """Close an account with a reason (Manager only)."""
+    try:
+        account_id = request.data.get('account_id')
+        closure_reason = request.data.get('closure_reason', '').strip()
+        
+        if not account_id:
+            return Response(
+                {"error": "Account ID is required"},
+                status=400
+            )
+        
+        if not closure_reason:
+            return Response(
+                {"error": "Closure reason is required"},
+                status=400
+            )
+        
+        # Check if user is manager or admin
+        if request.user.role not in ['MANAGER', 'ADMIN']:
+            return Response(
+                {"error": "Only managers and admins can close accounts"},
+                status=403
+            )
+        
+        try:
+            account = ChartOfAccounts.objects.get(id=account_id)
+        except ChartOfAccounts.DoesNotExist:
+            return Response(
+                {"error": "Account not found"},
+                status=404
+            )
+        
+        # Check if account is already closed
+        if account.is_closed:
+            return Response(
+                {"error": "Account is already closed"},
+                status=400
+            )
+        
+        # Check if account can be closed (balance should be zero)
+        if not account.can_be_closed():
+            return Response(
+                {"error": f"Cannot close account. Current balance is {account.balance}. Account must have zero balance to be closed."},
+                status=400
+            )
+        
+        # Close the account
+        account.close_account(request.user, closure_reason)
+        
+        # Log the event
+        EventLog.objects.create(
+            user=request.user,
+            action="ACCOUNT_CLOSED",
+            details=f"Account {account.account_number} - {account.account_name} was closed. Reason: {closure_reason}",
+            before_image={"account_id": account.id, "is_closed": False},
+            after_image={"account_id": account.id, "is_closed": True, "closure_reason": closure_reason}
+        )
+        
+        return Response({
+            "message": "Account closed successfully",
+            "account": {
+                "id": account.id,
+                "account_number": account.account_number,
+                "account_name": account.account_name,
+                "is_closed": account.is_closed,
+                "closed_at": account.closed_at,
+                "closure_reason": account.closure_reason
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Failed to close account: {e}", exc_info=True)
+        return Response(
+            {"error": f"Failed to close account: {str(e)}"},
+            status=500
+        )
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_managers_and_admins(request):
@@ -2019,5 +2105,394 @@ def get_managers_and_admins(request):
         logger.error(f"Failed to get managers and admins: {e}", exc_info=True)
         return Response(
             {"detail": "Failed to retrieve managers, administrators, and accountants."},
+            status=500
+        )
+
+
+# Financial Statement Views
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def trial_balance(request):
+    """Generate trial balance for a specific date or date range."""
+    try:
+        as_of_date = request.query_params.get('as_of_date')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        
+        if not as_of_date and not (start_date and end_date):
+            return Response(
+                {"error": "Either as_of_date or both start_date and end_date are required"},
+                status=400
+            )
+        
+        # Get all active accounts
+        accounts = ChartOfAccounts.objects.filter(is_active=True).order_by('account_number')
+        
+        trial_balance_data = []
+        total_debits = Decimal('0.00')
+        total_credits = Decimal('0.00')
+        
+        for account in accounts:
+            # Always get all approved journal entry lines for this account (no date filtering)
+            # This ensures the trial balance always reflects the current state of all approved entries
+            journal_lines = JournalEntryLine.objects.filter(
+                account=account,
+                journal_entry__status='APPROVED'
+            )
+            
+            # Calculate balance dynamically from all approved journal entries to ensure real-time updates
+            account_debits = journal_lines.aggregate(total=Sum('debit'))['total'] or Decimal('0.00')
+            account_credits = journal_lines.aggregate(total=Sum('credit'))['total'] or Decimal('0.00')
+            
+            if account.normal_side == 'DEBIT':
+                account_balance = account.initial_balance + account_debits - account_credits
+            else:
+                account_balance = account.initial_balance + account_credits - account_debits
+            
+            # For post-closing trial balance, revenue and expense accounts should be zero
+            # This is the correct accounting practice - trial balance shows post-closing balances
+            if account.account_category in ['REVENUE', 'EXPENSE']:
+                account_balance = Decimal('0.00')
+            
+            # Special handling for Office Equipment and Accumulated Depreciation
+            if account.account_name == 'Office Equipment':
+                # Get Accumulated Depreciation balance
+                try:
+                    acc_dep_account = ChartOfAccounts.objects.get(account_name='Accumulated Depreciation - Office Equipment')
+                    acc_dep_balance = acc_dep_account.balance
+                    net_balance = account_balance - acc_dep_balance
+                    
+                    # Only include if net balance is not zero
+                    if net_balance != 0:
+                        trial_balance_data.append({
+                            'account_number': account.account_number,
+                            'account_name': f"{account.account_name} (Net)",
+                            'account_category': account.account_category,
+                            'normal_side': account.normal_side,
+                            'debit_balance': net_balance if net_balance > 0 else Decimal('0.00'),
+                            'credit_balance': abs(net_balance) if net_balance < 0 else Decimal('0.00'),
+                            'balance': net_balance
+                        })
+                        
+                        total_debits += net_balance if net_balance > 0 else Decimal('0.00')
+                        total_credits += abs(net_balance) if net_balance < 0 else Decimal('0.00')
+                except ChartOfAccounts.DoesNotExist:
+                    # If no accumulated depreciation, show gross amount
+                    if account_balance != 0:
+                        trial_balance_data.append({
+                            'account_number': account.account_number,
+                            'account_name': account.account_name,
+                            'account_category': account.account_category,
+                            'normal_side': account.normal_side,
+                            'debit_balance': account_balance if account_balance > 0 else Decimal('0.00'),
+                            'credit_balance': abs(account_balance) if account_balance < 0 else Decimal('0.00'),
+                            'balance': account_balance
+                        })
+                        
+                        total_debits += account_balance if account_balance > 0 else Decimal('0.00')
+                        total_credits += abs(account_balance) if account_balance < 0 else Decimal('0.00')
+            elif account.account_name == 'Accumulated Depreciation - Office Equipment':
+                # Skip accumulated depreciation as it's included in net Office Equipment
+                continue
+            else:
+                # Only include accounts with non-zero balances
+                if account_balance != 0:
+                    # Determine debit and credit amounts for trial balance
+                    if account_balance > 0:
+                        # Positive balance - goes to debit side for debit accounts, credit side for credit accounts
+                        debit_amount = account_balance if account.normal_side == 'DEBIT' else Decimal('0.00')
+                        credit_amount = account_balance if account.normal_side == 'CREDIT' else Decimal('0.00')
+                    else:
+                        # Negative balance - goes to credit side for debit accounts, debit side for credit accounts
+                        debit_amount = abs(account_balance) if account.normal_side == 'CREDIT' else Decimal('0.00')
+                        credit_amount = abs(account_balance) if account.normal_side == 'DEBIT' else Decimal('0.00')
+                    
+                    trial_balance_data.append({
+                        'account_number': account.account_number,
+                        'account_name': account.account_name,
+                        'account_category': account.account_category,
+                        'normal_side': account.normal_side,
+                        'debit_balance': debit_amount,
+                        'credit_balance': credit_amount,
+                        'balance': account_balance
+                    })
+                    
+                    total_debits += debit_amount
+                    total_credits += credit_amount
+        
+        return Response({
+            'trial_balance': trial_balance_data,
+            'total_debits': total_debits,
+            'total_credits': total_credits,
+            'is_balanced': total_debits == total_credits,
+            'as_of_date': as_of_date,
+            'start_date': start_date,
+            'end_date': end_date
+        })
+        
+    except Exception as e:
+        return Response(
+            {"error": f"Failed to generate trial balance: {str(e)}"},
+            status=500
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def income_statement(request):
+    """Generate income statement for a specific date range."""
+    try:
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        
+        if not start_date or not end_date:
+            return Response(
+                {"error": "Both start_date and end_date are required"},
+                status=400
+            )
+        
+        # Get revenue accounts
+        revenue_accounts = ChartOfAccounts.objects.filter(
+            is_active=True,
+            account_category='REVENUE'
+        ).order_by('account_number')
+        
+        # Get expense accounts
+        expense_accounts = ChartOfAccounts.objects.filter(
+            is_active=True,
+            account_category='EXPENSE'
+        ).order_by('account_number')
+        
+        # Calculate revenue totals
+        revenues = []
+        total_revenue = Decimal('0.00')
+        
+        for account in revenue_accounts:
+            # Use the stored account balance for income statement (pre-closing balance)
+            revenue_amount = account.balance
+            
+            if revenue_amount > 0:
+                revenues.append({
+                    'account_number': account.account_number,
+                    'account_name': account.account_name,
+                    'amount': revenue_amount
+                })
+                total_revenue += revenue_amount
+        
+        # Calculate expense totals
+        expenses = []
+        total_expenses = Decimal('0.00')
+        
+        for account in expense_accounts:
+            # Use the stored account balance for income statement (pre-closing balance)
+            expense_amount = account.balance
+            
+            if expense_amount > 0:
+                expenses.append({
+                    'account_number': account.account_number,
+                    'account_name': account.account_name,
+                    'amount': expense_amount
+                })
+                total_expenses += expense_amount
+        
+        net_income = total_revenue - total_expenses
+        
+        return Response({
+            'revenues': revenues,
+            'total_revenue': total_revenue,
+            'expenses': expenses,
+            'total_expenses': total_expenses,
+            'net_income': net_income,
+            'start_date': start_date,
+            'end_date': end_date
+        })
+        
+    except Exception as e:
+        return Response(
+            {"error": f"Failed to generate income statement: {str(e)}"},
+            status=500
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def balance_sheet(request):
+    """Generate balance sheet for a specific date."""
+    try:
+        as_of_date = request.query_params.get('as_of_date')
+        
+        if not as_of_date:
+            return Response(
+                {"error": "as_of_date is required"},
+                status=400
+            )
+        
+        # Get asset accounts
+        asset_accounts = ChartOfAccounts.objects.filter(
+            is_active=True,
+            account_category='ASSET'
+        ).order_by('account_number')
+        
+        # Get liability accounts
+        liability_accounts = ChartOfAccounts.objects.filter(
+            is_active=True,
+            account_category='LIABILITY'
+        ).order_by('account_number')
+        
+        # Get equity accounts
+        equity_accounts = ChartOfAccounts.objects.filter(
+            is_active=True,
+            account_category='EQUITY'
+        ).order_by('account_number')
+        
+        def calculate_account_balance(account, as_of_date):
+            # Calculate balance dynamically from all approved journal entries to ensure real-time updates
+            # Remove date filtering to ensure all approved entries are included
+            journal_lines = JournalEntryLine.objects.filter(
+                account=account,
+                journal_entry__status='APPROVED'  # Only include approved entries
+            )
+            
+            account_debits = journal_lines.aggregate(total=Sum('debit'))['total'] or Decimal('0.00')
+            account_credits = journal_lines.aggregate(total=Sum('credit'))['total'] or Decimal('0.00')
+            
+            if account.normal_side == 'DEBIT':
+                balance = account.initial_balance + account_debits - account_credits
+            else:
+                balance = account.initial_balance + account_credits - account_debits
+            
+            return balance
+        
+        # Calculate assets
+        assets = []
+        total_assets = Decimal('0.00')
+        
+        for account in asset_accounts:
+            balance = calculate_account_balance(account, as_of_date)
+            if balance != 0:
+                # Handle accumulated depreciation as a contra-asset (reduces total assets)
+                if 'Accumulated Depreciation' in account.account_name:
+                    assets.append({
+                        'account_number': account.account_number,
+                        'account_name': account.account_name,
+                        'account_subcategory': account.account_subcategory,
+                        'balance': -balance  # Show as negative to reduce total assets
+                    })
+                    total_assets -= balance  # Subtract from total assets
+                else:
+                    assets.append({
+                        'account_number': account.account_number,
+                        'account_name': account.account_name,
+                        'account_subcategory': account.account_subcategory,
+                        'balance': balance
+                    })
+                    total_assets += balance
+        
+        # Calculate liabilities
+        liabilities = []
+        total_liabilities = Decimal('0.00')
+        
+        for account in liability_accounts:
+            balance = calculate_account_balance(account, as_of_date)
+            if balance != 0:
+                liabilities.append({
+                    'account_number': account.account_number,
+                    'account_name': account.account_name,
+                    'account_subcategory': account.account_subcategory,
+                    'balance': balance
+                })
+                total_liabilities += balance
+        
+        # Calculate equity
+        equity = []
+        total_equity = Decimal('0.00')
+        
+        for account in equity_accounts:
+            balance = calculate_account_balance(account, as_of_date)
+            if balance != 0:
+                equity.append({
+                    'account_number': account.account_number,
+                    'account_name': account.account_name,
+                    'account_subcategory': account.account_subcategory,
+                    'balance': balance
+                })
+                total_equity += balance
+        
+        # Calculate if balanced
+        is_balanced = total_assets == (total_liabilities + total_equity)
+        
+        return Response({
+            'assets': assets,
+            'total_assets': total_assets,
+            'liabilities': liabilities,
+            'total_liabilities': total_liabilities,
+            'equity': equity,
+            'total_equity': total_equity,
+            'is_balanced': is_balanced,
+            'as_of_date': as_of_date
+        })
+        
+    except Exception as e:
+        return Response(
+            {"error": f"Failed to generate balance sheet: {str(e)}"},
+            status=500
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def retained_earnings(request):
+    """Generate statement of retained earnings for a specific date range."""
+    try:
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        
+        if not start_date or not end_date:
+            return Response(
+                {"error": "Both start_date and end_date are required"},
+                status=400
+            )
+        
+        # Get beginning retained earnings (from previous period)
+        beginning_retained_earnings = Decimal('0.00')
+        
+        # Calculate net income for the period
+        revenue_accounts = ChartOfAccounts.objects.filter(
+            is_active=True,
+            account_category='REVENUE'
+        )
+        
+        expense_accounts = ChartOfAccounts.objects.filter(
+            is_active=True,
+            account_category='EXPENSE'
+        )
+        
+        total_revenue = Decimal('0.00')
+        total_expenses = Decimal('0.00')
+        
+        # Calculate revenue using stored balances (pre-closing balances)
+        for account in revenue_accounts:
+            total_revenue += account.balance
+        
+        # Calculate expenses using stored balances (pre-closing balances)
+        for account in expense_accounts:
+            total_expenses += account.balance
+        
+        net_income = total_revenue - total_expenses
+        
+        # Calculate ending retained earnings
+        ending_retained_earnings = beginning_retained_earnings + net_income
+        
+        return Response({
+            'beginning_retained_earnings': beginning_retained_earnings,
+            'net_income': net_income,
+            'ending_retained_earnings': ending_retained_earnings,
+            'start_date': start_date,
+            'end_date': end_date
+        })
+        
+    except Exception as e:
+        return Response(
+            {"error": f"Failed to generate retained earnings statement: {str(e)}"},
             status=500
         )

@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import HelpModal from '../components/HelpModal';
+import CloseAccountModal from '../components/CloseAccountModal';
+import SelectAccountModal from '../components/SelectAccountModal';
 import '../styles/auth.css';
 
 export default function JournalList() {
@@ -27,6 +29,12 @@ export default function JournalList() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [additionalFilter, setAdditionalFilter] = useState('all');
+  
+  // Close Account functionality
+  const [showSelectAccountModal, setShowSelectAccountModal] = useState(false);
+  const [showCloseAccountModal, setShowCloseAccountModal] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [accounts, setAccounts] = useState([]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -34,7 +42,21 @@ export default function JournalList() {
     setUserRole(role);
     setRolePrefix(role.toLowerCase() === 'admin' ? 'admin' : role.toLowerCase() === 'accountant' ? 'accountant' : 'manager');
     fetchEntries();
+    
+    // Fetch accounts for close account functionality (managers only)
+    if (role === 'MANAGER' || role === 'ADMIN') {
+      fetchAccounts();
+    }
   }, [activeTab, startDate, endDate]);
+
+  const fetchAccounts = async () => {
+    try {
+      const response = await api.get('/chart-of-accounts/');
+      setAccounts(response.data);
+    } catch (err) {
+      console.error('Failed to fetch accounts:', err);
+    }
+  };
 
   const fetchEntries = async () => {
     try {
@@ -71,6 +93,24 @@ export default function JournalList() {
     } else {
       setEntries(allEntries.filter(e => e.status === tab));
     }
+  };
+
+  const handleAccountSelected = (account) => {
+    setSelectedAccount(account);
+    setShowCloseAccountModal(true);
+  };
+
+  const handleAccountClosed = (closedAccount) => {
+    // Update the accounts list to reflect the closed account
+    setAccounts(prev => 
+      prev.map(acc => 
+        acc.id === closedAccount.id 
+          ? { ...acc, is_closed: true, closure_reason: closedAccount.closure_reason }
+          : acc
+      )
+    );
+    setShowCloseAccountModal(false);
+    setSelectedAccount(null);
   };
 
   const handleSort = (key) => {
@@ -133,7 +173,7 @@ export default function JournalList() {
   };
 
   const handleDelete = async (entry) => {
-    if (!confirm(`Are you sure you want to delete journal entry JE-${entry.id}? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete journal entry ${entry.id}? This action cannot be undone.`)) {
       return;
     }
 
@@ -170,11 +210,31 @@ export default function JournalList() {
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(entry => {
-        const matchesId = `je-${entry.id}`.includes(search);
-        const matchesDate = entry.entry_date.includes(search);
-        const matchesAmount = entry.total_debits.toString().includes(search) || entry.total_credits.toString().includes(search);
+        const matchesId = `${entry.id}`.includes(search);
+        
+        // Improved date search - supports various date formats
+        const matchesDate = entry.entry_date.includes(search) || 
+                           new Date(entry.entry_date).toLocaleDateString().includes(search) ||
+                           new Date(entry.entry_date).toLocaleDateString('en-US', { 
+                             year: 'numeric', 
+                             month: '2-digit', 
+                             day: '2-digit' 
+                           }).includes(search);
+        
+        // Improved amount search - handles decimal numbers and various formats
+        const searchAsNumber = parseFloat(search);
+        const matchesAmount = !isNaN(searchAsNumber) && (
+          Math.abs(entry.total_debits - searchAsNumber) < 0.01 ||
+          Math.abs(entry.total_credits - searchAsNumber) < 0.01 ||
+          entry.total_debits.toString().includes(search) ||
+          entry.total_credits.toString().includes(search) ||
+          entry.total_debits.toFixed(2).includes(search) ||
+          entry.total_credits.toFixed(2).includes(search)
+        );
+        
         const matchesAccount = entry.lines?.some(line => 
-          line.account_name?.toLowerCase().includes(search)
+          line.account_name?.toLowerCase().includes(search) ||
+          line.account_number?.toString().includes(search)
         );
         const matchesDescription = entry.description?.toLowerCase().includes(search);
         
@@ -274,6 +334,26 @@ export default function JournalList() {
               title="Create a new journal entry"
             >
               + Create Entry
+            </button>
+          )}
+
+          {userRole === 'MANAGER' && (
+            <button
+              onClick={() => setShowSelectAccountModal(true)}
+              className="auth-button secondary"
+              style={{
+                fontSize: 12,
+                padding: '6px 12px',
+                borderRadius: "6px",
+                backgroundColor: '#c1121f',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
+              }}
+              title="Close an existing account"
+            >
+              - Close Account
             </button>
           )}
 
@@ -807,7 +887,7 @@ export default function JournalList() {
               Approve Journal Entry
             </h3>
             <p style={{ marginBottom: '16px', color: '#666' }}>
-              Are you sure you want to approve journal entry JE-{selectedEntry?.id}?
+              Are you sure you want to approve journal entry {selectedEntry?.id}?
             </p>
             <p style={{ marginBottom: '20px', color: '#666', fontSize: '14px' }}>
               This action will update the account balances and cannot be undone.
@@ -874,7 +954,7 @@ export default function JournalList() {
               Reject Journal Entry
             </h3>
             <p style={{ marginBottom: '16px', color: '#666' }}>
-              Please provide a reason for rejecting journal entry JE-{selectedEntry?.id}:
+              Please provide a reason for rejecting journal entry {selectedEntry?.id}:
             </p>
             <textarea
               value={rejectionReason}
@@ -933,6 +1013,23 @@ export default function JournalList() {
       {showHelpModal && (
         <HelpModal onClose={() => setShowHelpModal(false)} page="journalList" userRole={userRole} />
       )}
+
+      <SelectAccountModal
+        isOpen={showSelectAccountModal}
+        onClose={() => setShowSelectAccountModal(false)}
+        accounts={accounts}
+        onAccountSelected={handleAccountSelected}
+      />
+
+      <CloseAccountModal
+        isOpen={showCloseAccountModal}
+        onClose={() => {
+          setShowCloseAccountModal(false);
+          setSelectedAccount(null);
+        }}
+        account={selectedAccount}
+        onAccountClosed={handleAccountClosed}
+      />
     </div>
   );
 }

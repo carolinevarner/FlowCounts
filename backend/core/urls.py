@@ -20,6 +20,11 @@ from accounts.views import (
     JournalEntryViewSet,
     send_email_to_user,
     get_managers_and_admins,
+    close_account,
+    trial_balance,
+    income_statement,
+    balance_sheet,
+    retained_earnings,
 )
 from accounts.error_views import ErrorMessageViewSet, ErrorLogViewSet
 from core.views import index 
@@ -43,6 +48,11 @@ urlpatterns = [
     path("api/auth/forgot-password/", forgot_password, name="forgot-password"),
     path("api/auth/send-email/", send_email_to_user, name="send-email"),
     path("api/auth/managers-admins/", get_managers_and_admins, name="get-managers-admins"),
+    path("api/accounts/close/", close_account, name="close-account"),
+    path("api/financial/trial-balance/", trial_balance, name="trial-balance"),
+    path("api/financial/income-statement/", income_statement, name="income-statement"),
+    path("api/financial/balance-sheet/", balance_sheet, name="balance-sheet"),
+    path("api/financial/retained-earnings/", retained_earnings, name="retained-earnings"),
 ]
 
 # Serve media files in development

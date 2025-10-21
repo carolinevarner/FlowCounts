@@ -271,12 +271,121 @@ export default function HelpModal({ onClose, page = "general", userRole = "" }) 
             </ul>
           </>
         )
+      },
+      trialBalance: {
+        title: "Trial Balance",
+        icon: "⚖️",
+        content: (
+          <>
+            <h3>What is a Trial Balance?</h3>
+            <p>A trial balance is a bookkeeping worksheet in which the balances of all ledgers are compiled into debit and credit account column totals that are equal.</p>
+            
+            <h4>How to Use This Page:</h4>
+            <ol>
+              <li><strong>Select Date Range:</strong> Choose either a single date or a date range for your trial balance</li>
+              <li><strong>Generate Report:</strong> Click "Generate Report" to create the trial balance</li>
+              <li><strong>Review Results:</strong> Check that total debits equal total credits</li>
+              <li><strong>Export:</strong> Use Print, Email, or Download options to share the report</li>
+            </ol>
+            
+            <h4>Understanding the Results:</h4>
+            <ul>
+              <li><strong>Balanced:</strong> Total debits = Total credits (this is correct)</li>
+              <li><strong>Not Balanced:</strong> There may be errors in the journal entries</li>
+              <li><strong>Account Categories:</strong> Assets, Liabilities, Equity, Revenue, and Expenses</li>
+            </ul>
+          </>
+        )
+      },
+      incomeStatement: {
+        title: "Income Statement",
+        icon: "💰",
+        content: (
+          <>
+            <h3>What is an Income Statement?</h3>
+            <p>An income statement shows a company's revenues and expenses over a specific period, resulting in net income or net loss.</p>
+            
+            <h4>How to Use This Page:</h4>
+            <ol>
+              <li><strong>Select Period:</strong> Choose the start and end dates for your income statement</li>
+              <li><strong>Generate Report:</strong> Click "Generate Report" to create the income statement</li>
+              <li><strong>Review Results:</strong> Check revenues, expenses, and net income/loss</li>
+              <li><strong>Export:</strong> Use Print, Email, or Download options to share the report</li>
+            </ol>
+            
+            <h4>Understanding the Results:</h4>
+            <ul>
+              <li><strong>Revenues:</strong> Money earned from business operations</li>
+              <li><strong>Expenses:</strong> Costs incurred in running the business</li>
+              <li><strong>Net Income:</strong> Revenues minus expenses (positive = profit)</li>
+              <li><strong>Net Loss:</strong> When expenses exceed revenues (negative = loss)</li>
+            </ul>
+          </>
+        )
+      },
+      balanceSheet: {
+        title: "Balance Sheet",
+        icon: "📋",
+        content: (
+          <>
+            <h3>What is a Balance Sheet?</h3>
+            <p>A balance sheet shows a company's assets, liabilities, and equity at a specific point in time, following the equation: Assets = Liabilities + Equity.</p>
+            
+            <h4>How to Use This Page:</h4>
+            <ol>
+              <li><strong>Select Date:</strong> Choose the date for your balance sheet</li>
+              <li><strong>Generate Report:</strong> Click "Generate Report" to create the balance sheet</li>
+              <li><strong>Review Results:</strong> Check that assets equal liabilities plus equity</li>
+              <li><strong>Export:</strong> Use Print, Email, or Download options to share the report</li>
+            </ol>
+            
+            <h4>Understanding the Results:</h4>
+            <ul>
+              <li><strong>Assets:</strong> What the company owns (cash, equipment, inventory, etc.)</li>
+              <li><strong>Liabilities:</strong> What the company owes (loans, accounts payable, etc.)</li>
+              <li><strong>Equity:</strong> Owner's claim on assets (capital, retained earnings, etc.)</li>
+              <li><strong>Balanced:</strong> Assets = Liabilities + Equity (this is correct)</li>
+            </ul>
+          </>
+        )
+      },
+      retainedEarnings: {
+        title: "Retained Earnings",
+        icon: "📈",
+        content: (
+          <>
+            <h3>What is a Statement of Retained Earnings?</h3>
+            <p>A statement of retained earnings shows how retained earnings have changed during a specific period, including beginning balance, net income/loss, and ending balance.</p>
+            
+            <h4>How to Use This Page:</h4>
+            <ol>
+              <li><strong>Select Period:</strong> Choose the start and end dates for your statement</li>
+              <li><strong>Generate Report:</strong> Click "Generate Report" to create the statement</li>
+              <li><strong>Review Results:</strong> Check the beginning balance, net income, and ending balance</li>
+              <li><strong>Export:</strong> Use Print, Email, or Download options to share the report</li>
+            </ol>
+            
+            <h4>Understanding the Results:</h4>
+            <ul>
+              <li><strong>Beginning Retained Earnings:</strong> Retained earnings at the start of the period</li>
+              <li><strong>Net Income:</strong> Profit or loss for the period (from income statement)</li>
+              <li><strong>Ending Retained Earnings:</strong> Beginning + Net Income</li>
+              <li><strong>Net Loss:</strong> When expenses exceed revenues (reduces retained earnings)</li>
+            </ul>
+            
+            <h4>Formula:</h4>
+            <p><strong>Ending Retained Earnings = Beginning Retained Earnings + Net Income - Dividends</strong></p>
+            <p><em>Note: This system currently assumes no dividends are paid.</em></p>
+          </>
+        )
       }
     };
 
     const availablePages = isAdmin 
       ? ["dashboard", "chartOfAccounts", "accounts", "ledger", "users", "events"]
-      : ["dashboard", "chartOfAccounts", "accounts", "ledger", "journalEntry", "journalList"];
+      : isManager 
+        ? ["dashboard", "chartOfAccounts", "accounts", "ledger", "journalEntry", "journalList", "trialBalance", "incomeStatement", "balanceSheet", "retainedEarnings"]
+        : ["dashboard", "chartOfAccounts", "accounts", "ledger", "journalEntry", "journalList", "trialBalance", "incomeStatement", "balanceSheet", "retainedEarnings"];
 
     const filteredContent = {};
     availablePages.forEach(key => {

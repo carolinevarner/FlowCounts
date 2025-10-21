@@ -2,7 +2,7 @@ import { useState } from 'react';
 import api from '../api';
 import '../styles/auth.css';
 
-export default function EmailModal({ onClose, recipientType = 'manager', managersAndAdmins = { managers: [], admin_emails: [] }, senderRole = 'ACCOUNTANT' }) {
+export default function EmailModal({ onClose, recipientType = 'manager', managersAndAdmins = { managers: [], admin_emails: [] }, senderRole = 'ACCOUNTANT', isOpen = true }) {
   const [recipient, setRecipient] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -48,6 +48,8 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
       setSending(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
