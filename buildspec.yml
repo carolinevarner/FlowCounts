@@ -29,8 +29,6 @@ phases:
       - cp backend/db.sqlite3 . || true
       - cp -r backend/core .
 
-      - echo "Build complete — root-level files (.ebextensions, Procfile, etc.) already present."
-
 artifacts:
   files:
     - '**/*'
