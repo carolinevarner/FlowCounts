@@ -6,21 +6,29 @@ phases:
       python: 3.11
       nodejs: 18
     commands:
+      - echo "Installing backend dependencies..."
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt --log /var/log/pip_install.log
       - cat /var/log/pip_install.log
+      - echo "Installing frontend dependencies..."
       - npm ci --prefix frontend
 
   build:
     commands:
+      - echo "Building frontend..."
       - npm run build --prefix frontend
+      - echo "Copying frontend build to backend/static..."
       - mkdir -p backend/static
       - cp -r frontend/dist/* backend/static/
+      - echo "Preparing artifact structure..."
+      - cp backend/manage.py .
+      - cp backend/requirements.txt .
+      - cp -r backend/core .  # replace 'core' with your Django app folder
+      - cp -r backend/static .
+      - cp -r backend/db.sqlite3 . # if you want the latest DB included
 
 artifacts:
   files:
-    - backend/**/*
-    - .ebextensions/**/*
-    - Procfile
+    - '**/*'
   base-directory: .
   discard-paths: no
