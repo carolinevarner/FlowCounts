@@ -10,6 +10,7 @@ phases:
       - pip install --upgrade pip
       - pip install -r backend/requirements.txt --log /var/log/pip_install.log
       - cat /var/log/pip_install.log
+
       - echo "Installing frontend dependencies..."
       - npm ci --prefix frontend
 
@@ -17,15 +18,22 @@ phases:
     commands:
       - echo "Building frontend..."
       - npm run build --prefix frontend
-      - echo "Copying frontend build to backend/static..."
-      - mkdir -p backend/static
-      - cp -r frontend/dist/* backend/static/
-      - echo "Preparing artifact structure..."
+
+      - echo "Copying frontend build into static directory..."
+      - mkdir -p static
+      - cp -r frontend/dist/* static/
+
+      - echo "Copying backend project files..."
       - cp backend/manage.py .
       - cp backend/requirements.txt .
-      - cp -r backend/core .  # replace 'core' with your Django app folder
-      - cp -r backend/static .
-      - cp -r backend/db.sqlite3 . # if you want the latest DB included
+      - cp backend/db.sqlite3 . || true  # optional
+      - cp -r backend/core .
+      - cp -r backend/.ebextensions . || true
+      - cp -r backend/.platform . || true
+
+      - echo "Copying EB configuration and startup files..."
+      - cp Procfile .
+      - echo "Build complete."
 
 artifacts:
   files:
