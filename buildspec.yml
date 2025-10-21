@@ -19,21 +19,17 @@ phases:
       - echo "Building frontend..."
       - npm run build --prefix frontend
 
-      - echo "Copying frontend build into static directory..."
+      - echo "Creating static directory..."
       - mkdir -p static
       - cp -r frontend/dist/* static/
 
       - echo "Copying backend project files..."
       - cp backend/manage.py .
       - cp backend/requirements.txt .
-      - cp backend/db.sqlite3 . || true  # optional
+      - cp backend/db.sqlite3 . || true
       - cp -r backend/core .
-      - cp -r backend/.ebextensions . || true
-      - cp -r backend/.platform . || true
 
-      - echo "Copying EB configuration and startup files..."
-      - cp Procfile .
-      - echo "Build complete."
+      - echo "Build complete — root-level files (.ebextensions, Procfile, etc.) already present."
 
 artifacts:
   files:
