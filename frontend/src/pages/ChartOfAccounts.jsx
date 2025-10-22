@@ -748,16 +748,23 @@ export default function ChartOfAccounts() {
   const isAdmin = userRole === "ADMIN";
 
   const getTermType = (account) => {
-    const subcategory = (account.account_subcategory || '').toLowerCase();
+    const accountNumber = parseInt(account.account_number);
     
-    const currentKeywords = ['current', 'short-term', 'short term', 'cash', 'receivable', 'payable'];
+    // Accounts 3000-5700 (equity, revenue, expense) should have empty terms
+    if (accountNumber >= 3000 && accountNumber <= 5700) {
+      return '';
+    }
     
+    const subcategory = (account.account_subcategory || '').toLowerCase();  
+
+    const currentKeywords = ['current', 'short-term', 'short term', 'cash', 'receivable', 'payable'];                                                       
+
     for (const keyword of currentKeywords) {
       if (subcategory.includes(keyword)) {
         return 'Current';
       }
     }
-    
+
     return 'Long Term';
   };
 
@@ -849,6 +856,11 @@ export default function ChartOfAccounts() {
 
   const filteredAccounts = useMemo(() => {
     let filtered = accounts;
+
+    // Filter out inactive accounts for managers and accountants
+    if (userRole === "MANAGER" || userRole === "ACCOUNTANT") {
+      filtered = filtered.filter((a) => a.is_active);
+    }
 
     if (selectedDate) {
       filtered = filtered.filter((a) => {
@@ -1351,7 +1363,7 @@ export default function ChartOfAccounts() {
                     <div 
                       onClick={() => {
                         const basePath = `/${userRole.toLowerCase()}`;
-                        navigate(`${basePath}/ledger/${account.id}`);
+                        navigate(`${basePath}/ledger/${account.account_number}`);
                       }}
                       style={{
                         color: "#1C5C59",
@@ -1371,26 +1383,51 @@ export default function ChartOfAccounts() {
                     >
                       {account.account_number}
                     </div>
-                    <div style={{ marginTop: 4 }}>
-                      <span style={{
-                        display: "inline-block",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                        fontSize: "0.7em",
-                        fontWeight: "500",
-                        backgroundColor: account.is_active ? "#4f772d" : "#c1121f",
-                        color: "white"
-                      }}>
-                        {account.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </div>
+                    {userRole === "ADMIN" && (
+                      <div style={{ marginTop: 4 }}>
+                        <span style={{
+                          display: "inline-block",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                          fontSize: "0.7em",
+                          fontWeight: "500",
+                          backgroundColor: account.is_active ? "#4f772d" : "#c1121f",
+                          color: "white"
+                        }}>
+                          {account.is_active ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                    )}
                   </td>
                   <td style={{ 
                     padding: "10px 12px", 
                     borderBottom: "1px solid #ddd",
                     fontWeight: "normal",
                     fontSize: "0.85em"
-                  }}>{account.account_name}</td>
+                  }}>
+                    <span
+                      onClick={() => navigate(`/${userRole.toLowerCase()}/ledger/${account.account_number}`)}
+                      style={{
+                        cursor: 'pointer',
+                        textDecoration: 'none',
+                        color: '#333',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.fontWeight = 'bold';
+                        e.target.style.textDecoration = 'underline';
+                        e.target.style.color = '#1C5C59';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.fontWeight = 'normal';
+                        e.target.style.textDecoration = 'none';
+                        e.target.style.color = '#333';
+                      }}
+                      title="Click to view account ledger"
+                    >
+                      {account.account_name}
+                    </span>
+                  </td>
                   <td style={{ 
                     padding: "10px 12px", 
                     borderBottom: "1px solid #ddd",

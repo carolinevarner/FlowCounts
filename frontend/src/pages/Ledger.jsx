@@ -58,10 +58,21 @@ export default function Ledger() {
     try {
       setLoading(true);
       setError("");
-      const response = await api.get(`/chart-of-accounts/${accountId}/`);
-      setAccount(response.data);
       
-      const ledgerResponse = await api.get(`/chart-of-accounts/${accountId}/ledger_entries/`);
+      // First, get all accounts to find the one with the matching account number
+      const accountsResponse = await api.get('/chart-of-accounts/');
+      const account = accountsResponse.data.find(acc => acc.account_number === accountId);
+      
+      if (!account) {
+        setError("Account not found");
+        setLoading(false);
+        return;
+      }
+      
+      setAccount(account);
+      
+      // Fetch ledger entries for this account
+      const ledgerResponse = await api.get(`/chart-of-accounts/${account.id}/ledger_entries/`);
       setTransactions(ledgerResponse.data);
     } catch (err) {
       console.error("Error fetching account:", err);

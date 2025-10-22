@@ -10,6 +10,11 @@ export default function BalanceSheet() {
   const [balanceSheetData, setBalanceSheetData] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [dateMode, setDateMode] = useState('asof'); // 'asof' or 'range'
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
 
   console.log('BalanceSheet component rendered');
 
@@ -18,10 +23,13 @@ export default function BalanceSheet() {
       setLoading(true);
       setError('');
       
-      // Use current date as the as_of_date
-      const params = {
-        as_of_date: new Date().toISOString().split('T')[0]
-      };
+      let params = {};
+      
+      if (dateMode === 'asof') {
+        params = { as_of_date: selectedDate };
+      } else {
+        params = { start_date: startDate, end_date: endDate };
+      }
 
       console.log('Fetching balance sheet with params:', params);
       const response = await api.get('/financial/balance-sheet/', { params });
@@ -36,10 +44,10 @@ export default function BalanceSheet() {
     }
   };
 
-  // Auto-fetch on component mount
+  // Auto-fetch on component mount and when date changes
   useEffect(() => {
     fetchBalanceSheet();
-  }, []);
+  }, [selectedDate, startDate, endDate, dateMode]);
 
   const handlePrint = () => {
     window.print();
@@ -75,6 +83,13 @@ export default function BalanceSheet() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
+    }).format(amount);
+  };
+
+  const formatNumber = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(amount);
   };
 
@@ -179,20 +194,202 @@ export default function BalanceSheet() {
         <h2 style={{ margin: 0, fontFamily: "Playfair Display", fontSize: "1.5em", fontWeight: "600" }}>
           Balance Sheet
         </h2>
-        <button
-          onClick={() => setShowHelpModal(true)}
-          className="auth-linkbtn"
-          style={{
-            height: "30px",
-            padding: "0 12px",
-            fontSize: 14,
-            width: "auto",
-            minWidth: "80px"
-          }}
-          title="Get help with this page"
-        >
-          Help
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Date Filter */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              style={{
+                backgroundColor: "#f8f9fa",
+                border: "1px solid #dee2e6",
+                borderRadius: "6px",
+                padding: "6px 10px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "40px",
+                color: "#000"
+              }}
+              title={`Report as of: ${new Date(selectedDate).toLocaleDateString()}`}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+              </svg>
+            </button>
+            {showDatePicker && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "35px",
+                  right: "0",
+                  backgroundColor: "white",
+                  border: "1px solid #dee2e6",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  zIndex: 1000,
+                  minWidth: "220px"
+                }}
+              >
+                {/* Date Mode Toggle */}
+                <div style={{ marginBottom: 12, display: "flex", gap: 4 }}>
+                  <button
+                    onClick={() => setDateMode('asof')}
+                    style={{
+                      flex: 1,
+                      padding: "6px 8px",
+                      fontSize: 11,
+                      backgroundColor: dateMode === 'asof' ? "#1C5C59" : "#f8f9fa",
+                      color: dateMode === 'asof' ? "white" : "#333",
+                      border: "1px solid #dee2e6",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    As of Date
+                  </button>
+                  <button
+                    onClick={() => setDateMode('range')}
+                    style={{
+                      flex: 1,
+                      padding: "6px 8px",
+                      fontSize: 11,
+                      backgroundColor: dateMode === 'range' ? "#1C5C59" : "#f8f9fa",
+                      color: dateMode === 'range' ? "white" : "#333",
+                      border: "1px solid #dee2e6",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Date Range
+                  </button>
+                </div>
+
+                {dateMode === 'asof' ? (
+                  <>
+                    <div style={{ marginBottom: 8, fontSize: 12, fontWeight: "bold", color: "#333" }}>
+                      Report as of:
+                    </div>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => {
+                        setSelectedDate(e.target.value);
+                        setShowDatePicker(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "6px 8px",
+                        fontSize: 12,
+                        borderRadius: "4px",
+                        border: "1px solid #b8b6b6"
+                      }}
+                    />
+                    <div style={{ marginTop: 8, fontSize: 11, color: "#666", textAlign: "center" }}>
+                      {selectedDate ? `Selected: ${new Date(selectedDate).toLocaleDateString()}` : "No date selected"}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ marginBottom: 8, fontSize: 12, fontWeight: "bold", color: "#333" }}>
+                      Date Range:
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, color: "#666", marginBottom: 4 }}>From:</div>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "6px 8px",
+                          fontSize: 12,
+                          borderRadius: "4px",
+                          border: "1px solid #b8b6b6"
+                        }}
+                      />
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, color: "#666", marginBottom: 4 }}>To:</div>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "6px 8px",
+                          fontSize: 12,
+                          borderRadius: "4px",
+                          border: "1px solid #b8b6b6"
+                        }}
+                      />
+                    </div>
+                    <div style={{ marginTop: 8, fontSize: 11, color: "#666", textAlign: "center" }}>
+                      {startDate && endDate ? `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}` : "Select date range"}
+                    </div>
+                  </>
+                )}
+
+                <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
+                  <button
+                    onClick={() => {
+                      const today = new Date().toISOString().split('T')[0];
+                      if (dateMode === 'asof') {
+                        setSelectedDate(today);
+                      } else {
+                        setStartDate(today);
+                        setEndDate(today);
+                      }
+                      setShowDatePicker(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      backgroundColor: "#1C5C59",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => setShowDatePicker(false)}
+                    style={{
+                      flex: 1,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      backgroundColor: "#6c757d",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setShowHelpModal(true)}
+            className="auth-linkbtn"
+            style={{
+              height: "30px",
+              padding: "0 12px",
+              fontSize: 14,
+              width: "auto",
+              minWidth: "80px"
+            }}
+            title="Get help with this page"
+          >
+            Help
+          </button>
+        </div>
       </div>
 
 
@@ -227,7 +424,7 @@ export default function BalanceSheet() {
               fontWeight: "600",
               fontFamily: "Playfair Display"
             }}>
-              FlowCounts Inc.
+              Addams & Family Inc.
             </h1>
             <h2 style={{ 
               margin: "0 0 8px 0", 
@@ -243,11 +440,23 @@ export default function BalanceSheet() {
               fontWeight: "normal",
               opacity: 0.8
             }}>
-              As of {new Date().toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
+              {dateMode === 'asof' ? (
+                <>As of {new Date(selectedDate).toLocaleDateString('en-US', { 
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}</>
+              ) : (
+                <>For the period from {new Date(startDate).toLocaleDateString('en-US', { 
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })} to {new Date(endDate).toLocaleDateString('en-US', { 
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}</>
+              )}
             </p>
           </div>
 
@@ -265,37 +474,159 @@ export default function BalanceSheet() {
                   Assets
                 </h4>
                 
-                {Object.entries(groupAccountsBySubcategory(balanceSheetData.assets)).map(([subcategory, accounts]) => (
-                  <div key={subcategory} style={{ marginBottom: 20 }}>
-                    <h5 style={{ 
-                      margin: "0 0 8px 0", 
-                      fontSize: "1em", 
-                      fontWeight: "bold",
-                      color: "#333"
+                {/* Current Assets Section */}
+                <h5 style={{ 
+                  margin: "0 0 8px 0", 
+                  fontSize: "1em", 
+                  fontWeight: "bold",
+                  color: "#333"
+                }}>
+                  Current Assets
+                </h5>
+                
+                {(() => {
+                  const currentAssets = balanceSheetData.assets.filter(account => 
+                    account.account_subcategory && account.account_subcategory.toLowerCase().includes('current')
+                  );
+                  
+                  return currentAssets.map((account, index) => (
+                    <div key={index} style={{ 
+                      display: "flex", 
+                      justifyContent: "space-between", 
+                      padding: "6px 0",
+                      borderBottom: "1px solid #f0f0f0"
                     }}>
-                      {subcategory}
-                    </h5>
-                    {accounts.map((account, index) => (
-                      <div key={index} style={{ 
+                      <div style={{ fontWeight: "500" }}>
+                        {account.account_name}
+                      </div>
+                      <div style={{ 
+                        fontFamily: "sans-serif", 
+                        fontWeight: "500",
+                        textAlign: "right"
+                      }}>
+                        {account.account_name === 'Cash' ? formatCurrency(account.balance) : formatNumber(account.balance)}
+                      </div>
+                    </div>
+                  ));
+                })()}
+                
+                {/* Total Current Assets */}
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  padding: "12px 0",
+                  fontWeight: "bold",
+                  fontSize: "1em",
+                  borderTop: "1px solid #1C5C59",
+                  marginTop: "10px"
+                }}>
+                  <span>Total Current Assets</span>
+                  <div style={{
+                    display: "inline-block",
+                    borderBottom: "1px solid #333",
+                    paddingBottom: "2px",
+                    fontFamily: "sans-serif"
+                  }}>
+                    {formatCurrency(balanceSheetData.assets
+                      .filter(account => account.account_subcategory && account.account_subcategory.toLowerCase().includes('current'))
+                      .reduce((sum, account) => sum + account.balance, 0)
+                    )}
+                  </div>
+                </div>
+
+                {/* Property Plant & Equipment Section */}
+                <h5 style={{ 
+                  margin: "20px 0 8px 0", 
+                  fontSize: "1em", 
+                  fontWeight: "bold",
+                  color: "#333"
+                }}>
+                  Property Plant & Equipment
+                </h5>
+                
+                {(() => {
+                  const fixedAssets = balanceSheetData.assets.filter(account => 
+                    account.account_name === 'Office Equipment'
+                  );
+                  
+                  return fixedAssets.map((account, index) => (
+                    <div key={index} style={{ 
+                      display: "flex", 
+                      justifyContent: "space-between", 
+                      padding: "6px 0",
+                      borderBottom: "1px solid #f0f0f0"
+                    }}>
+                      <div style={{ fontWeight: "500" }}>
+                        {account.account_name}
+                      </div>
+                      <div style={{ 
+                        fontFamily: "sans-serif", 
+                        fontWeight: "500",
+                        textAlign: "right"
+                      }}>
+                        {formatNumber(account.balance)}
+                      </div>
+                    </div>
+                  ));
+                })()}
+                
+                {/* Less: Accumulated Depreciation */}
+                {(() => {
+                  const accumulatedDepreciation = balanceSheetData.assets.find(account => 
+                    account.account_name === 'Accumulated Depreciation - Office Equipment'
+                  );
+                  
+                  if (accumulatedDepreciation) {
+                    return (
+                      <div style={{ 
                         display: "flex", 
                         justifyContent: "space-between", 
                         padding: "6px 0",
                         borderBottom: "1px solid #f0f0f0"
                       }}>
                         <div style={{ fontWeight: "500" }}>
-                          {account.account_name}
+                          Less: Accumulated Depreciation - Office Equipment
                         </div>
                         <div style={{ 
-                          fontFamily: "monospace", 
+                          fontFamily: "sans-serif", 
                           fontWeight: "500",
                           textAlign: "right"
                         }}>
-                          {formatCurrency(account.balance)}
+                          {formatNumber(accumulatedDepreciation.balance)}
                         </div>
                       </div>
-                    ))}
+                    );
+                  }
+                  return null;
+                })()}
+                
+                {/* Property Plant & Equipment Net */}
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  padding: "12px 0",
+                  fontWeight: "bold",
+                  fontSize: "1em",
+                  borderTop: "1px solid #1C5C59",
+                  marginTop: "10px"
+                }}>
+                  <span>Property Plant & Equipment, Net</span>
+                  <div style={{
+                    display: "inline-block",
+                    borderBottom: "1px solid #333",
+                    paddingBottom: "2px",
+                    fontFamily: "sans-serif"
+                  }}>
+                    {formatNumber(
+                      balanceSheetData.assets
+                        .filter(account => account.account_name === 'Office Equipment')
+                        .reduce((sum, account) => sum + account.balance, 0) +
+                      balanceSheetData.assets
+                        .filter(account => account.account_name === 'Accumulated Depreciation - Office Equipment')
+                        .reduce((sum, account) => sum + account.balance, 0)
+                    )}
                   </div>
-                ))}
+                </div>
                 
                 <div style={{ 
                   display: "flex", 
@@ -309,11 +640,11 @@ export default function BalanceSheet() {
                   <span>Total Assets</span>
                   <div style={{
                     display: "inline-block",
-                    borderBottom: "3px double #333",
+                    borderBottom: "1px solid #333",
                     paddingBottom: "2px",
-                    fontFamily: "monospace"
+                    fontFamily: "sans-serif"
                   }}>
-                    {formatCurrency(balanceSheetData.total_assets)}
+                    {formatNumber(balanceSheetData.total_assets)}
                   </div>
                 </div>
               </div>
@@ -326,7 +657,7 @@ export default function BalanceSheet() {
                   fontWeight: "bold",
                   color: "#1C5C59"
                 }}>
-                  Equity & Liabilities
+                  Liabilities & Stocklholders' Equity
                 </h4>
                 
                 {/* Liabilities */}
@@ -352,11 +683,11 @@ export default function BalanceSheet() {
                           {account.account_name}
                         </div>
                         <div style={{ 
-                          fontFamily: "monospace", 
+                          fontFamily: "sans-serif", 
                           fontWeight: "500",
                           textAlign: "right"
                         }}>
-                          {formatCurrency(account.balance)}
+                          {account.account_name === 'Salaries Payable' ? formatCurrency(account.balance) : formatNumber(account.balance)}
                         </div>
                       </div>
                     ))}
@@ -372,14 +703,14 @@ export default function BalanceSheet() {
                   borderTop: "1px solid #1C5C59",
                   marginBottom: "20px"
                 }}>
-                  <span>Total Liabilities</span>
+                  <span>Total Current Liabilities</span>
                   <div style={{
                     display: "inline-block",
-                    borderBottom: "3px double #333",
+                    borderBottom: "1px solid #333",
                     paddingBottom: "2px",
-                    fontFamily: "monospace"
+                    fontFamily: "sans-serif"
                   }}>
-                    {formatCurrency(balanceSheetData.total_liabilities)}
+                    {formatNumber(balanceSheetData.total_liabilities)}
                   </div>
                 </div>
 
@@ -390,7 +721,7 @@ export default function BalanceSheet() {
                   fontWeight: "bold",
                   color: "#333"
                 }}>
-                  Owners Equity
+                  Stockholders' Equity
                 </h5>
                 
                 {Object.entries(groupAccountsBySubcategory(balanceSheetData.equity)).map(([subcategory, accounts]) => (
@@ -406,11 +737,11 @@ export default function BalanceSheet() {
                           {account.account_name}
                         </div>
                         <div style={{ 
-                          fontFamily: "monospace", 
+                          fontFamily: "sans-serif", 
                           fontWeight: "500",
                           textAlign: "right"
                         }}>
-                          {formatCurrency(account.balance)}
+                          {formatNumber(account.balance)}
                         </div>
                       </div>
                     ))}
@@ -426,14 +757,14 @@ export default function BalanceSheet() {
                   borderTop: "1px solid #1C5C59",
                   marginBottom: "20px"
                 }}>
-                  <span>Total Equity</span>
+                  <span>Total Stockholders' Equity</span>
                   <div style={{
                     display: "inline-block",
-                    borderBottom: "3px double #333",
+                    borderBottom: "1px solid #333",
                     paddingBottom: "2px",
-                    fontFamily: "monospace"
+                    fontFamily: "sans-serif"
                   }}>
-                    {formatCurrency(balanceSheetData.total_equity)}
+                    {formatNumber(balanceSheetData.total_stockholders_equity)}
                   </div>
                 </div>
 
@@ -445,14 +776,14 @@ export default function BalanceSheet() {
                   fontSize: "1.1em",
                   borderTop: "2px solid #1C5C59"
                 }}>
-                  <span>Total Equity & Liabilities</span>
+                  <span>Total Liabilities & Stockholders' Equity</span>
                   <div style={{
                     display: "inline-block",
                     borderBottom: "3px double #333",
                     paddingBottom: "2px",
-                    fontFamily: "monospace"
+                    fontFamily: "sans-serif"
                   }}>
-                    {formatCurrency(balanceSheetData.total_liabilities + balanceSheetData.total_equity)}
+                    {formatCurrency(balanceSheetData.total_liabilities + balanceSheetData.total_stockholders_equity)}
                   </div>
                 </div>
               </div>
@@ -476,8 +807,8 @@ export default function BalanceSheet() {
               {!balanceSheetData.is_balanced && (
                 <div style={{ marginTop: 8, fontSize: "14px" }}>
                   Assets: {formatCurrency(balanceSheetData.total_assets)}<br/>
-                  Liabilities + Equity: {formatCurrency(balanceSheetData.total_liabilities + balanceSheetData.total_equity)}<br/>
-                  Difference: {formatCurrency(Math.abs(balanceSheetData.total_assets - (balanceSheetData.total_liabilities + balanceSheetData.total_equity)))}
+                  Liabilities + Equity: {formatCurrency(balanceSheetData.total_liabilities + balanceSheetData.total_stockholders_equity)}<br/>
+                  Difference: {formatCurrency(Math.abs(balanceSheetData.total_assets - (balanceSheetData.total_liabilities + balanceSheetData.total_stockholders_equity)))}
                 </div>
               )}
             </div>
@@ -503,7 +834,7 @@ Balance Sheet Report
 As of: ${new Date().toLocaleDateString()}
 Total Assets: ${formatCurrency(balanceSheetData.total_assets)}
 Total Liabilities: ${formatCurrency(balanceSheetData.total_liabilities)}
-Total Equity: ${formatCurrency(balanceSheetData.total_equity)}
+Total Stockholders' Equity: ${formatCurrency(balanceSheetData.total_stockholders_equity)}
 Status: ${balanceSheetData.is_balanced ? 'Balanced' : 'Not Balanced'}
 
 Please find the detailed report attached.
