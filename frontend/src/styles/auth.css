@@ -350,12 +350,12 @@ h2{
 }
 
 .error-box {
-  background: #fee;
-  color: #c00;
+  background: #f8d7da;
+  color: #c1121f;
   padding: 12px;
   border-radius: 4px;
   margin-bottom: 16px;
-  border: 1px solid #fcc;
+  border: 1px solid #f5c6cb;
 }
 
 button {

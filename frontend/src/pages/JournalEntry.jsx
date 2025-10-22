@@ -512,10 +512,10 @@ export default function JournalEntry() {
           whiteSpace: 'pre-line', 
           marginBottom: 16,
           padding: '16px',
-          backgroundColor: '#ffebee',
-          border: '2px solid #f44336',
+          backgroundColor: '#f8d7da',
+          border: '2px solid #c1121f',
           borderRadius: '8px',
-          color: '#c62828',
+          color: '#c1121f',
           fontSize: '14px',
           fontWeight: '500',
           boxShadow: '0 2px 4px rgba(244, 67, 54, 0.2)'
@@ -1063,8 +1063,8 @@ export default function JournalEntry() {
         </div>
 
         <div style={{ 
-          backgroundColor: isBalanced ? '#e8f5e8' : '#ffeaea',
-          border: isBalanced ? '2px solid #4caf50' : '2px solid #f44336',
+          backgroundColor: isBalanced ? '#d4edda' : '#f8d7da',
+          border: isBalanced ? '2px solid #4f772d' : '2px solid #c1121f',
           borderRadius: '8px',
           padding: '20px',
           marginBottom: 20,
@@ -1087,7 +1087,7 @@ export default function JournalEntry() {
                 gap: '8px',
                 padding: '8px 16px',
                 borderRadius: '20px',
-                backgroundColor: isBalanced ? '#4caf50' : '#f44336',
+                backgroundColor: isBalanced ? '#4f772d' : '#c1121f',
                 color: 'white',
                 fontWeight: 'bold',
                 fontSize: '14px'
@@ -1110,10 +1110,10 @@ export default function JournalEntry() {
             <div style={{ 
               marginTop: '12px', 
               padding: '8px 12px', 
-              backgroundColor: '#ffcdd2', 
+              backgroundColor: '#f8d7da', 
               borderRadius: '4px',
               fontSize: '14px',
-              color: '#d32f2f'
+              color: '#c1121f'
             }}>
               <strong>Difference:</strong> ${Math.abs(totalDebits - totalCredits).toFixed(2)}
             </div>

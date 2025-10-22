@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import HelpModal from '../components/HelpModal';
 import EmailModal from '../components/EmailModal';
+import { getErrorMessage, getErrorTitle } from '../utils/errorUtils';
 import '../styles/auth.css';
 
 export default function IncomeStatement() {
@@ -58,7 +59,7 @@ export default function IncomeStatement() {
       console.error('Failed to fetch income statement:', err);
       console.error('Error details:', err.response?.data);
       console.error('Error status:', err.response?.status);
-      setError(err.response?.data?.error || 'Failed to load income statement');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
       console.log('Loading set to false');

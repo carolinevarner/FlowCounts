@@ -138,7 +138,7 @@ export default function JournalView() {
           style={{
             marginTop: '16px',
             padding: '10px 20px',
-            backgroundColor: '#28a745',
+            backgroundColor: '#4f772d',
             color: 'white',
             border: 'none',
             borderRadius: '6px',
@@ -179,7 +179,7 @@ export default function JournalView() {
                 disabled={submitting}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: submitting ? '#ccc' : '#28a745',
+                  backgroundColor: submitting ? '#ccc' : '#4f772d',
                   color: 'white',
                   border: 'none',
                   borderRadius: '6px',
@@ -195,7 +195,7 @@ export default function JournalView() {
                 disabled={submitting}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: submitting ? '#ccc' : '#dc3545',
+                  backgroundColor: submitting ? '#ccc' : '#c1121f',
                   color: 'white',
                   border: 'none',
                   borderRadius: '6px',
@@ -359,9 +359,9 @@ export default function JournalView() {
                 </td>
                 <td colSpan="2" style={{ padding: '12px', textAlign: 'center' }}>
                   {entry.is_balanced ? (
-                    <span style={{ color: '#28a745', fontWeight: 'bold' }}>✓ Balanced</span>
+                    <span style={{ color: '#4f772d', fontWeight: 'bold' }}>✓ Balanced</span>
                   ) : (
-                    <span style={{ color: '#dc3545', fontWeight: 'bold' }}>✗ Not Balanced</span>
+                    <span style={{ color: '#c1121f', fontWeight: 'bold' }}>✗ Not Balanced</span>
                   )}
                 </td>
               </tr>
@@ -484,7 +484,7 @@ export default function JournalView() {
                 disabled={submitting || !rejectionReason.trim()}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: (submitting || !rejectionReason.trim()) ? '#ccc' : '#dc3545',
+                  backgroundColor: (submitting || !rejectionReason.trim()) ? '#ccc' : '#c1121f',
                   color: 'white',
                   border: 'none',
                   borderRadius: '6px',

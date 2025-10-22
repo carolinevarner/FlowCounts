@@ -2007,44 +2007,45 @@ def close_account(request):
         closure_reason = request.data.get('closure_reason', '').strip()
         
         if not account_id:
-            return Response(
-                {"error": "Account ID is required"},
+            return DatabaseErrorResponse.create_response(
+                'ACCOUNT_ID_REQUIRED',
                 status=400
             )
         
         if not closure_reason:
-            return Response(
-                {"error": "Closure reason is required"},
+            return DatabaseErrorResponse.create_response(
+                'ACCOUNT_CLOSURE_REASON_REQUIRED',
                 status=400
             )
         
         # Check if user is manager or admin
         if request.user.role not in ['MANAGER', 'ADMIN']:
-            return Response(
-                {"error": "Only managers and admins can close accounts"},
+            return DatabaseErrorResponse.create_response(
+                'ACCOUNT_CLOSURE_PERMISSION_DENIED',
                 status=403
             )
         
         try:
             account = ChartOfAccounts.objects.get(id=account_id)
         except ChartOfAccounts.DoesNotExist:
-            return Response(
-                {"error": "Account not found"},
+            return DatabaseErrorResponse.create_response(
+                'ACCOUNT_NOT_FOUND',
                 status=404
             )
         
         # Check if account is already closed
         if account.is_closed:
-            return Response(
-                {"error": "Account is already closed"},
+            return DatabaseErrorResponse.create_response(
+                'ACCOUNT_ALREADY_CLOSED',
                 status=400
             )
         
         # Check if account can be closed (balance should be zero)
         if not account.can_be_closed():
-            return Response(
-                {"error": f"Cannot close account. Current balance is {account.balance}. Account must have zero balance to be closed."},
-                status=400
+            return DatabaseErrorResponse.create_response(
+                'ACCOUNT_NON_ZERO_BALANCE',
+                status=400,
+                balance=float(account.balance)
             )
         
         # Close the account
@@ -2072,9 +2073,16 @@ def close_account(request):
         })
         
     except Exception as e:
-        logger.error(f"Failed to close account: {e}", exc_info=True)
-        return Response(
-            {"error": f"Failed to close account: {str(e)}"},
+        log_error(
+            'ACCOUNT_CLOSURE_FAILED',
+            level='ERROR',
+            user=request.user if hasattr(request, 'user') else None,
+            request=request,
+            exception=e,
+            additional_details=f"Account ID: {request.data.get('account_id')}, Closure reason: {request.data.get('closure_reason')}"
+        )
+        return DatabaseErrorResponse.create_response(
+            'ACCOUNT_CLOSURE_FAILED',
             status=500
         )
 
@@ -2102,9 +2110,15 @@ def get_managers_and_admins(request):
         return Response(result)
         
     except Exception as e:
-        logger.error(f"Failed to get managers and admins: {e}", exc_info=True)
-        return Response(
-            {"detail": "Failed to retrieve managers, administrators, and accountants."},
+        log_error(
+            'MANAGERS_ADMINS_FETCH_FAILED',
+            level='ERROR',
+            user=request.user if hasattr(request, 'user') else None,
+            request=request,
+            exception=e
+        )
+        return DatabaseErrorResponse.create_response(
+            'MANAGERS_ADMINS_FETCH_FAILED',
             status=500
         )
 
@@ -2120,8 +2134,8 @@ def trial_balance(request):
         end_date = request.query_params.get('end_date')
         
         if not as_of_date and not (start_date and end_date):
-            return Response(
-                {"error": "Either as_of_date or both start_date and end_date are required"},
+            return DatabaseErrorResponse.create_response(
+                'FINANCIAL_MISSING_DATE_PARAMS',
                 status=400
             )
         
@@ -2209,8 +2223,16 @@ def trial_balance(request):
         })
         
     except Exception as e:
-        return Response(
-            {"error": f"Failed to generate trial balance: {str(e)}"},
+        log_error(
+            'FINANCIAL_TRIAL_BALANCE_ERROR',
+            level='ERROR',
+            user=request.user if hasattr(request, 'user') else None,
+            request=request,
+            exception=e,
+            additional_details=f"Date parameters: as_of_date={request.query_params.get('as_of_date')}, start_date={request.query_params.get('start_date')}, end_date={request.query_params.get('end_date')}"
+        )
+        return DatabaseErrorResponse.create_response(
+            'FINANCIAL_TRIAL_BALANCE_ERROR',
             status=500
         )
 
@@ -2224,8 +2246,8 @@ def income_statement(request):
         end_date = request.query_params.get('end_date')
         
         if not start_date or not end_date:
-            return Response(
-                {"error": "Both start_date and end_date are required"},
+            return DatabaseErrorResponse.create_response(
+                'FINANCIAL_MISSING_START_END_DATES',
                 status=400
             )
         
@@ -2305,8 +2327,16 @@ def income_statement(request):
         })
         
     except Exception as e:
-        return Response(
-            {"error": f"Failed to generate income statement: {str(e)}"},
+        log_error(
+            'FINANCIAL_INCOME_STATEMENT_ERROR',
+            level='ERROR',
+            user=request.user if hasattr(request, 'user') else None,
+            request=request,
+            exception=e,
+            additional_details=f"Date parameters: start_date={request.query_params.get('start_date')}, end_date={request.query_params.get('end_date')}"
+        )
+        return DatabaseErrorResponse.create_response(
+            'FINANCIAL_INCOME_STATEMENT_ERROR',
             status=500
         )
 
@@ -2319,8 +2349,8 @@ def balance_sheet(request):
         as_of_date = request.query_params.get('as_of_date')
         
         if not as_of_date:
-            return Response(
-                {"error": "as_of_date is required"},
+            return DatabaseErrorResponse.create_response(
+                'FINANCIAL_MISSING_AS_OF_DATE',
                 status=400
             )
         
@@ -2417,8 +2447,16 @@ def balance_sheet(request):
         })
         
     except Exception as e:
-        return Response(
-            {"error": f"Failed to generate balance sheet: {str(e)}"},
+        log_error(
+            'FINANCIAL_BALANCE_SHEET_ERROR',
+            level='ERROR',
+            user=request.user if hasattr(request, 'user') else None,
+            request=request,
+            exception=e,
+            additional_details=f"Date parameter: as_of_date={request.query_params.get('as_of_date')}"
+        )
+        return DatabaseErrorResponse.create_response(
+            'FINANCIAL_BALANCE_SHEET_ERROR',
             status=500
         )
 
@@ -2432,8 +2470,8 @@ def retained_earnings(request):
         end_date = request.query_params.get('end_date')
         
         if not start_date or not end_date:
-            return Response(
-                {"error": "Both start_date and end_date are required"},
+            return DatabaseErrorResponse.create_response(
+                'FINANCIAL_MISSING_START_END_DATES',
                 status=400
             )
         
@@ -2494,7 +2532,15 @@ def retained_earnings(request):
         })
         
     except Exception as e:
-        return Response(
-            {"error": f"Failed to generate retained earnings statement: {str(e)}"},
+        log_error(
+            'FINANCIAL_RETAINED_EARNINGS_ERROR',
+            level='ERROR',
+            user=request.user if hasattr(request, 'user') else None,
+            request=request,
+            exception=e,
+            additional_details=f"Date parameters: start_date={request.query_params.get('start_date')}, end_date={request.query_params.get('end_date')}"
+        )
+        return DatabaseErrorResponse.create_response(
+            'FINANCIAL_RETAINED_EARNINGS_ERROR',
             status=500
         )

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import HelpModal from '../components/HelpModal';
 import EmailModal from '../components/EmailModal';
+import { getErrorMessage, getErrorTitle } from '../utils/errorUtils';
 import '../styles/auth.css';
 
 export default function BalanceSheet() {
@@ -38,7 +39,7 @@ export default function BalanceSheet() {
     } catch (err) {
       console.error('Failed to fetch balance sheet:', err);
       console.error('Error details:', err.response?.data);
-      setError(err.response?.data?.error || 'Failed to load balance sheet');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

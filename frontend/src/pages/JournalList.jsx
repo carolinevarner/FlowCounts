@@ -471,11 +471,11 @@ export default function JournalList() {
       {error && (
         <div style={{
           padding: '12px',
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
+          backgroundColor: '#f8d7da',
+          border: '1px solid #f5c6cb',
           borderRadius: '6px',
           marginBottom: '16px',
-          color: '#c00',
+          color: '#c1121f',
           fontSize: '14px'
         }}>
           {error}
@@ -626,7 +626,7 @@ export default function JournalList() {
                   };
 
                   const getTypeColor = (type) => {
-                    return type === 'Adjusting' ? '#ff8c00' : '#28a745';
+                    return type === 'Adjusting' ? '#ff8c00' : '#4f772d';
                   };
 
                   const renderAccountsColumn = () => {
@@ -789,7 +789,7 @@ export default function JournalList() {
 
                   const getStatusColor = (status) => {
                     if (status === 'APPROVED') return '#4f772d';
-                    if (status === 'PENDING') return '#FF9800';
+                    if (status === 'PENDING') return '#ffc107';
                     if (status === 'REJECTED') return '#c1121f';
                     return '#666';
                   };

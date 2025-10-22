@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import HelpModal from '../components/HelpModal';
 import EmailModal from '../components/EmailModal';
+import { getErrorMessage, getErrorTitle } from '../utils/errorUtils';
 import '../styles/auth.css';
 
 export default function RetainedEarnings() {
@@ -48,7 +49,7 @@ export default function RetainedEarnings() {
     } catch (err) {
       console.error('Failed to fetch retained earnings:', err);
       console.error('Error details:', err.response?.data);
-      setError(err.response?.data?.error || 'Failed to load retained earnings statement');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

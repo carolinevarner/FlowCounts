@@ -372,7 +372,7 @@ function SuspendUserModal({ user, onClose, onSuspended }) {
           onClick={onSubmit} 
           style={{ 
             marginTop: 6, 
-            backgroundColor: isSuspended ? '#4f772d' : '#f08f00' 
+            backgroundColor: isSuspended ? '#4f772d' : '#ffc107' 
           }}
         >
           {saving ? (isSuspended ? "Unsuspending…" : "Suspending…") : (isSuspended ? "Unsuspend" : "Suspend User")}
@@ -831,7 +831,7 @@ export default function AdminUsers() {
                                 className="auth-button secondary"
                                 disabled={busyId === u.id}
                                 onClick={() => setSuspending(u)}
-                                style={{ backgroundColor: '#f08f00', color: 'white', border: 'none' }}
+                                style={{ backgroundColor: '#ffc107', color: 'white', border: 'none' }}
                               >
                                 {busyId === u.id ? "…" : (u.suspended_now ? "Unsuspend" : "Suspend")}
                               </button>

@@ -265,6 +265,68 @@ def create_default_error_messages():
         ('USER_INACTIVE_SUSPENDED', 'AUTH', 'Account Inactive',
          'User is inactive/suspended',
          'User account is not active or has been suspended.'),
+        
+        # Financial Statement errors
+        ('FINANCIAL_MISSING_DATE_PARAMS', 'VALIDATION', 'Date Parameters Required',
+         'Either as_of_date or both start_date and end_date are required.',
+         'Financial statement API call missing required date parameters.'),
+        
+        ('FINANCIAL_MISSING_START_END_DATES', 'VALIDATION', 'Start and End Dates Required',
+         'Both start_date and end_date are required.',
+         'Financial statement API call missing start_date or end_date parameters.'),
+        
+        ('FINANCIAL_MISSING_AS_OF_DATE', 'VALIDATION', 'As Of Date Required',
+         'as_of_date is required.',
+         'Financial statement API call missing as_of_date parameter.'),
+        
+        ('FINANCIAL_TRIAL_BALANCE_ERROR', 'SYSTEM', 'Trial Balance Generation Failed',
+         'Failed to generate trial balance. Please try again later.',
+         'Error occurred while generating trial balance financial statement.'),
+        
+        ('FINANCIAL_INCOME_STATEMENT_ERROR', 'SYSTEM', 'Income Statement Generation Failed',
+         'Failed to generate income statement. Please try again later.',
+         'Error occurred while generating income statement financial report.'),
+        
+        ('FINANCIAL_BALANCE_SHEET_ERROR', 'SYSTEM', 'Balance Sheet Generation Failed',
+         'Failed to generate balance sheet. Please try again later.',
+         'Error occurred while generating balance sheet financial report.'),
+        
+        ('FINANCIAL_RETAINED_EARNINGS_ERROR', 'SYSTEM', 'Retained Earnings Statement Generation Failed',
+         'Failed to generate retained earnings statement. Please try again later.',
+         'Error occurred while generating retained earnings statement financial report.'),
+        
+        # Account management errors
+        ('ACCOUNT_ID_REQUIRED', 'VALIDATION', 'Account ID Required',
+         'Account ID is required.',
+         'Account management operation missing required account ID parameter.'),
+        
+        ('ACCOUNT_CLOSURE_REASON_REQUIRED', 'VALIDATION', 'Closure Reason Required',
+         'Closure reason is required.',
+         'Account closure operation missing required closure reason.'),
+        
+        ('ACCOUNT_CLOSURE_PERMISSION_DENIED', 'PERMISSION', 'Permission Denied',
+         'Only managers and admins can close accounts.',
+         'User lacks permission to close accounts.'),
+        
+        ('ACCOUNT_NOT_FOUND', 'USER_ACTION', 'Account Not Found',
+         'Account not found.',
+         'Account lookup failed for the provided account ID.'),
+        
+        ('ACCOUNT_ALREADY_CLOSED', 'USER_ACTION', 'Account Already Closed',
+         'Account is already closed.',
+         'User attempted to close an account that is already closed.'),
+        
+        ('ACCOUNT_NON_ZERO_BALANCE', 'VALIDATION', 'Account Has Non-Zero Balance',
+         'Cannot close account. Account must have zero balance to be closed.',
+         'User attempted to close an account with non-zero balance.'),
+        
+        ('ACCOUNT_CLOSURE_FAILED', 'SYSTEM', 'Account Closure Failed',
+         'Failed to close account. Please try again later.',
+         'Error occurred while closing account.'),
+        
+        ('MANAGERS_ADMINS_FETCH_FAILED', 'SYSTEM', 'Failed to Load Users',
+         'Failed to load managers and administrators. Please try again later.',
+         'Error occurred while fetching managers and administrators list.'),
     ]
     
     for code, error_type, title, message, technical_details in default_errors:

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import HelpModal from '../components/HelpModal';
+import { getErrorMessage, getErrorTitle } from '../utils/errorUtils';
 import '../styles/auth.css';
 
 export default function TrialBalance() {
@@ -31,7 +32,7 @@ export default function TrialBalance() {
       setTrialBalanceData(response.data);
     } catch (err) {
       console.error('Failed to fetch trial balance:', err);
-      setError(err.response?.data?.error || 'Failed to load trial balance');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
