@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 import '../styles/auth.css';
 
-export default function EmailModal({ onClose, recipientType = 'manager', managersAndAdmins = { managers: [], admin_emails: [] }, senderRole = 'ACCOUNTANT', isOpen = true }) {
+export default function EmailModal({ onClose, recipientType = 'manager', managersAndAdmins = { managers: [], admin_emails: [] }, senderRole = 'ACCOUNTANT', isOpen = true, initialSubject = '', initialMessage = '' }) {
   const [recipient, setRecipient] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -11,6 +11,21 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
   const [success, setSuccess] = useState(false);
   const [currentManagersAndAdmins, setCurrentManagersAndAdmins] = useState({ managers: [], admin_emails: [] });
   const [loadingManagers, setLoadingManagers] = useState(false);
+
+  // Initialize subject and message from props when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      if (initialSubject) setSubject(initialSubject);
+      if (initialMessage) setMessage(initialMessage);
+    } else {
+      // Reset when modal closes
+      setSubject('');
+      setMessage('');
+      setRecipient('');
+      setError('');
+      setSuccess(false);
+    }
+  }, [isOpen, initialSubject, initialMessage]);
 
   // Fetch fresh managers/admins list when modal opens
   const fetchManagersAndAdmins = useCallback(async () => {

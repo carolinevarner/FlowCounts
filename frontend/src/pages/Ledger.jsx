@@ -97,8 +97,51 @@ export default function Ledger() {
     return sortConfig.direction === 'asc' ? ' ⌃' : ' ⌄';
   };
 
+  // Calculate running balance for each transaction
+  const transactionsWithBalance = useMemo(() => {
+    if (!account || !transactions.length) return [];
+
+    // Sort transactions by date first (chronological order is critical for balance calculation)
+    const sorted = [...transactions].sort((a, b) => {
+      const dateA = new Date(a.date || 0);
+      const dateB = new Date(b.date || 0);
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateA.getTime() - dateB.getTime();
+      }
+      // If same date, sort by reference ID for consistency
+      return (a.reference || '').localeCompare(b.reference || '');
+    });
+
+    // Get initial balance from account
+    const initialBalance = parseFloat(account.initial_balance || account.balance || 0);
+    const normalSide = account.normal_side || 'DEBIT';
+
+    // Calculate running balance
+    let runningBalance = initialBalance;
+    const transactionsWithBal = sorted.map((tx) => {
+      const debit = parseFloat(tx.debit || 0);
+      const credit = parseFloat(tx.credit || 0);
+
+      // Calculate balance based on normal side
+      if (normalSide === 'DEBIT') {
+        // For debit normal accounts: debits increase, credits decrease
+        runningBalance = runningBalance + debit - credit;
+      } else {
+        // For credit normal accounts: credits increase, debits decrease
+        runningBalance = runningBalance + credit - debit;
+      }
+
+      return {
+        ...tx,
+        runningBalance: runningBalance
+      };
+    });
+
+    return transactionsWithBal;
+  }, [account, transactions]);
+
   const filteredTransactions = useMemo(() => {
-    let filtered = transactions;
+    let filtered = transactionsWithBalance;
 
     if (selectedDate) {
       filtered = filtered.filter((tx) => {
@@ -152,6 +195,10 @@ export default function Ledger() {
             aValue = a.credit || 0;
             bValue = b.credit || 0;
             break;
+          case 'balance':
+            aValue = a.runningBalance || 0;
+            bValue = b.runningBalance || 0;
+            break;
           default:
             return 0;
         }
@@ -167,7 +214,7 @@ export default function Ledger() {
     }
 
     return filtered;
-  }, [transactions, searchTerm, filter, sortConfig, selectedDate]);
+  }, [transactionsWithBalance, searchTerm, filter, sortConfig, selectedDate]);
 
   if (loading) {
     return <div style={{ padding: "12px 16px" }}>Loading ledger...</div>;
@@ -445,91 +492,182 @@ export default function Ledger() {
               >
                 Credit{getSortIndicator('credit')}
               </th>
+              <th 
+                onClick={() => handleSort('balance')}
+                style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "right", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000",
+                  cursor: "pointer",
+                  userSelect: "none"
+                }}
+              >
+                Balance{getSortIndicator('balance')}
+              </th>
             </tr>
           </thead>
           <tbody>
             {filteredTransactions.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: 20, borderBottom: "1px solid #ddd" }}>
+                <td colSpan={6} style={{ textAlign: "center", padding: 20, borderBottom: "1px solid #ddd" }}>
                   No transactions found for this account.
                 </td>
               </tr>
             ) : (
-                filteredTransactions.map((tx) => (
-                <tr key={tx.id}>
-                  <td style={{ 
-                    padding: "10px 12px", 
-                    borderBottom: "1px solid #ddd", 
-                    fontWeight: "normal",
-                    fontSize: "0.85em"
-                  }}>
-                    {tx.date ? new Date(tx.date).toLocaleDateString() : ""}
-                  </td>
-                  <td style={{ 
-                    padding: "10px 12px", 
-                    borderBottom: "1px solid #ddd",
-                    fontWeight: "normal", 
-                    fontSize: "0.85em",
-                    color: "#1C5C59"
-                  }}>
-                    {tx.journal_entry_id ? (
-                      <button
-                        onClick={() => navigate(`/${userRole.toLowerCase()}/journal/view/${tx.journal_entry_id}`)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "#1C5C59",
-                          textDecoration: "none",
-                          cursor: "pointer",
-                          fontSize: "inherit",
-                          fontFamily: "inherit",
-                          padding: 0,
-                          fontWeight: "normal"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.textDecoration = "underline";
-                          e.target.style.fontWeight = "bold";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.textDecoration = "none";
-                          e.target.style.fontWeight = "normal";
-                        }}
-                        title="Click to view journal entry details"
-                      >
-                        {tx.reference || ""}
-                      </button>
-                    ) : (
-                      tx.reference || ""
-                    )}
-                  </td>
-                  <td style={{ 
-                    padding: "10px 12px", 
-                    borderBottom: "1px solid #ddd",
-                    fontWeight: "normal", 
-                    fontSize: "0.85em"
-                  }}>
-                    {tx.description || ""}
-                  </td>
-                  <td style={{ 
-                    padding: "10px 12px", 
-                    borderBottom: "1px solid #ddd", 
-                    textAlign: "right",
-                    fontWeight: "normal",
-                    fontSize: "0.85em"
-                  }}>
-                    {tx.debit > 0 ? formatCurrency(tx.debit) : ""}
-                  </td>
-                  <td style={{ 
-                    padding: "10px 12px", 
-                    borderBottom: "1px solid #ddd", 
-                    textAlign: "right",
-                    fontWeight: "normal",
-                    fontSize: "0.85em"
-                  }}>
-                    {tx.credit > 0 ? formatCurrency(tx.credit) : ""}
-                  </td>
-                </tr>
-              ))
+              <>
+                {/* Opening Balance Row */}
+                {account && (
+                  <tr style={{ backgroundColor: "#f8f9fa" }}>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd", 
+                      fontWeight: "normal",
+                      fontSize: "0.85em"
+                    }}>
+                      {account.created_at ? new Date(account.created_at).toLocaleDateString() : ""}
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd",
+                      fontWeight: "normal", 
+                      fontSize: "0.85em",
+                      color: "#1C5C59"
+                    }}>
+                      Opening
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd",
+                      fontWeight: "normal", 
+                      fontSize: "0.85em",
+                      fontStyle: "italic"
+                    }}>
+                      Opening Balance
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd", 
+                      textAlign: "right",
+                      fontWeight: "normal",
+                      fontSize: "0.85em"
+                    }}>
+                      {account.normal_side === 'DEBIT' && parseFloat(account.initial_balance || 0) > 0 
+                        ? formatCurrency(account.initial_balance) 
+                        : ""}
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd", 
+                      textAlign: "right",
+                      fontWeight: "normal",
+                      fontSize: "0.85em"
+                    }}>
+                      {account.normal_side === 'CREDIT' && parseFloat(account.initial_balance || 0) > 0 
+                        ? formatCurrency(account.initial_balance) 
+                        : ""}
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd", 
+                      textAlign: "right",
+                      fontWeight: "bold",
+                      fontSize: "0.85em",
+                      color: "#1C5C59"
+                    }}>
+                      {formatCurrency(account.initial_balance || 0)}
+                    </td>
+                  </tr>
+                )}
+                {/* Transaction Rows */}
+                {filteredTransactions.map((tx) => (
+                  <tr key={tx.id}>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd", 
+                      fontWeight: "normal",
+                      fontSize: "0.85em"
+                    }}>
+                      {tx.date ? new Date(tx.date).toLocaleDateString() : ""}
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd",
+                      fontWeight: "normal", 
+                      fontSize: "0.85em",
+                      color: "#1C5C59"
+                    }}>
+                      {tx.journal_entry_id ? (
+                        <button
+                          onClick={() => navigate(`/${userRole.toLowerCase()}/journal/view/${tx.journal_entry_id}`)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#1C5C59",
+                            textDecoration: "none",
+                            cursor: "pointer",
+                            fontSize: "inherit",
+                            fontFamily: "inherit",
+                            padding: 0,
+                            fontWeight: "normal"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.textDecoration = "underline";
+                            e.target.style.fontWeight = "bold";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.textDecoration = "none";
+                            e.target.style.fontWeight = "normal";
+                          }}
+                          title="Click to view journal entry details"
+                        >
+                          {tx.reference || ""}
+                        </button>
+                      ) : (
+                        tx.reference || ""
+                      )}
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd",
+                      fontWeight: "normal", 
+                      fontSize: "0.85em"
+                    }}>
+                      {tx.description || ""}
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd", 
+                      textAlign: "right",
+                      fontWeight: "normal",
+                      fontSize: "0.85em"
+                    }}>
+                      {tx.debit > 0 ? formatCurrency(tx.debit) : ""}
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd", 
+                      textAlign: "right",
+                      fontWeight: "normal",
+                      fontSize: "0.85em"
+                    }}>
+                      {tx.credit > 0 ? formatCurrency(tx.credit) : ""}
+                    </td>
+                    <td style={{ 
+                      padding: "10px 12px", 
+                      borderBottom: "1px solid #ddd", 
+                      textAlign: "right",
+                      fontWeight: "bold",
+                      fontSize: "0.85em",
+                      color: "#1C5C59"
+                    }}>
+                      {formatCurrency(tx.runningBalance || 0)}
+                    </td>
+                  </tr>
+                ))}
+              </>
             )}
           </tbody>
         </table>

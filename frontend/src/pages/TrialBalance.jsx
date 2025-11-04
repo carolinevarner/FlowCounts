@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import HelpModal from '../components/HelpModal';
+import EmailModal from '../components/EmailModal';
 import { getErrorMessage, getErrorTitle } from '../utils/errorUtils';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import '../styles/auth.css';
 
 export default function TrialBalance() {
@@ -9,6 +12,7 @@ export default function TrialBalance() {
   const [error, setError] = useState('');
   const [trialBalanceData, setTrialBalanceData] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dateMode, setDateMode] = useState('asof'); // 'asof' or 'range'
@@ -49,6 +53,70 @@ export default function TrialBalance() {
       style: 'currency',
       currency: 'USD'
     }).format(amount);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleEmail = () => {
+    setShowEmailModal(true);
+  };
+
+  const handleDownload = async () => {
+    if (!trialBalanceData) return;
+    
+    const reportDate = dateMode === 'asof' 
+      ? selectedDate 
+      : `${startDate}_to_${endDate}`;
+    
+    // Find the report card element
+    const reportCard = document.getElementById('trial-balance-report-card');
+    if (!reportCard) {
+      alert('Report card not found. Please ensure the report is displayed.');
+      return;
+    }
+    
+    try {
+      // Capture the report card as an image using html2canvas
+      const canvas = await html2canvas(reportCard, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: reportCard.scrollWidth,
+        windowHeight: reportCard.scrollHeight
+      });
+      
+      // Convert canvas to image data
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Create PDF with the image
+      const pdf = new jsPDF('portrait', 'mm', 'a4');
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      // Add additional pages if needed
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      // Save the PDF
+      pdf.save(`trial-balance-${reportDate}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
   return (
@@ -238,6 +306,79 @@ export default function TrialBalance() {
               </div>
             )}
           </div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button
+              onClick={handlePrint}
+              disabled={!trialBalanceData}
+              style={{
+                backgroundColor: "#1C5C59",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                cursor: trialBalanceData ? "pointer" : "not-allowed",
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                opacity: trialBalanceData ? 1 : 0.6
+              }}
+              title="Print report"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1h12a1 1 0 0 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1h6a1 1 0 0 1 1z"/>
+              </svg>
+              Print
+            </button>
+            <button
+              onClick={handleEmail}
+              disabled={!trialBalanceData}
+              style={{
+                backgroundColor: "#1C5C59",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                cursor: trialBalanceData ? "pointer" : "not-allowed",
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                opacity: trialBalanceData ? 1 : 0.6
+              }}
+              title="Email report"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/>
+              </svg>
+              Email
+            </button>
+            <button
+              onClick={handleDownload}
+              disabled={!trialBalanceData}
+              style={{
+                backgroundColor: "#1C5C59",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                cursor: trialBalanceData ? "pointer" : "not-allowed",
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                opacity: trialBalanceData ? 1 : 0.6
+              }}
+              title="Download/Save report"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+              </svg>
+              Save
+            </button>
+          </div>
           <button
             onClick={() => setShowHelpModal(true)}
             className="auth-linkbtn"
@@ -264,7 +405,7 @@ export default function TrialBalance() {
 
       {/* Trial Balance Report */}
       {trialBalanceData && (
-        <div className="card" style={{ marginBottom: 20, padding: 0, overflow: "hidden" }}>
+        <div id="trial-balance-report-card" className="card" style={{ marginBottom: 20, padding: 0, overflow: "hidden" }}>
           {/* Report Header */}
           <div style={{ 
             backgroundColor: "#1C302F", 
@@ -484,6 +625,38 @@ export default function TrialBalance() {
           onClose={() => setShowHelpModal(false)} 
           page="trialBalance" 
           userRole="MANAGER" 
+        />
+      )}
+
+      {showEmailModal && trialBalanceData && (
+        <EmailModal
+          isOpen={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+          recipientType="manager"
+          senderRole="ACCOUNTANT"
+          initialSubject={`Trial Balance Report - ${dateMode === 'asof' ? new Date(selectedDate).toLocaleDateString() : `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`}`}
+          initialMessage={`
+Trial Balance Report
+
+${dateMode === 'asof' 
+  ? `As of: ${new Date(selectedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
+  : `Period: ${new Date(startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} to ${new Date(endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
+}
+
+Total Debits: ${formatCurrency(trialBalanceData.total_debits)}
+Total Credits: ${formatCurrency(trialBalanceData.total_credits)}
+Status: ${trialBalanceData.is_balanced ? 'Balanced ✓' : 'Not Balanced ✗'}
+${!trialBalanceData.is_balanced ? `Difference: ${formatCurrency(Math.abs(trialBalanceData.total_debits - trialBalanceData.total_credits))}` : ''}
+
+Please review the detailed report below.
+
+Account Details:
+${trialBalanceData.trial_balance.map(acc => 
+  `${acc.account_number} - ${acc.account_name}: ${acc.debit_balance > 0 ? `Debit ${formatCurrency(acc.debit_balance)}` : `Credit ${formatCurrency(acc.credit_balance)}`}`
+).join('\n')}
+
+Generated on: ${new Date().toLocaleString()}
+          `}
         />
       )}
 

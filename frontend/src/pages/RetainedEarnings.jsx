@@ -3,6 +3,8 @@ import api from '../api';
 import HelpModal from '../components/HelpModal';
 import EmailModal from '../components/EmailModal';
 import { getErrorMessage, getErrorTitle } from '../utils/errorUtils';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import '../styles/auth.css';
 
 export default function RetainedEarnings() {
@@ -68,29 +70,60 @@ export default function RetainedEarnings() {
     setShowEmailModal(true);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!retainedEarningsData) return;
     
-    const now = new Date();
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
-    const startDate = startOfYear.toISOString().split('T')[0];
-    const endDate = now.toISOString().split('T')[0];
+    const reportDate = dateMode === 'asof' 
+      ? selectedDate 
+      : `${startDate}_to_${endDate}`;
     
-    const data = {
-      title: 'Statement of Retained Earnings',
-      period: `${startDate} to ${endDate}`,
-      data: retainedEarningsData
-    };
+    // Find the report card element
+    const reportCard = document.getElementById('retained-earnings-report-card');
+    if (!reportCard) {
+      alert('Report card not found. Please ensure the report is displayed.');
+      return;
+    }
     
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `retained-earnings-${startDate}-to-${endDate}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      // Capture the report card as an image using html2canvas
+      const canvas = await html2canvas(reportCard, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: reportCard.scrollWidth,
+        windowHeight: reportCard.scrollHeight
+      });
+      
+      // Convert canvas to image data
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Create PDF with the image
+      const pdf = new jsPDF('portrait', 'mm', 'a4');
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      // Add additional pages if needed
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      // Save the PDF
+      pdf.save(`retained-earnings-${reportDate}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
   const formatCurrency = (amount) => {
@@ -123,7 +156,7 @@ export default function RetainedEarnings() {
   if (error) {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '18px', marginBottom: '10px', color: 'red' }}>Error Loading Retained Earnings Statement</div>
+        <div style={{ fontSize: '18px', marginBottom: '10px', color: '#c1121f' }}>Error Loading Retained Earnings Statement</div>
         <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>{error}</div>
         <button 
           onClick={() => fetchRetainedEarnings()} 
@@ -353,6 +386,79 @@ export default function RetainedEarnings() {
               </div>
             )}
           </div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button
+              onClick={handlePrint}
+              disabled={!retainedEarningsData}
+              style={{
+                backgroundColor: "#1C5C59",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                cursor: retainedEarningsData ? "pointer" : "not-allowed",
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                opacity: retainedEarningsData ? 1 : 0.6
+              }}
+              title="Print report"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1h12a1 1 0 0 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1h6a1 1 0 0 1 1z"/>
+              </svg>
+              Print
+            </button>
+            <button
+              onClick={handleEmail}
+              disabled={!retainedEarningsData}
+              style={{
+                backgroundColor: "#1C5C59",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                cursor: retainedEarningsData ? "pointer" : "not-allowed",
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                opacity: retainedEarningsData ? 1 : 0.6
+              }}
+              title="Email report"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/>
+              </svg>
+              Email
+            </button>
+            <button
+              onClick={handleDownload}
+              disabled={!retainedEarningsData}
+              style={{
+                backgroundColor: "#1C5C59",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                cursor: retainedEarningsData ? "pointer" : "not-allowed",
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                opacity: retainedEarningsData ? 1 : 0.6
+              }}
+              title="Download/Save report"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+              </svg>
+              Save
+            </button>
+          </div>
           <button
             onClick={() => setShowHelpModal(true)}
             className="auth-linkbtn"
@@ -374,11 +480,11 @@ export default function RetainedEarnings() {
       {error && (
         <div style={{
           padding: '12px',
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
+          backgroundColor: '#f8d7da',
+          border: '1px solid #f5c6cb',
           borderRadius: '6px',
           marginBottom: '16px',
-          color: '#c00',
+          color: '#c1121f',
           fontSize: '14px'
         }}>
           {error}
@@ -387,7 +493,7 @@ export default function RetainedEarnings() {
 
       {/* Retained Earnings Statement Report */}
       {retainedEarningsData && (
-        <div className="card" style={{ marginBottom: 20, padding: 0, overflow: "hidden" }}>
+        <div id="retained-earnings-report-card" className="card" style={{ marginBottom: 20, padding: 0, overflow: "hidden" }}>
           {/* Report Header */}
           <div style={{ 
             backgroundColor: "#1C302F", 
@@ -560,21 +666,30 @@ export default function RetainedEarnings() {
         />
       )}
 
-      <EmailModal
-        isOpen={showEmailModal}
-        onClose={() => setShowEmailModal(false)}
-        subject={`Statement of Retained Earnings - ${new Date().getFullYear()}`}
-        body={retainedEarningsData ? `
+      {showEmailModal && retainedEarningsData && (
+        <EmailModal
+          isOpen={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+          recipientType="manager"
+          senderRole="ACCOUNTANT"
+          initialSubject={`Statement of Retained Earnings - ${dateMode === 'asof' ? new Date(selectedDate).toLocaleDateString() : `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`}`}
+          initialMessage={`
 Statement of Retained Earnings Report
 
-Period: ${new Date().getFullYear()}
+${dateMode === 'asof' 
+  ? `For the period ending: ${new Date(selectedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
+  : `Period: ${new Date(startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} to ${new Date(endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
+}
+
 Beginning Retained Earnings: ${formatCurrency(retainedEarningsData.beginning_retained_earnings)}
-Net Income: ${formatCurrency(retainedEarningsData.net_income)}
+Add: Net Income: ${formatCurrency(retainedEarningsData.net_income)}
+Less: Dividends: ${formatCurrency(0)}
 Ending Retained Earnings: ${formatCurrency(retainedEarningsData.ending_retained_earnings)}
 
-Please find the detailed report attached.
-        ` : ''}
-      />
+Generated on: ${new Date().toLocaleString()}
+          `}
+        />
+      )}
     </div>
   );
 }

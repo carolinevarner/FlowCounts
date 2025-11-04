@@ -85,7 +85,7 @@ export default function Signup() {
   return (
     <AuthLayout title="FlowCounts" subtitle="Request Access to FlowCounts">
       <form onSubmit={onSubmit} className="auth-row">
-        {error && <div style={{ color: "#c00" }}>{error}</div>}
+        {error && <div style={{ color: "#c1121f", marginBottom: "12px", padding: "12px", backgroundColor: "#f8d7da", border: "1px solid #f5c6cb", borderRadius: "6px" }}>{error}</div>}
         
         <div style={{ 
           padding: "12px", 

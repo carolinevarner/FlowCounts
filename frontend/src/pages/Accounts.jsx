@@ -121,7 +121,7 @@ function DeactivateAccountModal({ account, onClose, onDeactivated }) {
                 <strong>Balance:</strong> {formatCurrency(account.balance)}
               </p>
               {parseFloat(account.balance) !== 0 && (
-                <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#c00' }}>
+                <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#c1121f' }}>
                   ⚠ Cannot deactivate account with non-zero balance
                 </p>
               )}

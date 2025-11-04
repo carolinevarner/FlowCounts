@@ -72,7 +72,7 @@ export default function Login() {
   return (
     <AuthLayout title="FlowCounts" subtitle="Welcome to FlowCounts!">
       <form onSubmit={onSubmit} className="auth-row">
-        {error && <div style={{ color: "#c00", marginBottom: "12px" }}>{error}</div>}
+        {error && <div style={{ color: "#c1121f", marginBottom: "12px", padding: "12px", backgroundColor: "#f8d7da", border: "1px solid #f5c6cb", borderRadius: "6px" }}>{error}</div>}
         {success && <div style={{ color: "#28a745", marginBottom: "12px", padding: "12px", backgroundColor: "#d4edda", border: "1px solid #c3e6cb", borderRadius: "6px" }}>{success}</div>}
 
         <input
