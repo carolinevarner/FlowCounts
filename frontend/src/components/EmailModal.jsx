@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 import '../styles/auth.css';
 
@@ -9,6 +9,36 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [currentManagersAndAdmins, setCurrentManagersAndAdmins] = useState({ managers: [], admin_emails: [] });
+  const [loadingManagers, setLoadingManagers] = useState(false);
+
+  // Fetch fresh managers/admins list when modal opens
+  const fetchManagersAndAdmins = useCallback(async () => {
+    setLoadingManagers(true);
+    try {
+      const response = await api.get('/auth/managers-admins/');
+      console.log('Fetched managers/admins/accountants:', response.data);
+      console.log('Total users:', response.data.managers?.length || 0);
+      console.log('Managers:', response.data.managers?.filter(m => m.role === 'MANAGER').length || 0);
+      console.log('Admins:', response.data.managers?.filter(m => m.role === 'ADMIN').length || 0);
+      console.log('Accountants:', response.data.managers?.filter(m => m.role === 'ACCOUNTANT').length || 0);
+      setCurrentManagersAndAdmins(response.data);
+    } catch (err) {
+      console.error('Failed to fetch managers and admins:', err);
+      // If fetch fails, use the prop value as fallback
+      setCurrentManagersAndAdmins(managersAndAdmins);
+    } finally {
+      setLoadingManagers(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Always fetch fresh data when modal opens (or when component mounts with isOpen=true)
+      fetchManagersAndAdmins();
+    }
+  }, [isOpen, fetchManagersAndAdmins]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -118,33 +148,39 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
                 required
               >
                 <option value="">Select a recipient...</option>
-                {/* Managers - visible to both admins and accountants */}
-                {managersAndAdmins.managers.filter(m => m.role === 'MANAGER').map((manager) => (
-                  <option key={manager.id} value={manager.email}>
-                    {manager.first_name} {manager.last_name} (Manager) - {manager.email}
-                  </option>
-                ))}
-                {/* Accountants - only visible to admins */}
-                {senderRole === 'ADMIN' && managersAndAdmins.managers.filter(m => m.role === 'ACCOUNTANT').map((accountant) => (
-                  <option key={accountant.id} value={accountant.email}>
-                    {accountant.first_name} {accountant.last_name} (Accountant) - {accountant.email}
-                  </option>
-                ))}
-                {/* Administrators - only visible to accountants (not admins messaging themselves) */}
-                {senderRole === 'ACCOUNTANT' && managersAndAdmins.managers.filter(m => m.role === 'ADMIN').map((admin) => (
-                  <option key={admin.id} value={admin.email}>
-                    {admin.first_name} {admin.last_name} (Administrator) - {admin.email}
-                  </option>
-                ))}
-                {/* Additional admin emails from settings - only visible to accountants */}
-                {senderRole === 'ACCOUNTANT' && managersAndAdmins.admin_emails.map((email, index) => (
-                  <option key={`admin-email-${index}`} value={email}>
-                    Administrator - {email}
-                  </option>
-                ))}
+                {loadingManagers ? (
+                  <option value="" disabled>Loading recipients...</option>
+                ) : (
+                  <>
+                    {/* Managers - visible to both admins and accountants */}
+                    {currentManagersAndAdmins.managers.filter(m => m.role === 'MANAGER').map((manager) => (
+                      <option key={manager.id} value={manager.email}>
+                        {manager.first_name} {manager.last_name} (Manager) - {manager.email}
+                      </option>
+                    ))}
+                    {/* Accountants - only visible to admins */}
+                    {senderRole === 'ADMIN' && currentManagersAndAdmins.managers.filter(m => m.role === 'ACCOUNTANT').map((accountant) => (
+                      <option key={accountant.id} value={accountant.email}>
+                        {accountant.first_name} {accountant.last_name} (Accountant) - {accountant.email}
+                      </option>
+                    ))}
+                    {/* Administrators - only visible to accountants (not admins messaging themselves) */}
+                    {senderRole === 'ACCOUNTANT' && currentManagersAndAdmins.managers.filter(m => m.role === 'ADMIN').map((admin) => (
+                      <option key={admin.id} value={admin.email}>
+                        {admin.first_name} {admin.last_name} (Administrator) - {admin.email}
+                      </option>
+                    ))}
+                    {/* Additional admin emails from settings - only visible to accountants */}
+                    {senderRole === 'ACCOUNTANT' && currentManagersAndAdmins.admin_emails.map((email, index) => (
+                      <option key={`admin-email-${index}`} value={email}>
+                        Administrator - {email}
+                      </option>
+                    ))}
+                  </>
+                )}
               </select>
-              {((senderRole === 'ADMIN' && managersAndAdmins.managers.filter(m => m.role === 'MANAGER' || m.role === 'ACCOUNTANT').length === 0) ||
-                (senderRole === 'ACCOUNTANT' && (managersAndAdmins.managers.filter(m => m.role === 'MANAGER' || m.role === 'ADMIN').length === 0 && managersAndAdmins.admin_emails.length === 0))) && (
+              {!loadingManagers && ((senderRole === 'ADMIN' && currentManagersAndAdmins.managers.filter(m => m.role === 'MANAGER' || m.role === 'ACCOUNTANT').length === 0) ||
+                (senderRole === 'ACCOUNTANT' && (currentManagersAndAdmins.managers.filter(m => m.role === 'MANAGER' || m.role === 'ADMIN').length === 0 && currentManagersAndAdmins.admin_emails.length === 0))) && (
                 <div style={{ marginTop: '8px', fontSize: '12px', color: '#6c757d' }}>
                   {senderRole === 'ADMIN' 
                     ? 'No managers or accountants found. Please contact support.'

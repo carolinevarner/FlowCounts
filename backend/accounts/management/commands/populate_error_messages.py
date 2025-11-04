@@ -19,3 +19,4 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.ERROR(f'Failed to populate error messages: {str(e)}')
             )
+

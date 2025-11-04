@@ -14,7 +14,7 @@ export default function JournalEntry() {
   const [accounts, setAccounts] = useState([]);
   
   const [entryDate, setEntryDate] = useState(new Date().toISOString().split('T')[0]);
-  const [entryType, setEntryType] = useState('Regular');
+  const [entryType, setEntryType] = useState('REGULAR');
   const [description, setDescription] = useState('');
   const [debitLines, setDebitLines] = useState([
     { account: '', description: '', debit: '', order: 0 }
@@ -81,7 +81,7 @@ export default function JournalEntry() {
       }
 
       setEntryDate(entry.entry_date);
-      setEntryType(entry.description?.toLowerCase().includes('adjusting') ? 'Adjusting' : 'Regular');
+      setEntryType(entry.entry_type || 'REGULAR');
       setDescription(entry.description);
       
       const debits = entry.lines.filter(line => parseFloat(line.debit) > 0).map((line, idx) => ({
@@ -115,15 +115,31 @@ export default function JournalEntry() {
     return [...debitAccounts, ...creditAccounts];
   };
 
-  const getAvailableAccounts = (currentLineAccount) => {
+  const getAvailableAccounts = (currentLineAccount, lineType) => {
     const selectedAccounts = getSelectedAccounts();
-    return accounts.filter(acc => 
+    let filtered = accounts.filter(acc => 
       !selectedAccounts.includes(acc.id.toString()) || acc.id.toString() === currentLineAccount
     );
+    
+    // Filter by normal_side based on line type
+    // For debit lines: only show accounts with normal_side = 'DEBIT'
+    // For credit lines: only show accounts with normal_side = 'CREDIT'
+    // But always include the currently selected account (if any) regardless of normal_side
+    if (lineType === 'debit') {
+      filtered = filtered.filter(acc => 
+        acc.normal_side === 'DEBIT' || acc.id.toString() === currentLineAccount
+      );
+    } else if (lineType === 'credit') {
+      filtered = filtered.filter(acc => 
+        acc.normal_side === 'CREDIT' || acc.id.toString() === currentLineAccount
+      );
+    }
+    
+    return filtered;
   };
 
-  const getFilteredAccounts = (currentLineAccount) => {
-    let filtered = getAvailableAccounts(currentLineAccount);
+  const getFilteredAccounts = (currentLineAccount, lineType) => {
+    let filtered = getAvailableAccounts(currentLineAccount, lineType);
     
     // Apply category filter
     if (accountFilter !== 'all') {
@@ -153,8 +169,8 @@ export default function JournalEntry() {
     });
   };
 
-  const getAccountCategoryGroups = (currentLineAccount) => {
-    const filteredAccounts = getFilteredAccounts(currentLineAccount);
+  const getAccountCategoryGroups = (currentLineAccount, lineType) => {
+    const filteredAccounts = getFilteredAccounts(currentLineAccount, lineType);
     const groups = {};
     
     filteredAccounts.forEach(acc => {
@@ -412,9 +428,8 @@ export default function JournalEntry() {
 
       const payload = {
         entry_date: entryDate,
-        description: entryType === 'Adjusting' && !description.toLowerCase().includes('adjusting') 
-          ? `${description ? description + ' - ' : ''}Adjusting Entry` 
-          : description,
+        entry_type: entryType,
+        description: description,
         lines: allLines
       };
 
@@ -473,7 +488,7 @@ export default function JournalEntry() {
   const handleReset = () => {
     if (confirm('Are you sure you want to reset this form? All unsaved changes will be lost.')) {
       setEntryDate(new Date().toISOString().split('T')[0]);
-      setEntryType('Regular');
+      setEntryType('REGULAR');
       setDescription('');
       setDebitLines([{ account: '', description: '', debit: '', order: 0 }]);
       setCreditLines([{ account: '', description: '', credit: '', order: 1 }]);
@@ -575,8 +590,9 @@ export default function JournalEntry() {
                   backgroundColor: '#fff'
                 }}
               >
-                <option value="Regular">Regular</option>
-                <option value="Adjusting">Adjusting</option>
+                <option value="REGULAR">Regular</option>
+                <option value="ADJUSTED">Adjusted</option>
+                <option value="CLOSING">Closing</option>
               </select>
             </div>
             <div>
@@ -736,7 +752,7 @@ export default function JournalEntry() {
                               
                               {/* Account List */}
                               <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                {Object.entries(getAccountCategoryGroups(line.account)).map(([category, categoryAccounts]) => (
+                                {Object.entries(getAccountCategoryGroups(line.account, 'debit')).map(([category, categoryAccounts]) => (
                                   <div key={category}>
                                     <div style={{
                                       padding: '6px 12px',
@@ -784,7 +800,7 @@ export default function JournalEntry() {
                                     ))}
                                   </div>
                                 ))}
-                                {Object.keys(getAccountCategoryGroups(line.account)).length === 0 && (
+                                {Object.keys(getAccountCategoryGroups(line.account, 'debit')).length === 0 && (
                                   <div style={{ padding: '12px', textAlign: 'center', color: '#6c757d', fontSize: '13px' }}>
                                     No accounts found
                                   </div>
@@ -933,7 +949,7 @@ export default function JournalEntry() {
                               
                               {/* Account List */}
                               <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                {Object.entries(getAccountCategoryGroups(line.account)).map(([category, categoryAccounts]) => (
+                                {Object.entries(getAccountCategoryGroups(line.account, 'credit')).map(([category, categoryAccounts]) => (
                                   <div key={category}>
                                     <div style={{
                                       padding: '6px 12px',
@@ -981,7 +997,7 @@ export default function JournalEntry() {
                                     ))}
                                   </div>
                                 ))}
-                                {Object.keys(getAccountCategoryGroups(line.account)).length === 0 && (
+                                {Object.keys(getAccountCategoryGroups(line.account, 'credit')).length === 0 && (
                                   <div style={{ padding: '12px', textAlign: 'center', color: '#6c757d', fontSize: '13px' }}>
                                     No accounts found
                                   </div>

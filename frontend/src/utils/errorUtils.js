@@ -113,3 +113,4 @@ export const getErrorCode = (error) => {
 export const isDatabaseError = (error) => {
   return getErrorCode(error) !== null;
 };
+

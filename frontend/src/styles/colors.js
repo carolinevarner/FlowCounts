@@ -80,3 +80,4 @@ export const getColorVariant = (baseColor, variant = 'base') => {
 };
 
 export default COLORS;
+

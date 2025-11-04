@@ -469,12 +469,13 @@ export default function JournalView() {
                 disabled={submitting}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: '#6c757d',
-                  color: 'white',
-                  border: 'none',
+                  backgroundColor: 'white',
+                  color: '#c1121f',
+                  border: '2.8px solid #c1121f',
                   borderRadius: '6px',
                   cursor: submitting ? 'not-allowed' : 'pointer',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  fontWeight: 'bold'
                 }}
               >
                 Cancel

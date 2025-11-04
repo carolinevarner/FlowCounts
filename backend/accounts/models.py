@@ -318,7 +318,14 @@ class JournalEntry(models.Model):
         ('REJECTED', 'Rejected'),
     ]
     
+    ENTRY_TYPE_CHOICES = [
+        ('REGULAR', 'Regular'),
+        ('ADJUSTED', 'Adjusted'),
+        ('CLOSING', 'Closing'),
+    ]
+    
     entry_date = models.DateField()
+    entry_type = models.CharField(max_length=20, choices=ENTRY_TYPE_CHOICES, default='REGULAR')
     description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     

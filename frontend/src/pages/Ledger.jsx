@@ -415,25 +415,35 @@ export default function Ledger() {
               }}>
                 Description
               </th>
-              <th style={{ 
-                padding: "10px 12px", 
-                textAlign: "right", 
-                fontWeight: "bold", 
-                fontSize: "0.8em",
-                background: "white",
-                color: "#000"
-              }}>
-                Debit
+              <th 
+                onClick={() => handleSort('debit')}
+                style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "right", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000",
+                  cursor: "pointer",
+                  userSelect: "none"
+                }}
+              >
+                Debit{getSortIndicator('debit')}
               </th>
-              <th style={{ 
-                padding: "10px 12px", 
-                textAlign: "right", 
-                fontWeight: "bold", 
-                fontSize: "0.8em",
-                background: "white",
-                color: "#000"
-              }}>
-                Credit
+              <th 
+                onClick={() => handleSort('credit')}
+                style={{ 
+                  padding: "10px 12px", 
+                  textAlign: "right", 
+                  fontWeight: "bold", 
+                  fontSize: "0.8em",
+                  background: "white",
+                  color: "#000",
+                  cursor: "pointer",
+                  userSelect: "none"
+                }}
+              >
+                Credit{getSortIndicator('credit')}
               </th>
             </tr>
           </thead>

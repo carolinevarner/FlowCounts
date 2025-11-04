@@ -454,6 +454,7 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'entry_date',
+            'entry_type',
             'description',
             'status',
             'created_by',

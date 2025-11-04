@@ -1,12 +1,22 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api from "../api"; 
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccess(location.state.message);
+      // Clear the state so it doesn't show again on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   function onCancel() {
     setForm({ email: "", password: "" });
@@ -62,7 +72,8 @@ export default function Login() {
   return (
     <AuthLayout title="FlowCounts" subtitle="Welcome to FlowCounts!">
       <form onSubmit={onSubmit} className="auth-row">
-        {error && <div style={{ color: "#c00" }}>{error}</div>}
+        {error && <div style={{ color: "#c00", marginBottom: "12px" }}>{error}</div>}
+        {success && <div style={{ color: "#28a745", marginBottom: "12px", padding: "12px", backgroundColor: "#d4edda", border: "1px solid #c3e6cb", borderRadius: "6px" }}>{success}</div>}
 
         <input
           className="auth-input"

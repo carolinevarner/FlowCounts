@@ -9,31 +9,7 @@ const SECURITY_QUESTIONS = [
   "What city were you born in?",
 ];
 
-function validatePassword(password) {
-  const errors = [];
-  
-  if (password.length < 8) {
-    errors.push("Password must be at least 8 characters long");
-  }
-  
-  if (!password[0] || !password[0].match(/[a-zA-Z]/)) {
-    errors.push("Password must start with a letter");
-  }
-  
-  if (!password.match(/[a-zA-Z]/)) {
-    errors.push("Password must contain at least one letter");
-  }
-  
-  if (!password.match(/\d/)) {
-    errors.push("Password must contain at least one number");
-  }
-  
-  if (!password.match(/[^a-zA-Z0-9]/)) {
-    errors.push("Password must contain at least one special character");
-  }
-  
-  return errors;
-}
+
 
 export default function Signup() {
   const questions = SECURITY_QUESTIONS;
@@ -44,8 +20,6 @@ export default function Signup() {
     email: "",
     address: "",
     dob: "",
-    password: "",
-    confirm: "",
     q0: "",
     q1: "",
     q2: "",
@@ -60,8 +34,6 @@ export default function Signup() {
       email: "",
       address: "",
       dob: "",
-      password: "",
-      confirm: "",
       q0: "",
       q1: "",
       q2: "",
@@ -72,17 +44,6 @@ export default function Signup() {
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
-
-    const passwordErrors = validatePassword(form.password);
-    if (passwordErrors.length > 0) {
-      setError(passwordErrors.join(". ") + ".");
-      return;
-    }
-
-    if (form.password !== form.confirm) {
-      setError("Passwords do not match.");
-      return;
-    }
 
     try {
       await api.post("/auth/registration-requests/", {
@@ -99,11 +60,11 @@ export default function Signup() {
         security_answer_3: form.q2,
       });
 
-      navigate("/login");
+      navigate("/login", { state: { message: "Registration request submitted successfully! You will receive an email with your login credentials once your request is approved by an administrator." } });
     } catch (err) {
       console.log("signup error:", err.response?.data || err.message);
 
-      let msg = "Could not sign up";
+      let msg = "Could not submit registration request";
       const data = err.response?.data;
 
       if (data) {
@@ -122,9 +83,23 @@ export default function Signup() {
   }
 
   return (
-    <AuthLayout title="FlowCounts" subtitle="Leave the Numbers to Us, Focus on Your Business!">
+    <AuthLayout title="FlowCounts" subtitle="Request Access to FlowCounts">
       <form onSubmit={onSubmit} className="auth-row">
         {error && <div style={{ color: "#c00" }}>{error}</div>}
+        
+        <div style={{ 
+          padding: "12px", 
+          backgroundColor: "#e7f3ff", 
+          border: "1px solid #b3d9ff", 
+          borderRadius: "6px", 
+          marginBottom: "16px",
+          fontSize: "14px",
+          color: "#004085"
+        }}>
+          <strong>📧 Important:</strong> After submitting your request, an administrator will review it. 
+          Once approved, you will receive an email with your username and temporary password. 
+          You will need to change your password on first login.
+        </div>
 
         <div className="auth-grid-2">
           <input
@@ -170,24 +145,6 @@ export default function Signup() {
           type="date"
           value={form.dob}
           onChange={(e) => setForm({ ...form, dob: e.target.value })}
-          required
-        />
-
-        <input
-          className="auth-input"
-          placeholder="Create password"
-          type="password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          required
-        />
-
-        <input
-          className="auth-input"
-          placeholder="Confirm password"
-          type="password"
-          value={form.confirm}
-          onChange={(e) => setForm({ ...form, confirm: e.target.value })}
           required
         />
 

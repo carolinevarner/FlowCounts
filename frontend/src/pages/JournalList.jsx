@@ -193,14 +193,12 @@ export default function JournalList() {
     if (additionalFilter === 'my_entries' && userRole === 'ACCOUNTANT') {
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       filtered = filtered.filter(entry => entry.created_by === currentUser.id);
-    } else if (additionalFilter === 'adjusting') {
-      filtered = filtered.filter(entry => 
-        entry.description?.toLowerCase().includes('adjusting')
-      );
     } else if (additionalFilter === 'regular') {
-      filtered = filtered.filter(entry => 
-        !entry.description?.toLowerCase().includes('adjusting')
-      );
+      filtered = filtered.filter(entry => entry.entry_type === 'REGULAR');
+    } else if (additionalFilter === 'adjusted') {
+      filtered = filtered.filter(entry => entry.entry_type === 'ADJUSTED');
+    } else if (additionalFilter === 'closing') {
+      filtered = filtered.filter(entry => entry.entry_type === 'CLOSING');
     } else if (additionalFilter === 'large') {
       filtered = filtered.filter(entry => entry.total_debits > 1000);
     } else if (additionalFilter === 'small') {
@@ -247,8 +245,8 @@ export default function JournalList() {
         let aVal, bVal;
         
         if (sortConfig.key === 'type') {
-          aVal = a.description?.toLowerCase().includes('adjusting') ? 'adjusting' : 'regular';
-          bVal = b.description?.toLowerCase().includes('adjusting') ? 'adjusting' : 'regular';
+          aVal = a.entry_type || 'REGULAR';
+          bVal = b.entry_type || 'REGULAR';
         } else if (sortConfig.key === 'created_by_username') {
           aVal = (a.created_by_username || '').toLowerCase();
           bVal = (b.created_by_username || '').toLowerCase();
@@ -436,7 +434,8 @@ export default function JournalList() {
             {userRole === 'ACCOUNTANT' && <option value="my_entries">My Entries</option>}
             <optgroup label="By Entry Type">
               <option value="regular">Regular</option>
-              <option value="adjusting">Adjusting</option>
+              <option value="adjusted">Adjusted</option>
+              <option value="closing">Closing</option>
             </optgroup>
             <optgroup label="By Amount">
               <option value="large">Over $1,000</option>
@@ -619,14 +618,18 @@ export default function JournalList() {
               <tbody>
                 {filteredEntries.map(entry => {
                   const getEntryType = () => {
-                    if (entry.description && entry.description.toLowerCase().includes('adjusting')) {
-                      return 'Adjusting';
-                    }
-                    return 'Regular';
+                    const typeMap = {
+                      'REGULAR': 'Regular',
+                      'ADJUSTED': 'Adjusted',
+                      'CLOSING': 'Closing'
+                    };
+                    return typeMap[entry.entry_type] || 'Regular';
                   };
 
                   const getTypeColor = (type) => {
-                    return type === 'Adjusting' ? '#ff8c00' : '#4f772d';
+                    if (type === 'Adjusted') return '#ff8c00';
+                    if (type === 'Closing') return '#8b0000';
+                    return '#4f772d'; // Regular
                   };
 
                   const renderAccountsColumn = () => {
@@ -980,12 +983,13 @@ export default function JournalList() {
                 }}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: '#c00',
-                  color: 'white',
-                  border: 'none',
+                  backgroundColor: 'white',
+                  color: '#c00',
+                  border: '2.8px solid #c00',
                   borderRadius: '6px',
                   cursor: 'pointer',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  fontWeight: 'bold'
                 }}
               >
                 Cancel
