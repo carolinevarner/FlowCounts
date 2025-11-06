@@ -967,13 +967,16 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
             user.save()
 
             subject = "FlowCounts Access Approved - Action Required"
+            # Get the login URL from settings, defaulting to a relative path
+            login_url = f"{settings.PUBLIC_ORIGIN}/login" if hasattr(settings, 'PUBLIC_ORIGIN') else "/login"
+            
             body = (
                 f"Hello {req.first_name},\n\n"
                 f"Your access request to FlowCounts has been approved!\n\n"
                 f"Username: {user.username}\n"
                 f"Role: {user.role}\n"
                 f"Temporary password: {temp}\n"
-                "Login: http://localhost:5173/login\n\n"
+                f"Login: {login_url}\n\n"
                 f"⚠️ IMPORTANT: Your password is temporary and must be changed within 3 days.\n"
                 f"Deadline: {user.password_must_change_by.strftime('%Y-%m-%d %H:%M')}\n\n"
                 f"You will receive daily reminder emails until you change your password.\n"

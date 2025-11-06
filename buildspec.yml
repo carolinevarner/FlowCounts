@@ -28,6 +28,10 @@ phases:
       - cp backend/requirements.txt .
       - cp backend/db.sqlite3 . || true
       - cp -r backend/core .
+      - cp -r backend/accounts .
+      - cp -r backend/api .
+      - mkdir -p media
+      - mkdir -p staticfiles
 
 artifacts:
   files:

@@ -117,23 +117,12 @@ export default function JournalEntry() {
 
   const getAvailableAccounts = (currentLineAccount, lineType) => {
     const selectedAccounts = getSelectedAccounts();
+    // Allow any account to be selected for debit or credit lines
+    // The same account can be selected multiple times if adding more debit/credit lines
+    // But exclude accounts already selected in other lines (unless it's the current line's account)
     let filtered = accounts.filter(acc => 
       !selectedAccounts.includes(acc.id.toString()) || acc.id.toString() === currentLineAccount
     );
-    
-    // Filter by normal_side based on line type
-    // For debit lines: only show accounts with normal_side = 'DEBIT'
-    // For credit lines: only show accounts with normal_side = 'CREDIT'
-    // But always include the currently selected account (if any) regardless of normal_side
-    if (lineType === 'debit') {
-      filtered = filtered.filter(acc => 
-        acc.normal_side === 'DEBIT' || acc.id.toString() === currentLineAccount
-      );
-    } else if (lineType === 'credit') {
-      filtered = filtered.filter(acc => 
-        acc.normal_side === 'CREDIT' || acc.id.toString() === currentLineAccount
-      );
-    }
     
     return filtered;
   };

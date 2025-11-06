@@ -233,7 +233,7 @@ class Command(BaseCommand):
                 'account_description': 'Office supplies and materials on hand',
                 'normal_side': 'DEBIT',
                 'account_category': 'ASSET',
-                'account_subcategory': 'Current Assets',
+                'account_subcategory': 'Other Assets',
                 'initial_balance': 2500.00,
                 'debit': 3500.00,
                 'credit': 1000.00,

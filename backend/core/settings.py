@@ -64,7 +64,10 @@ PASSWORD_HASHERS = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'frontend/build')],  # React build folder
+        'DIRS': [
+            os.path.join(BASE_DIR, 'frontend/dist'),  # Vite production build
+            os.path.join(BASE_DIR, 'frontend/build'),  # Fallback for older builds
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -169,7 +172,10 @@ PASSWORD_MAX_AGE_DAYS = 90
 PASSWORD_EXPIRY_WARNING_DAYS = 3
 MAX_FAILED_LOGINS = 3   
 
-PUBLIC_ORIGIN = "http://127.0.0.1:8000"
+# PUBLIC_ORIGIN - Used for generating absolute URLs in emails and other contexts
+# Can be overridden with PUBLIC_ORIGIN environment variable
+# Defaults to localhost for development, but should be set to actual domain in production
+PUBLIC_ORIGIN = os.environ.get('PUBLIC_ORIGIN', 'http://127.0.0.1:8000')
 
 AUTHENTICATION_BACKENDS = [
     "accounts.backends.MultiFieldModelBackend",
@@ -202,9 +208,10 @@ STATIC_URL = '/static/'
 # Folder where collectstatic will put all static files for production
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Additional directories to look for static files (React build static)
+# Additional directories to look for static files (Vite build static)
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/build', 'static'),
+    os.path.join(BASE_DIR, 'frontend/dist'),  # Vite production build
+    os.path.join(BASE_DIR, 'frontend/build'),  # Fallback for older builds
 ]
 
 # Use Whitenoise to serve static files efficiently
