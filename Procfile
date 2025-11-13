@@ -1,1 +1,1 @@
-web: cd /var/app/current && gunicorn backend.core.wsgi:application
+web: gunicorn core.wsgi:application --chdir backend --bind 0.0.0.0:$PORT --workers 3

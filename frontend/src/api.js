@@ -4,11 +4,13 @@ import axios from "axios";
 // In development with Vite proxy, use relative path
 // In production, Django serves both frontend and backend, so relative path works
 const getBaseURL = () => {
-  // Check if we're in development (Vite dev server)
-  if (import.meta.env.DEV) {
-    return "/api";
+  // Use VITE_API_URL if set (for Amplify deployment)
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl) {
+    // ensure no trailing slash, then append /api
+    return apiUrl.replace(/\/$/, "") + "/api";
   }
-  // In production, Django serves the API from the same origin
+  if (import.meta.env.DEV) return "/api";
   return "/api";
 };
 
