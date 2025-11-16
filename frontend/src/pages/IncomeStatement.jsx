@@ -595,25 +595,34 @@ export default function IncomeStatement() {
                 
                 {incomeStatementData.revenues.length > 0 ? (
                   <div>
-                    {incomeStatementData.revenues.map((revenue, index) => (
-                      <div key={index} style={{ 
-                        display: "flex", 
-                        justifyContent: "space-between", 
-                        padding: "8px 0",
-                        borderBottom: "1px solid #eee"
-                      }}>
-                        <div style={{ fontWeight: "500" }}>
-                          {revenue.account_name}
-                        </div>
-                        <div style={{ 
-                          fontFamily: "sans-serif", 
-                          fontWeight: "500",
-                          textAlign: "right"
-                        }}>
-                          {formatCurrency(revenue.amount)}
-                        </div>
-                      </div>
-                    ))}
+                    {(() => {
+                      let firstRevenuePlaced = false;
+                      return incomeStatementData.revenues.map((revenue, index) => {
+                        const amountDisplay = !firstRevenuePlaced
+                          ? formatCurrency(revenue.amount)
+                          : formatNumber(revenue.amount);
+                        firstRevenuePlaced = true;
+                        return (
+                          <div key={index} style={{ 
+                            display: "flex", 
+                            justifyContent: "space-between", 
+                            padding: "8px 0",
+                            borderBottom: "1px solid #eee"
+                          }}>
+                            <div style={{ fontWeight: "500" }}>
+                              {revenue.account_name}
+                            </div>
+                            <div style={{ 
+                              fontFamily: "sans-serif", 
+                              fontWeight: "500",
+                              textAlign: "right"
+                            }}>
+                              {amountDisplay}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
                     <div style={{ 
                       display: "flex", 
                       justifyContent: "space-between", 
@@ -629,7 +638,7 @@ export default function IncomeStatement() {
                         paddingBottom: "2px",
                         fontFamily: "sans-serif"
                       }}>
-                        {formatNumber(incomeStatementData.total_revenue)}
+                        {formatCurrency(incomeStatementData.total_revenue)}
                       </div>
                     </div>
                   </div>
@@ -653,25 +662,34 @@ export default function IncomeStatement() {
                 
                 {incomeStatementData.expenses.length > 0 ? (
                   <div>
-                    {incomeStatementData.expenses.map((expense, index) => (
-                      <div key={index} style={{ 
-                        display: "flex", 
-                        justifyContent: "space-between", 
-                        padding: "8px 0",
-                        borderBottom: "1px solid #eee"
-                      }}>
-                        <div style={{ fontWeight: "500" }}>
-                          {expense.account_name}
-                        </div>
-                        <div style={{ 
-                          fontFamily: "sans-serif", 
-                          fontWeight: "500",
-                          textAlign: "right"
-                        }}>
-                          {formatNumber(expense.amount)}
-                        </div>
-                      </div>
-                    ))}
+                    {(() => {
+                      let firstExpensePlaced = false;
+                      return incomeStatementData.expenses.map((expense, index) => {
+                        const amountDisplay = !firstExpensePlaced
+                          ? formatCurrency(expense.amount)
+                          : formatNumber(expense.amount);
+                        firstExpensePlaced = true;
+                        return (
+                          <div key={index} style={{ 
+                            display: "flex", 
+                            justifyContent: "space-between", 
+                            padding: "8px 0",
+                            borderBottom: "1px solid #eee"
+                          }}>
+                            <div style={{ fontWeight: "500" }}>
+                              {expense.account_name}
+                            </div>
+                            <div style={{ 
+                              fontFamily: "sans-serif", 
+                              fontWeight: "500",
+                              textAlign: "right"
+                            }}>
+                              {amountDisplay}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
                     <div style={{ 
                       display: "flex", 
                       justifyContent: "space-between", 
@@ -687,7 +705,7 @@ export default function IncomeStatement() {
                         paddingBottom: "2px",
                         fontFamily: "sans-serif"
                       }}>
-                        {formatNumber(incomeStatementData.total_expenses)}
+                        {formatCurrency(incomeStatementData.total_expenses)}
                       </div>
                     </div>
                   </div>
@@ -698,20 +716,12 @@ export default function IncomeStatement() {
                 )}
               </div>
 
-              {/* Net Income Section */}
+              {/* Net Income Line (no section title) */}
               <div style={{ 
                 marginTop: "30px",
                 padding: "20px 0",
                 borderTop: "2px solid #1C5C59"
               }}>
-                <h4 style={{ 
-                  margin: "0 0 16px 0", 
-                  fontSize: "1.1em", 
-                  fontWeight: "bold",
-                  color: "#1C5C59"
-                }}>
-                  Net Income
-                </h4>
                 <div style={{ 
                   display: "flex", 
                   justifyContent: "space-between", 

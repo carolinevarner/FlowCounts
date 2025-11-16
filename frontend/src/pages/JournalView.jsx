@@ -314,6 +314,7 @@ export default function JournalView() {
                 <th style={{ padding: '12px', textAlign: 'left', width: '5%' }}>#</th>
                 <th style={{ padding: '12px', textAlign: 'left', width: '15%' }}>Account Number</th>
                 <th style={{ padding: '12px', textAlign: 'left', width: '30%' }}>Account Name</th>
+                <th style={{ padding: '12px', textAlign: 'center', width: '12%' }}>Post Ref</th>
                 <th style={{ padding: '12px', textAlign: 'left', width: '25%' }}>Description</th>
                 <th style={{ padding: '12px', textAlign: 'right', width: '12.5%' }}>Debit</th>
                 <th style={{ padding: '12px', textAlign: 'right', width: '12.5%' }}>Credit</th>
@@ -323,8 +324,88 @@ export default function JournalView() {
               {entry.lines && entry.lines.map((line, index) => (
                 <tr key={line.id} style={{ borderBottom: '1px solid #eee' }}>
                   <td style={{ padding: '12px' }}>{index + 1}</td>
-                  <td style={{ padding: '12px', fontWeight: '500' }}>{line.account_number}</td>
-                  <td style={{ padding: '12px' }}>{line.account_name}</td>
+                  <td style={{ padding: '12px', fontWeight: '500' }}>
+                    <button
+                      onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${line.account_number}`)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'inherit',
+                        cursor: 'pointer',
+                        padding: 0,
+                        fontWeight: 'inherit',
+                        fontSize: 'inherit',
+                        fontFamily: 'inherit'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.textDecoration = 'underline';
+                        e.currentTarget.style.color = '#1C5C59';
+                        e.currentTarget.style.fontWeight = 'bold';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.textDecoration = 'none';
+                        e.currentTarget.style.color = 'inherit';
+                        e.currentTarget.style.fontWeight = 'inherit';
+                      }}
+                      title="Open ledger for this account"
+                    >
+                      {line.account_number}
+                    </button>
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <button
+                      onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${line.account_number}`)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'inherit',
+                        cursor: 'pointer',
+                        padding: 0,
+                        fontSize: 'inherit',
+                        fontFamily: 'inherit'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.textDecoration = 'underline';
+                        e.currentTarget.style.color = '#1C5C59';
+                        e.currentTarget.style.fontWeight = 'bold';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.textDecoration = 'none';
+                        e.currentTarget.style.color = 'inherit';
+                        e.currentTarget.style.fontWeight = 'inherit';
+                      }}
+                      title="Open ledger for this account"
+                    >
+                      {line.account_name}
+                    </button>
+                  </td>
+                  <td style={{ padding: '12px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${line.account_number}`)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'inherit',
+                        cursor: 'pointer',
+                        padding: 0,
+                        fontSize: 'inherit',
+                        fontFamily: 'inherit'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.textDecoration = 'underline';
+                        e.currentTarget.style.color = '#1C5C59';
+                        e.currentTarget.style.fontWeight = 'bold';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.textDecoration = 'none';
+                        e.currentTarget.style.color = 'inherit';
+                        e.currentTarget.style.fontWeight = 'inherit';
+                      }}
+                      title="Post to ledger"
+                    >
+                      {line.account_number}
+                    </button>
+                  </td>
                   <td style={{ padding: '12px', color: '#666' }}>{line.description || '-'}</td>
                   <td style={{ 
                     padding: '12px', 
@@ -345,7 +426,7 @@ export default function JournalView() {
                 </tr>
               ))}
               <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 'bold', fontSize: '1.1em' }}>
-                <td colSpan="4" style={{ padding: '12px', textAlign: 'right' }}>Totals:</td>
+                <td colSpan="5" style={{ padding: '12px', textAlign: 'right' }}>Totals:</td>
                 <td style={{ padding: '12px', textAlign: 'right', color: '#000' }}>
                   {formatCurrency(entry.total_debits)}
                 </td>
@@ -354,7 +435,7 @@ export default function JournalView() {
                 </td>
               </tr>
               <tr style={{ backgroundColor: '#e9ecef' }}>
-                <td colSpan="4" style={{ padding: '12px', textAlign: 'right', fontWeight: '500' }}>
+                <td colSpan="5" style={{ padding: '12px', textAlign: 'right', fontWeight: '500' }}>
                   Status:
                 </td>
                 <td colSpan="2" style={{ padding: '12px', textAlign: 'center' }}>

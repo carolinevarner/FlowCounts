@@ -659,25 +659,30 @@ export default function BalanceSheet() {
                     account.account_name === 'Office Equipment'
                   );
                   
-                  return fixedAssets.map((account, index) => (
-                    <div key={index} style={{ 
-                      display: "flex", 
-                      justifyContent: "space-between", 
-                      padding: "6px 0",
-                      borderBottom: "1px solid #f0f0f0"
-                    }}>
-                      <div style={{ fontWeight: "500" }}>
-                        {account.account_name}
-                      </div>
-                      <div style={{ 
-                        fontFamily: "sans-serif", 
-                        fontWeight: "500",
-                        textAlign: "right"
+                  return fixedAssets.map((account, index) => {
+                    const amountDisplay = index === 0
+                      ? formatCurrency(account.balance)
+                      : formatNumber(account.balance);
+                    return (
+                      <div key={index} style={{ 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        padding: "6px 0",
+                        borderBottom: "1px solid #f0f0f0"
                       }}>
-                        {formatNumber(account.balance)}
+                        <div style={{ fontWeight: "500" }}>
+                          {account.account_name}
+                        </div>
+                        <div style={{ 
+                          fontFamily: "sans-serif", 
+                          fontWeight: "500",
+                          textAlign: "right"
+                        }}>
+                          {amountDisplay}
+                        </div>
                       </div>
-                    </div>
-                  ));
+                    );
+                  });
                 })()}
                 
                 {/* Less: Accumulated Depreciation */}
@@ -727,7 +732,7 @@ export default function BalanceSheet() {
                     paddingBottom: "2px",
                     fontFamily: "sans-serif"
                   }}>
-                    {formatNumber(
+                    {formatCurrency(
                       balanceSheetData.assets
                         .filter(account => account.account_name === 'Office Equipment')
                         .reduce((sum, account) => sum + account.balance, 0) +
@@ -750,11 +755,11 @@ export default function BalanceSheet() {
                   <span>Total Assets</span>
                   <div style={{
                     display: "inline-block",
-                    borderBottom: "1px solid #333",
+                    borderBottom: "3px double #333",
                     paddingBottom: "2px",
                     fontFamily: "sans-serif"
                   }}>
-                    {formatNumber(balanceSheetData.total_assets)}
+                    {formatCurrency(balanceSheetData.total_assets)}
                   </div>
                 </div>
               </div>
@@ -771,6 +776,7 @@ export default function BalanceSheet() {
                 </h4>
                 
                 {/* Liabilities */}
+                {(() => { var firstLiabPlaced = false; return null; })()}
                 <h5 style={{ 
                   margin: "0 0 8px 0", 
                   fontSize: "1em", 
@@ -780,29 +786,38 @@ export default function BalanceSheet() {
                   Current Liabilities
                 </h5>
                 
-                {Object.entries(groupAccountsBySubcategory(balanceSheetData.liabilities)).map(([subcategory, accounts]) => (
-                  <div key={subcategory} style={{ marginBottom: 20 }}>
-                    {accounts.map((account, index) => (
-                      <div key={index} style={{ 
-                        display: "flex", 
-                        justifyContent: "space-between", 
-                        padding: "6px 0",
-                        borderBottom: "1px solid #f0f0f0"
-                      }}>
-                        <div style={{ fontWeight: "500" }}>
-                          {account.account_name}
-                        </div>
-                        <div style={{ 
-                          fontFamily: "sans-serif", 
-                          fontWeight: "500",
-                          textAlign: "right"
+                {(() => {
+                  let firstLiabPlaced = false;
+                  return Object.entries(groupAccountsBySubcategory(balanceSheetData.liabilities)).map(([subcategory, accounts]) => (
+                    <div key={subcategory} style={{ marginBottom: 20 }}>
+                      {accounts.map((account, index) => (
+                        <div key={index} style={{ 
+                          display: "flex", 
+                          justifyContent: "space-between", 
+                          padding: "6px 0",
+                          borderBottom: "1px solid #f0f0f0"
                         }}>
-                          {account.account_name === 'Salaries Payable' ? formatCurrency(account.balance) : formatNumber(account.balance)}
+                          <div style={{ fontWeight: "500" }}>
+                            {account.account_name}
+                          </div>
+                          <div style={{ 
+                            fontFamily: "sans-serif", 
+                            fontWeight: "500",
+                            textAlign: "right"
+                          }}>
+                            {(() => {
+                              const display = !firstLiabPlaced
+                                ? formatCurrency(account.balance)
+                                : formatNumber(account.balance);
+                              firstLiabPlaced = true;
+                              return display;
+                            })()}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                      ))}
+                    </div>
+                  ));
+                })()}
                 
                 <div style={{ 
                   display: "flex", 
@@ -820,11 +835,12 @@ export default function BalanceSheet() {
                     paddingBottom: "2px",
                     fontFamily: "sans-serif"
                   }}>
-                    {formatNumber(balanceSheetData.total_liabilities)}
+                    {formatCurrency(balanceSheetData.total_liabilities)}
                   </div>
                 </div>
 
                 {/* Equity */}
+                {(() => { var firstEquityPlaced = false; return null; })()}
                 <h5 style={{ 
                   margin: "0 0 8px 0", 
                   fontSize: "1em", 
@@ -834,29 +850,38 @@ export default function BalanceSheet() {
                   Stockholders' Equity
                 </h5>
                 
-                {Object.entries(groupAccountsBySubcategory(balanceSheetData.equity)).map(([subcategory, accounts]) => (
-                  <div key={subcategory} style={{ marginBottom: 20 }}>
-                    {accounts.map((account, index) => (
-                      <div key={index} style={{ 
-                        display: "flex", 
-                        justifyContent: "space-between", 
-                        padding: "6px 0",
-                        borderBottom: "1px solid #f0f0f0"
-                      }}>
-                        <div style={{ fontWeight: "500" }}>
-                          {account.account_name}
-                        </div>
-                        <div style={{ 
-                          fontFamily: "sans-serif", 
-                          fontWeight: "500",
-                          textAlign: "right"
+                {(() => {
+                  let firstEquityPlaced = false;
+                  return Object.entries(groupAccountsBySubcategory(balanceSheetData.equity)).map(([subcategory, accounts]) => (
+                    <div key={subcategory} style={{ marginBottom: 20 }}>
+                      {accounts.map((account, index) => (
+                        <div key={index} style={{ 
+                          display: "flex", 
+                          justifyContent: "space-between", 
+                          padding: "6px 0",
+                          borderBottom: "1px solid #f0f0f0"
                         }}>
-                          {formatNumber(account.balance)}
+                          <div style={{ fontWeight: "500" }}>
+                            {account.account_name}
+                          </div>
+                          <div style={{ 
+                            fontFamily: "sans-serif", 
+                            fontWeight: "500",
+                            textAlign: "right"
+                          }}>
+                            {(() => {
+                              const display = !firstEquityPlaced
+                                ? formatCurrency(account.balance)
+                                : formatNumber(account.balance);
+                              firstEquityPlaced = true;
+                              return display;
+                            })()}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                      ))}
+                    </div>
+                  ));
+                })()}
                 
                 <div style={{ 
                   display: "flex", 
@@ -874,7 +899,7 @@ export default function BalanceSheet() {
                     paddingBottom: "2px",
                     fontFamily: "sans-serif"
                   }}>
-                    {formatNumber(balanceSheetData.total_stockholders_equity)}
+                    {formatCurrency(balanceSheetData.total_stockholders_equity)}
                   </div>
                 </div>
 

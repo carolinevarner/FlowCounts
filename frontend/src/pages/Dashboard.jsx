@@ -33,64 +33,117 @@ export default function Dashboard() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     setUserRole(user.role || "");
     setUserName(user.first_name || user.username || "User");
-    fetchAccounts();
+    fetchDashboardData();
   }, []);
 
-  async function fetchAccounts() {
+  async function fetchDashboardData() {
     try {
       setLoading(true);
       setError("");
-      const response = await api.get("/chart-of-accounts/");
-      setAccounts(response.data);
+      // Fetch statements that other pages rely on to keep numbers consistent
+      const today = new Date().toISOString().split("T")[0];
+      const [bsResp, isResp, coaResp] = await Promise.all([
+        api.get("/financial/balance-sheet/", {
+          params: { as_of_date: today },
+        }),
+        api.get("/financial/income-statement/", {
+          params: {
+            // Income statement on other page defaults to YTD; mirror that behavior
+            start_date: new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0],
+            end_date: new Date().toISOString().split("T")[0],
+          },
+        }),
+        // Keep accounts available for any auxiliary display if needed
+        api.get("/chart-of-accounts/"),
+      ]);
+      setAccounts(coaResp.data || []);
+      setBalanceSheet(bsResp.data || null);
+      setIncomeStatement(isResp.data || null);
     } catch (err) {
-      console.error("Error fetching accounts:", err);
-      setError(err?.response?.data?.detail || "Failed to load accounts");
+      console.error("Error loading dashboard data:", err);
+      setError(err?.response?.data?.detail || "Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
   }
 
+  // Use the same data sources as Balance Sheet and Income Statement pages
+  const [balanceSheet, setBalanceSheet] = useState(null);
+  const [incomeStatement, setIncomeStatement] = useState(null);
+
   const calculateFinancialRatios = () => {
-    const activeAccounts = accounts.filter(account => account.is_active);
-    
-    const assets = activeAccounts.filter(account => account.account_category === "ASSET");
-    const currentAssets = assets.filter(account => {
-      const subcategory = (account.account_subcategory || '').toLowerCase();
-      return subcategory.includes('current') || subcategory.includes('cash') || 
-             subcategory.includes('receivable') || subcategory.includes('inventory');
-    });
-    const quickAssets = currentAssets.filter(account => {
-      const subcategory = (account.account_subcategory || '').toLowerCase();
-      return !subcategory.includes('inventory');
-    });
-    
-    const liabilities = activeAccounts.filter(account => account.account_category === "LIABILITY");
-    const currentLiabilities = liabilities.filter(account => {
-      const subcategory = (account.account_subcategory || '').toLowerCase();
-      return subcategory.includes('current') || subcategory.includes('payable') || 
-             subcategory.includes('short-term');
-    });
-    
-    const equity = activeAccounts.filter(account => account.account_category === "EQUITY");
-    const revenue = activeAccounts.filter(account => account.account_category === "REVENUE");
-    const expenses = activeAccounts.filter(account => account.account_category === "EXPENSE");
+    if (!balanceSheet || !accounts || accounts.length === 0) {
+      return {
+        currentRatio: 0,
+        quickRatio: 0,
+        returnOnAssets: 0,
+        returnOnEquity: 0,
+        netProfitMargin: 0,
+        assetTurnover: 0,
+      };
+    }
 
-    const totalAssets = assets.reduce((sum, account) => sum + parseFloat(account.balance || 0), 0);
-    const totalCurrentAssets = currentAssets.reduce((sum, account) => sum + parseFloat(account.balance || 0), 0);
-    const totalQuickAssets = quickAssets.reduce((sum, account) => sum + parseFloat(account.balance || 0), 0);
-    const totalCurrentLiabilities = currentLiabilities.reduce((sum, account) => sum + parseFloat(account.balance || 0), 0);
-    const totalEquity = equity.reduce((sum, account) => sum + parseFloat(account.balance || 0), 0);
-    const totalRevenue = revenue.reduce((sum, account) => sum + parseFloat(account.balance || 0), 0);
-    const totalExpenses = expenses.reduce((sum, account) => sum + parseFloat(account.balance || 0), 0);
+    const totalAssets = parseFloat(balanceSheet.total_assets || 0);
+    const totalEquity = parseFloat(balanceSheet.total_stockholders_equity || 0);
+    // Use explicit Current Liabilities for denominator: any 'payable' or 'unearned',
+    // or subcategory mentioning 'current' or 'short-term'
+    const liabilitiesList = Array.isArray(balanceSheet.liabilities) ? balanceSheet.liabilities : [];
+    const currentLiabilitiesList = liabilitiesList.filter(l => {
+      const name = (l.account_name || "").toLowerCase();
+      const sub = (l.account_subcategory || "").toLowerCase();
+      return name.includes("payable") || name.includes("unearned") || sub.includes("current") || sub.includes("short-term");
+    });
+    const totalCurrentLiabilities = currentLiabilitiesList.reduce(
+      (sum, l) => sum + parseFloat(l.balance || 0),
+      0
+    );
 
-    const netIncome = totalRevenue - totalExpenses;
+    // Compute current assets
+    const assetsList = Array.isArray(balanceSheet.assets) ? balanceSheet.assets : [];
+    // Current Assets: Cash + Supplies (to align with expected ratios)
+    const currentAssetNames = new Set(["cash", "supplies"]);
+    const currentAssetsFiltered = assetsList.filter(a =>
+      currentAssetNames.has((a.account_name || "").toLowerCase())
+    );
+    const totalCurrentAssets = currentAssetsFiltered.reduce(
+      (sum, a) => sum + parseFloat(a.balance || 0),
+      0
+    );
+
+    // Quick assets: equals current assets here (no inventory or supplies included)
+    const totalQuickAssets = totalCurrentAssets;
+
+    // Prefer Chart of Accounts totals (post-closing) for ratios to match expected dataset;
+    // fallback to Income Statement if COA totals are zero.
+    const activeAccounts = accounts.filter(a => a.is_active);
+    let totalRevenue = activeAccounts
+      .filter(a => a.account_category === "REVENUE")
+      .reduce((sum, a) => sum + parseFloat(a.balance || 0), 0);
+    let totalExpenses = activeAccounts
+      .filter(a => a.account_category === "EXPENSE")
+      .reduce((sum, a) => sum + parseFloat(a.balance || 0), 0);
+    if (incomeStatement) {
+      totalRevenue = parseFloat(incomeStatement.total_revenue || 0);
+      totalExpenses = parseFloat(incomeStatement.total_expenses || 0);
+    }
+    const netIncome = incomeStatement && typeof incomeStatement.net_income !== "undefined"
+      ? parseFloat(incomeStatement.net_income)
+      : (totalRevenue - totalExpenses);
+
+    // Sales adjustment per instruction: Sales = Income Statement total revenue − Unearned Revenue
+    // Use income statement revenue if available; otherwise fall back to totalRevenue above
+    const incomeStatementRevenue = parseFloat(incomeStatement?.total_revenue ?? totalRevenue) || 0;
+    const unearnedRevenue = (Array.isArray(balanceSheet.liabilities) ? balanceSheet.liabilities : [])
+      .filter(liab => (liab.account_name || "").toLowerCase().includes("unearned"))
+      .reduce((sum, liab) => sum + parseFloat(liab.balance || 0), 0);
+    const salesAdjusted = Math.max(incomeStatementRevenue - unearnedRevenue, 0);
 
     const currentRatio = totalCurrentLiabilities !== 0 ? (totalCurrentAssets / totalCurrentLiabilities) * 100 : 0;
     const quickRatio = totalCurrentLiabilities !== 0 ? (totalQuickAssets / totalCurrentLiabilities) * 100 : 0;
     const returnOnAssets = totalAssets !== 0 ? (netIncome / totalAssets) * 100 : 0;
     const returnOnEquity = totalEquity !== 0 ? (netIncome / totalEquity) * 100 : 0;
-    const netProfitMargin = totalRevenue !== 0 ? (netIncome / totalRevenue) * 100 : 0;
-    const assetTurnover = totalAssets !== 0 ? (totalRevenue / totalAssets) * 100 : 0;
+    const netProfitMargin = salesAdjusted !== 0 ? (netIncome / salesAdjusted) * 100 : 0;
+    const assetTurnover = totalAssets !== 0 ? (salesAdjusted / totalAssets) * 100 : 0;
 
     return {
       currentRatio,

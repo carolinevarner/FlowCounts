@@ -541,7 +541,7 @@ export default function JournalEntry() {
           marginBottom: 20,
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
                 Entry Date <span style={{ color: 'red' }}>*</span>
@@ -583,24 +583,6 @@ export default function JournalEntry() {
                 <option value="ADJUSTED">Adjusted</option>
                 <option value="CLOSING">Closing</option>
               </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                Description (Optional)
-              </label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter journal entry description"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px'
-                }}
-              />
             </div>
           </div>
         </div>
@@ -650,7 +632,7 @@ export default function JournalEntry() {
           </div>
 
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px', tableLayout: 'fixed' }}>
               <thead>
                 <tr style={{ backgroundColor: '#1C302F', color: 'white' }}>
                   <th style={{ padding: '12px', textAlign: 'left', width: '50%' }}>Accounts</th>
@@ -661,7 +643,7 @@ export default function JournalEntry() {
               <tbody>
                 {debitLines.map((line, index) => (
                   <tr key={`debit-${index}`} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '12px', width: '50%' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ flex: 1, position: 'relative' }} data-dropdown>
                           <div
@@ -816,7 +798,35 @@ export default function JournalEntry() {
                         </button>
                       </div>
                     </td>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      {line.account ? (
+                        (() => {
+                          const acc = accounts.find(acc => acc.id.toString() === line.account);
+                          if (!acc) return null;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${acc.account_number}`)}
+                              style={{
+                                background: 'none',
+                                border: '1px solid #1C5C59',
+                                color: '#1C5C59',
+                                cursor: 'pointer',
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                fontSize: '12px'
+                              }}
+                              title="Post to ledger"
+                            >
+                              {acc.account_number}
+                            </button>
+                          );
+                        })()
+                      ) : (
+                        <span style={{ color: '#999', fontSize: '12px' }}>—</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '12px', width: '25%' }}>
                       <input
                         type="number"
                         step="0.01"
@@ -835,30 +845,14 @@ export default function JournalEntry() {
                         }}
                       />
                     </td>
-                    <td style={{ padding: '12px' }}>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value=""
-                        disabled
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          border: '1px solid #eee',
-                          borderRadius: '4px',
-                          fontSize: '14px',
-                          textAlign: 'right',
-                          backgroundColor: '#f8f9fa',
-                          color: '#999'
-                        }}
-                      />
+                    <td style={{ padding: '12px', width: '25%', textAlign: 'right', color: '#999' }}>
+                      {/* empty credit cell for debit line */}
                     </td>
                   </tr>
                 ))}
                 {creditLines.map((line, index) => (
                   <tr key={`credit-${index}`} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '12px', width: '50%' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '40px' }}>
                         <div style={{ flex: 1, position: 'relative' }} data-dropdown>
                           <div
@@ -1013,26 +1007,10 @@ export default function JournalEntry() {
                         </button>
                       </div>
                     </td>
-                    <td style={{ padding: '12px' }}>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value=""
-                        disabled
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          border: '1px solid #eee',
-                          borderRadius: '4px',
-                          fontSize: '14px',
-                          textAlign: 'right',
-                          backgroundColor: '#f8f9fa',
-                          color: '#999'
-                        }}
-                      />
+                    <td style={{ padding: '12px', width: '25%', textAlign: 'right', color: '#999' }}>
+                      {/* empty debit cell for credit line */}
                     </td>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '12px', width: '25%' }}>
                       <input
                         type="number"
                         step="0.01"
@@ -1064,6 +1042,34 @@ export default function JournalEntry() {
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+        {/* Description moved below lines, before entry balance */}
+        <div style={{ 
+          backgroundColor: 'white',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: 20,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+              Description (Optional)
+            </label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter journal entry description"
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #ddd',
+                borderRadius: '6px',
+                fontSize: '14px'
+              }}
+            />
           </div>
         </div>
 

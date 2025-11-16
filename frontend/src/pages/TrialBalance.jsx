@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import HelpModal from '../components/HelpModal';
 import EmailModal from '../components/EmailModal';
@@ -11,6 +12,8 @@ export default function TrialBalance() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [trialBalanceData, setTrialBalanceData] = useState(null);
+  const [userRole, setUserRole] = useState('');
+  const navigate = useNavigate();
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -42,16 +45,34 @@ export default function TrialBalance() {
     }
   };
 
+  const fetchUserRole = async () => {
+    try {
+      const res = await api.get('/auth/me/');
+      setUserRole(res.data.role || '');
+    } catch (err) {
+      console.error('Failed to fetch user role:', err);
+    }
+  };
+
   // Auto-fetch on component mount and when date changes
   useEffect(() => {
     fetchTrialBalance();
   }, [selectedDate, startDate, endDate, dateMode]);
 
+  useEffect(() => {
+    fetchUserRole();
+  }, []);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
+    }).format(amount);
+  };
+  const formatNumber = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(amount);
   };
 
@@ -501,39 +522,87 @@ export default function TrialBalance() {
                 </tr>
               </thead>
               <tbody>
-                {trialBalanceData.trial_balance.map((account, index) => (
-                  <tr key={index} style={{ 
-                    borderBottom: "1px solid #e9ecef",
-                    backgroundColor: index % 2 === 0 ? "white" : "#f8f9fa"
-                  }}>
+                {(() => {
+                  let firstDebitPlaced = false;
+                  let firstCreditPlaced = false;
+                  return trialBalanceData.trial_balance.map((account, index) => {
+                    let debitDisplay = '';
+                    if (account.debit_balance > 0) {
+                      if (!firstDebitPlaced) {
+                        debitDisplay = formatCurrency(account.debit_balance);
+                        firstDebitPlaced = true;
+                      } else {
+                        debitDisplay = formatNumber(account.debit_balance);
+                      }
+                    }
+                    let creditDisplay = '';
+                    if (account.credit_balance > 0) {
+                      if (!firstCreditPlaced) {
+                        creditDisplay = formatCurrency(account.credit_balance);
+                        firstCreditPlaced = true;
+                      } else {
+                        creditDisplay = formatNumber(account.credit_balance);
+                      }
+                    }
+                    return (
+                      <tr key={index} style={{ 
+                        borderBottom: "1px solid #e9ecef",
+                        backgroundColor: index % 2 === 0 ? "white" : "#f8f9fa"
+                      }}>
                     <td style={{ 
                       padding: "12px 16px", 
                       fontFamily: "monospace",
                       fontSize: "14px",
                       color: "#333"
                     }}>
-                      {account.account_number} - {account.account_name}
+                      <button
+                        onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${account.account_number}`)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "inherit",
+                          cursor: "pointer",
+                          padding: 0,
+                          fontFamily: "inherit",
+                          fontSize: "inherit"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.textDecoration = "underline";
+                          e.currentTarget.style.color = "#1C5C59";
+                          e.currentTarget.style.fontWeight = "bold";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.textDecoration = "none";
+                          e.currentTarget.style.color = "inherit";
+                          e.currentTarget.style.fontWeight = "inherit";
+                        }}
+                        title="Open ledger for this account"
+                      >
+                        {account.account_number} - {account.account_name}
+                      </button>
                     </td>
-                    <td style={{ 
-                      padding: "12px 16px", 
-                      textAlign: "right", 
-                      fontFamily: "monospace",
-                      fontSize: "14px",
-                      fontWeight: "500"
-                    }}>
-                      {account.debit_balance > 0 ? formatCurrency(account.debit_balance) : ''}
-                    </td>
-                    <td style={{ 
-                      padding: "12px 16px", 
-                      textAlign: "right", 
-                      fontFamily: "monospace",
-                      fontSize: "14px",
-                      fontWeight: "500"
-                    }}>
-                      {account.credit_balance > 0 ? formatCurrency(account.credit_balance) : ''}
-                    </td>
-                  </tr>
-                ))}
+                        <td style={{ 
+                          padding: "12px 16px", 
+                          textAlign: "right", 
+                          fontFamily: "monospace",
+                          fontSize: "14px",
+                          fontWeight: "500"
+                        }}>
+                          {debitDisplay}
+                        </td>
+                        <td style={{ 
+                          padding: "12px 16px", 
+                          textAlign: "right", 
+                          fontFamily: "monospace",
+                          fontSize: "14px",
+                          fontWeight: "500"
+                        }}>
+                          {creditDisplay}
+                        </td>
+                      </tr>
+                    );
+                  });
+                })()}
               </tbody>
               <tfoot>
                 <tr style={{ 
