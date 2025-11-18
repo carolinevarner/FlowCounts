@@ -15,9 +15,15 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-4e5u8tf)tap$o%!11w2q6jj&=(e$&t9z1$qqdk-**45o-ns^pj'
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR.parent / '.env')
+except ImportError:
+    pass
 
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-4e5u8tf)tap$o%!11w2q6jj&=(e$&t9z1$qqdk-**45o-ns^pj')
+
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 SECURE_SSL_REDIRECT = False
 CSRF_COOKIE_SECURE = False
@@ -148,17 +154,19 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
-ADMIN_NOTIFICATION_EMAILS = ["varner4262@gmail.com"]
+# Admin notification emails (comma-separated in env, or list)
+admin_emails_str = os.environ.get('ADMIN_NOTIFICATION_EMAILS', 'varner4262@gmail.com')
+ADMIN_NOTIFICATION_EMAILS = [email.strip() for email in admin_emails_str.split(',') if email.strip()]
 
 # Email configuration
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-EMAIL_HOST_USER = "varner4262@gmail.com"
-EMAIL_HOST_PASSWORD = "fokfddazweldxgpx"
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
@@ -182,22 +190,20 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-ALLOWED_HOSTS = [
-    "flowcounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
-    "FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
-    "127.0.0.1",
-    "localhost",
-    "*",  # Allow all hosts for development (remove this in production)
-]
+# Allowed hosts (comma-separated in env, or list)
+allowed_hosts_str = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,*')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',') if host.strip()]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:3000",
+# CORS allowed origins (comma-separated in env, or list)
+cors_origins_str = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000')
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_str.split(',') if origin.strip()]
+
+# Add production origins if they exist
+production_origins = [
     "https://flowcounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
     "https://FlowCounts-env.eba-c8ueugy2.us-east-2.elasticbeanstalk.com",
 ]
+CORS_ALLOWED_ORIGINS.extend(production_origins)
 
 # Allow all origins for development (remove this in production)
 CORS_ALLOW_ALL_ORIGINS = True

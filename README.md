@@ -20,7 +20,11 @@ This project is collaboratively built by:
 ## Quick Start
 
 1. Clone the repository
-2. Open 2 separate terminals and use these commands:
+2. Set up environment variables (optional but recommended):
+   - Copy `.env.example` to `.env` in the root directory
+   - Edit `.env` and fill in your email credentials and other settings
+   - If you don't create a `.env` file, the app will use default values (which may not work for email)
+3. Open 2 separate terminals and use these commands:
 
 **Terminal 1 (Backend):**
 ```bash

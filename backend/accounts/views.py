@@ -1055,9 +1055,35 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
 
 class EventLogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated]
     queryset = EventLog.objects.all().order_by("-created_at")
     serializer_class = EventLogSerializer
+    
+    def get_queryset(self):
+        """Filter events based on user role."""
+        qs = super().get_queryset()
+        user = self.request.user
+        
+        # Admins can see all events
+        if getattr(user, "role", "") == "ADMIN":
+            return qs
+        
+        # Accountants can only see account-related and journal entry events
+        if getattr(user, "role", "") == "ACCOUNTANT":
+            return qs.filter(
+                Q(action__startswith="ACCOUNT_") | 
+                Q(action__startswith="JOURNAL_ENTRY_")
+            )
+        
+        # Managers can see account and journal entry events
+        if getattr(user, "role", "") == "MANAGER":
+            return qs.filter(
+                Q(action__startswith="ACCOUNT_") | 
+                Q(action__startswith="JOURNAL_ENTRY_")
+            )
+        
+        # Default: no access
+        return qs.none()
 
 
 
@@ -1669,9 +1695,20 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
         """Filter based on user role and query parameters."""
         qs = super().get_queryset()
         user = self.request.user
+        user_role = getattr(user, 'role', '')
         
         status_filter = self.request.query_params.get('status')
-        if status_filter:
+        
+        if user_role == 'ACCOUNTANT':
+            if status_filter and status_filter.upper() == 'PENDING':
+                qs = qs.filter(status='PENDING')
+            elif status_filter and status_filter.upper() in ['APPROVED', 'REJECTED']:
+                qs = qs.filter(created_by=user, status=status_filter.upper())
+            else:
+                pending_entries = qs.filter(status='PENDING')
+                own_entries = qs.filter(created_by=user, status__in=['APPROVED', 'REJECTED'])
+                qs = (pending_entries | own_entries).distinct()
+        elif status_filter:
             qs = qs.filter(status=status_filter.upper())
         
         start_date = self.request.query_params.get('start_date')
@@ -1749,10 +1786,23 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
                 logger.error(f"Failed to send journal entry notification: {e}")
     
     def perform_update(self, serializer):
-        from .error_utils import get_error_message
+        from .error_utils import get_error_message, log_error, DatabaseErrorResponse
         entry = self.get_object()
+        user = self.request.user
+        user_role = getattr(user, 'role', '')
         
         if entry.status != 'PENDING':
+            error_msg = get_error_message('JOURNAL_EDIT_NOT_PENDING')
+            raise serializers.ValidationError(error_msg['message'])
+        
+        if user_role == 'ACCOUNTANT':
+            log_error(
+                'JOURNAL_EDIT_NOT_PENDING',
+                level='WARNING',
+                user=user,
+                request=self.request,
+                additional_details=f"Accountant {user.username} attempted to edit pending journal entry {entry.id}"
+            )
             error_msg = get_error_message('JOURNAL_EDIT_NOT_PENDING')
             raise serializers.ValidationError(error_msg['message'])
         
@@ -1789,10 +1839,14 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
         entry = self.get_object()
         
         if entry.status != 'PENDING':
-            return Response(
-                {"detail": "Only pending entries can be approved."},
-                status=400
+            log_error(
+                'JOURNAL_APPROVE_NOT_PENDING',
+                level='WARNING',
+                user=request.user,
+                request=request,
+                additional_details=f"Attempted to approve journal entry {entry.id} with status {entry.status}"
             )
+            return DatabaseErrorResponse.create_response('JOURNAL_APPROVE_NOT_PENDING', status_code=400)
         
         before_image = self._journal_entry_to_dict(entry)
         
@@ -1862,17 +1916,25 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
         entry = self.get_object()
         
         if entry.status != 'PENDING':
-            return Response(
-                {"detail": "Only pending entries can be rejected."},
-                status=400
+            log_error(
+                'JOURNAL_REJECT_NOT_PENDING',
+                level='WARNING',
+                user=request.user,
+                request=request,
+                additional_details=f"Attempted to reject journal entry {entry.id} with status {entry.status}"
             )
+            return DatabaseErrorResponse.create_response('JOURNAL_REJECT_NOT_PENDING', status_code=400)
         
         rejection_reason = request.data.get('rejection_reason', '').strip()
         if not rejection_reason:
-            return Response(
-                {"detail": "Rejection reason is required."},
-                status=400
+            log_error(
+                'JOURNAL_REJECTION_REASON_REQUIRED',
+                level='WARNING',
+                user=request.user,
+                request=request,
+                additional_details=f"Attempted to reject journal entry {entry.id} without providing rejection reason"
             )
+            return DatabaseErrorResponse.create_response('JOURNAL_REJECTION_REASON_REQUIRED', status_code=400)
         
         before_image = self._journal_entry_to_dict(entry)
         
@@ -1920,23 +1982,38 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
         entry = self.get_object()
         
         if entry.status != 'PENDING':
-            return Response(
-                {"detail": "Cannot add attachments to approved or rejected entries."},
-                status=400
+            log_error(
+                'JOURNAL_ATTACHMENT_NOT_PENDING',
+                level='WARNING',
+                user=request.user,
+                request=request,
+                additional_details=f"Attempted to add attachment to journal entry {entry.id} with status {entry.status}"
             )
+            return DatabaseErrorResponse.create_response('JOURNAL_ATTACHMENT_NOT_PENDING', status_code=400)
         
         file = request.FILES.get('file')
         if not file:
-            return Response({"detail": "No file provided."}, status=400)
+            log_error(
+                'JOURNAL_ATTACHMENT_NO_FILE',
+                level='WARNING',
+                user=request.user,
+                request=request,
+                additional_details=f"Attempted to upload attachment to journal entry {entry.id} without providing file"
+            )
+            return DatabaseErrorResponse.create_response('JOURNAL_ATTACHMENT_NO_FILE', status_code=400)
         
         allowed_extensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.jpg', '.jpeg', '.png']
         file_ext = file.name[file.name.rfind('.'):].lower() if '.' in file.name else ''
         
         if file_ext not in allowed_extensions:
-            return Response(
-                {"detail": f"File type {file_ext} not allowed. Allowed types: {', '.join(allowed_extensions)}"},
-                status=400
+            log_error(
+                'JOURNAL_ATTACHMENT_INVALID_TYPE',
+                level='WARNING',
+                user=request.user,
+                request=request,
+                additional_details=f"Attempted to upload file with extension {file_ext} to journal entry {entry.id}"
             )
+            return DatabaseErrorResponse.create_response('JOURNAL_ATTACHMENT_INVALID_TYPE', status_code=400)
         
         attachment = JournalEntryAttachment.objects.create(
             journal_entry=entry,
@@ -1962,10 +2039,14 @@ def send_email_to_user(request):
     
     if not recipient or not subject or not message_body:
         logger.warning(f"Missing required fields: recipient={recipient}, subject={subject}, message={bool(message_body)}")
-        return Response(
-            {"detail": "Recipient, subject, and message are required."},
-            status=400
+        log_error(
+            'EMAIL_REQUIRED_FIELDS',
+            level='WARNING',
+            user=request.user,
+            request=request,
+            additional_details=f"Attempted to send email with missing fields: recipient={bool(recipient)}, subject={bool(subject)}, message={bool(message_body)}"
         )
+        return DatabaseErrorResponse.create_response('EMAIL_REQUIRED_FIELDS', status_code=400)
     
     sender = request.user
     

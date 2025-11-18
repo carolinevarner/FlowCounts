@@ -80,6 +80,11 @@ export default function JournalEntry() {
         return;
       }
 
+      if (userRole === 'ACCOUNTANT') {
+        setError('Cannot edit a journal entry that has been submitted for approval. Please wait for manager review.');
+        return;
+      }
+
       setEntryDate(entry.entry_date);
       setEntryType(entry.entry_type || 'REGULAR');
       setDescription(entry.description);
@@ -797,34 +802,6 @@ export default function JournalEntry() {
                           −
                         </button>
                       </div>
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      {line.account ? (
-                        (() => {
-                          const acc = accounts.find(acc => acc.id.toString() === line.account);
-                          if (!acc) return null;
-                          return (
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${acc.account_number}`)}
-                              style={{
-                                background: 'none',
-                                border: '1px solid #1C5C59',
-                                color: '#1C5C59',
-                                cursor: 'pointer',
-                                padding: '2px 8px',
-                                borderRadius: '12px',
-                                fontSize: '12px'
-                              }}
-                              title="Post to ledger"
-                            >
-                              {acc.account_number}
-                            </button>
-                          );
-                        })()
-                      ) : (
-                        <span style={{ color: '#999', fontSize: '12px' }}>—</span>
-                      )}
                     </td>
                     <td style={{ padding: '12px', width: '25%' }}>
                       <input

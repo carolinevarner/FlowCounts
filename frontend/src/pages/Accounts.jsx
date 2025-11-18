@@ -958,6 +958,10 @@ export default function Accounts() {
             aValue = getTermType(a);
             bValue = getTermType(b);
             break;
+          case 'balance':
+            aValue = parseFloat(a.balance) || 0;
+            bValue = parseFloat(b.balance) || 0;
+            break;
           default:
             return 0;
         }
@@ -1331,17 +1335,22 @@ export default function Accounts() {
               >
                 Term{getSortIndicator('terms')}
               </th>
-              {(userRole === "MANAGER" || userRole === "ACCOUNTANT") && (
-                <th style={{ 
+              <th 
+                onClick={() => handleSort('balance')}
+                style={{ 
                   padding: "10px 12px", 
                   textAlign: "right", 
                   fontWeight: "bold", 
                   fontSize: "0.8em",
                   background: "white",
                   color: "#000",
-                  width: "120px"
-                }}>Balance</th>
-              )}
+                  width: "100px",
+                  cursor: "pointer",
+                  userSelect: "none"
+                }}
+              >
+                Balance{getSortIndicator('balance')}
+              </th>
               <th style={{ 
                 padding: "10px 12px", 
                 textAlign: "left", 
@@ -1367,7 +1376,7 @@ export default function Accounts() {
           <tbody>
             {filteredAccounts.length === 0 ? (
               <tr>
-                <td colSpan={(isAdmin ? 7 : (userRole === "MANAGER" || userRole === "ACCOUNTANT") ? 7 : 6)} style={{ textAlign: "center", padding: 20, borderBottom: "1px solid #ddd" }}>
+                <td colSpan={isAdmin ? 8 : 7} style={{ textAlign: "center", padding: 20, borderBottom: "1px solid #ddd" }}>
                   No accounts found.
                 </td>
               </tr>
@@ -1466,16 +1475,14 @@ export default function Accounts() {
                     fontWeight: "normal",
                     fontSize: "0.85em"
                   }}>{getTermType(account)}</td>
-                  {(userRole === "MANAGER" || userRole === "ACCOUNTANT") && (
-                    <td style={{ 
-                      padding: "10px 12px", 
-                      borderBottom: "1px solid #ddd",
-                      fontWeight: "normal",
-                      fontSize: "0.85em",
-                      textAlign: "right",
-                      color: "#000"
-                    }}>{formatCurrency(account.balance)}</td>
-                  )}
+                  <td style={{ 
+                    padding: "10px 12px", 
+                    borderBottom: "1px solid #ddd",
+                    fontWeight: "normal",
+                    fontSize: "0.85em",
+                    textAlign: "right",
+                    color: "#000"
+                  }}>{formatCurrency(account.balance)}</td>
                   <td style={{ 
                     padding: "10px 12px", 
                     borderBottom: "1px solid #ddd",

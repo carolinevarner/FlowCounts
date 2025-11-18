@@ -259,8 +259,8 @@ def create_default_error_messages():
          'Journal entry line has no debit or credit amount.'),
         
         ('JOURNAL_EDIT_NOT_PENDING', 'VALIDATION', 'Cannot Edit Entry',
-         'Cannot edit an entry that has been approved or rejected.',
-         'User attempted to edit non-pending journal entry.'),
+         'Cannot edit a journal entry that has been submitted for approval. Please wait for manager review.',
+         'User attempted to edit a journal entry that is pending approval or has been approved/rejected.'),
         
         ('USER_INACTIVE_SUSPENDED', 'AUTH', 'Account Inactive',
          'User is inactive/suspended',
@@ -327,6 +327,34 @@ def create_default_error_messages():
         ('MANAGERS_ADMINS_FETCH_FAILED', 'SYSTEM', 'Failed to Load Users',
          'Failed to load managers and administrators. Please try again later.',
          'Error occurred while fetching managers and administrators list.'),
+        
+        ('JOURNAL_APPROVE_NOT_PENDING', 'VALIDATION', 'Cannot Approve Entry',
+         'Only pending entries can be approved.',
+         'User attempted to approve a journal entry that is not in pending status.'),
+        
+        ('JOURNAL_REJECT_NOT_PENDING', 'VALIDATION', 'Cannot Reject Entry',
+         'Only pending entries can be rejected.',
+         'User attempted to reject a journal entry that is not in pending status.'),
+        
+        ('JOURNAL_REJECTION_REASON_REQUIRED', 'VALIDATION', 'Rejection Reason Required',
+         'Rejection reason is required.',
+         'User attempted to reject a journal entry without providing a rejection reason.'),
+        
+        ('JOURNAL_ATTACHMENT_NOT_PENDING', 'VALIDATION', 'Cannot Add Attachment',
+         'Cannot add attachments to approved or rejected entries.',
+         'User attempted to add an attachment to a journal entry that is not pending.'),
+        
+        ('JOURNAL_ATTACHMENT_NO_FILE', 'VALIDATION', 'No File Provided',
+         'No file provided.',
+         'User attempted to upload an attachment without providing a file.'),
+        
+        ('JOURNAL_ATTACHMENT_INVALID_TYPE', 'VALIDATION', 'Invalid File Type',
+         'File type not allowed. Allowed types: pdf, doc, docx, xls, xlsx, csv, jpg, jpeg, png.',
+         'User attempted to upload a file with an unsupported file extension.'),
+        
+        ('EMAIL_REQUIRED_FIELDS', 'VALIDATION', 'Email Fields Required',
+         'Recipient, subject, and message are required.',
+         'User attempted to send an email without providing all required fields.'),
     ]
     
     for code, error_type, title, message, technical_details in default_errors:

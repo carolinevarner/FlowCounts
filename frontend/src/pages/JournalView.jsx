@@ -208,7 +208,7 @@ export default function JournalView() {
               </button>
             </>
           )}
-          {entry.status === 'PENDING' && (
+          {entry.status === 'PENDING' && userRole !== 'ACCOUNTANT' && (
             <button
               onClick={() => navigate(`/${rolePrefix}/journal/edit/${entry.id}`)}
               style={{

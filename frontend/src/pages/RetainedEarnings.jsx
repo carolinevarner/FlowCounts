@@ -579,7 +579,7 @@ export default function RetainedEarnings() {
                       borderBottom: "1px solid #f0f0f0",
                       fontWeight: "500"
                     }}>
-                      Beginning Retained Earnings
+                      Retained Earnings, Beginning
                     </td>
                     <td style={{ 
                       padding: "12px 0", 
@@ -630,10 +630,32 @@ export default function RetainedEarnings() {
                   <tr>
                     <td style={{ 
                       padding: "12px 0", 
+                      borderBottom: "1px solid #f0f0f0",
+                      fontWeight: "bold"
+                    }}>
+                      Total
+                    </td>
+                    <td style={{ 
+                      padding: "12px 0", 
+                      borderBottom: "1px solid #f0f0f0",
+                      textAlign: "right",
+                      fontFamily: "sans-serif",
+                      fontWeight: "bold"
+                    }}>
+                      {formatCurrency(
+                        parseFloat(retainedEarningsData.beginning_retained_earnings || 0) +
+                        parseFloat(retainedEarningsData.net_income || 0) -
+                        0
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ 
+                      padding: "12px 0", 
                       fontWeight: "bold",
                       fontSize: "1.1em"
                     }}>
-                      Ending Retained Earnings
+                      Retained Earnings, Ending
                     </td>
                     <td style={{ 
                       padding: "12px 0", 
