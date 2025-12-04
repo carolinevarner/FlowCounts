@@ -160,7 +160,7 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
    - Scroll down to **"Start Command"**
    - **Replace** the existing start command with:
      ```
-     cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py init_error_messages && python manage.py create_superuser && python manage.py check_user --email varner4262@gmail.com && (python manage.py reset_user_password --email varner4262@gmail.com --password "$RESET_PASSWORD" || true) && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+      cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py init_error_messages && python manage.py create_superuser && python manage.py check_user --email varner4262@gmail.com && (python manage.py reset_user_password --email varner4262@gmail.com --password "$RESET_PASSWORD" || true) && (python manage.py set_user_role --email varner4262@gmail.com --role ADMIN || true) && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
      ```
      **Note**: 
      - Replace `varner4262@gmail.com` with your email
@@ -182,8 +182,10 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
    | `SUPERUSER_USERNAME` | Your admin username | `admin` | Yes |
    | `SUPERUSER_EMAIL` | Your admin email | `admin@example.com` | Yes |
    | `SUPERUSER_PASSWORD` | Your admin password | `YourSecurePassword123!` | Yes |
-   | `RESET_PASSWORD` | Password to reset for varner4262@gmail.com | `YourKnownPassword123!` | Optional* |
-   | `RESET_PASSWORD_EMAIL` | Email to reset password for | `varner4262@gmail.com` | Optional* |
+    | `RESET_PASSWORD` | Password to reset for varner4262@gmail.com | `YourKnownPassword123!` | Optional* |
+    | `RESET_PASSWORD_EMAIL` | Email to reset password for | `varner4262@gmail.com` | Optional* |
+    | `SET_ROLE_EMAIL` | Email to set role for | `varner4262@gmail.com` | Optional* |
+    | `SET_ROLE` | Role to set (ADMIN, MANAGER, ACCOUNTANT) | `ADMIN` | Optional* |
    
    **⚠️ Important**: 
    - Use a strong password for `SUPERUSER_PASSWORD`!
@@ -203,9 +205,11 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
    - Go to **"Logs"** tab in your backend service
    - You should see messages like:
      - "Operations to perform: Apply all migrations..."
-     - "Successfully created default error messages!"
-     - "Superuser admin created successfully!"
-     - "Starting gunicorn..."
+      - "Successfully created default error messages!"
+      - "Superuser admin created successfully!"
+      - "[RESET_PASSWORD] ✅ SUCCESS!" (if password reset ran)
+      - "[SET_ROLE] ✅ SUCCESS!" (if role was set)
+      - "Starting gunicorn..."
 
 6. **Verify backend is working**:
    - Go to: `https://flowcounts-backend.onrender.com/api/`
@@ -344,11 +348,24 @@ Update your email settings in environment variables for production.
    - Verify `RESET_PASSWORD` environment variable is set correctly
    - Try using Django admin to reset password manually (see step 3)
 
-6. **If password reset command isn't running**:
-   - Check that `RESET_PASSWORD` environment variable is set
-   - Check that the email in the command matches your actual email
-   - Look for errors in the deployment logs
-   - The command should show "✅ Successfully reset password" if it worked
+ 6. **If password reset command isn't running**:
+    - Check that `RESET_PASSWORD` environment variable is set
+    - Check that the email in the command matches your actual email
+    - Look for errors in the deployment logs
+    - The command should show "✅ Successfully reset password" if it worked
+
+ 7. **Wrong role after login (e.g., logging in as accountantUser1 instead of admin)**:
+    - Your account's role in the database is set to ACCOUNTANT instead of ADMIN
+    - Go to backend service → Settings → Start Command
+    - Add before gunicorn:
+      ```
+      (python manage.py set_user_role --email varner4262@gmail.com --role ADMIN || true) &&
+      ```
+    - Or add environment variables:
+      - `SET_ROLE_EMAIL` = `varner4262@gmail.com`
+      - `SET_ROLE` = `ADMIN`
+    - Save and redeploy
+    - After redeployment, log out and log back in - you should now be an admin
 
 ### "Cannot use ImageField because Pillow is not installed":
 - **Fixed!** Pillow has been added to `requirements.txt`
