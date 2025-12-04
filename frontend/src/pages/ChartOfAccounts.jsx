@@ -1365,20 +1365,7 @@ export default function ChartOfAccounts() {
                         const basePath = `/${userRole.toLowerCase()}`;
                         navigate(`${basePath}/ledger/${account.account_number}`);
                       }}
-                      style={{
-                        color: "#1C5C59",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                        fontWeight: "normal"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.textDecoration = "underline";
-                        e.currentTarget.style.fontWeight = "600";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.textDecoration = "none";
-                        e.currentTarget.style.fontWeight = "normal";
-                      }}
+                      className="clickable-link"
                       title="Click to view account ledger"
                     >
                       {account.account_number}
@@ -1407,22 +1394,7 @@ export default function ChartOfAccounts() {
                   }}>
                     <span
                       onClick={() => navigate(`/${userRole.toLowerCase()}/ledger/${account.account_number}`)}
-                      style={{
-                        cursor: 'pointer',
-                        textDecoration: 'none',
-                        color: '#333',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.fontWeight = 'bold';
-                        e.target.style.textDecoration = 'underline';
-                        e.target.style.color = '#1C5C59';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.fontWeight = 'normal';
-                        e.target.style.textDecoration = 'none';
-                        e.target.style.color = '#333';
-                      }}
+                      className="clickable-link"
                       title="Click to view account ledger"
                     >
                       {account.account_name}

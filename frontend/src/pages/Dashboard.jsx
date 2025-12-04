@@ -357,7 +357,15 @@ export default function Dashboard() {
               }}>
                 <div>
                   <div style={{ fontSize: "13px", fontWeight: "500" }}>
-                    Entry #{entry.id} - Pending Review
+                    <span 
+                      onClick={() => navigate(`/${userRole.toLowerCase()}/journal/view/${entry.id}`)}
+                      className="clickable-link"
+                      style={{ cursor: 'pointer' }}
+                      title="Click to view journal entry"
+                    >
+                      Entry #{entry.id}
+                    </span>
+                    {' '}- Pending Review
                   </div>
                   <div style={{ fontSize: "11px", color: "#666" }}>
                     {entry.description || "No description"} • Created {new Date(entry.created_at).toLocaleDateString()}
@@ -430,7 +438,15 @@ export default function Dashboard() {
               }}>
                 <div>
                   <div style={{ fontSize: "13px", fontWeight: "500" }}>
-                    Entry #{entry.id} - {entry.status === "APPROVED" ? "✅ Approved" : "❌ Rejected"}
+                    <span 
+                      onClick={() => navigate(`/${userRole.toLowerCase()}/journal/view/${entry.id}`)}
+                      className="clickable-link"
+                      style={{ cursor: 'pointer' }}
+                      title="Click to view journal entry"
+                    >
+                      Entry #{entry.id}
+                    </span>
+                    {' '}- {entry.status === "APPROVED" ? "✅ Approved" : "❌ Rejected"}
                   </div>
                   <div style={{ fontSize: "11px", color: "#666" }}>
                     {entry.description || "No description"} • {new Date(entry.reviewed_at).toLocaleDateString()}

@@ -420,6 +420,18 @@ table, thead, tbody, tr, td, th {
     color:#777; 
 }
 
+.clickable-link {
+    color: #1C5C59;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.clickable-link:hover {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

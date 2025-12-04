@@ -9,31 +9,61 @@ export default function AdminEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-
-  async function loadEvents() {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await api.get("/auth/events/");
-      setEvents(response.data || []);
-    } catch (e) {
-      console.error("Error loading events:", e);
-      const status = e?.response?.status;
-      if (status === 401) {
-        setError("Session expired. Log in again.");
-      } else if (status === 403) {
-        setError("You do not have permission to view event logs.");
-      } else {
-        setError("Failed to load event logs.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
+    async function loadEvents() {
+      setLoading(true);
+      setError("");
+      try {
+        const params = {};
+        if (startDate) {
+          params.start_date = startDate;
+        }
+        if (endDate) {
+          params.end_date = endDate;
+        }
+        const response = await api.get("/auth/events/", { params });
+        setEvents(response.data || []);
+      } catch (e) {
+        console.error("Error loading events:", e);
+        const status = e?.response?.status;
+        if (status === 401) {
+          setError("Session expired. Log in again.");
+        } else if (status === 403) {
+          setError("You do not have permission to view event logs.");
+        } else {
+          setError("Failed to load event logs.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    
     loadEvents();
-  }, []);
+  }, [startDate, endDate]);
+
+  function formatDateForInput(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function setQuickFilter(days) {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - days);
+    setStartDate(formatDateForInput(start));
+    setEndDate(formatDateForInput(today));
+  }
+
+  function clearFilters() {
+    setStartDate("");
+    setEndDate("");
+  }
 
   function formatDate(dateString) {
     try {
@@ -91,93 +121,256 @@ export default function AdminEvents() {
     return colors[action] || "#666";
   }
 
-  function renderChangeDetails(before, after) {
-    if (!before || !after) return null;
-
-    const changes = [];
-    const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
-
+  function getChangedFields(before, after) {
+    if (!before || !after) return new Set();
+    
+    const changed = new Set();
+    const allKeys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
+    
     allKeys.forEach(key => {
-      const beforeValue = before[key];
-      const afterValue = after[key];
-      
+      const beforeValue = before?.[key];
+      const afterValue = after?.[key];
       if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
-        changes.push({ key, before: beforeValue, after: afterValue });
+        changed.add(key);
       }
     });
-
-    if (changes.length === 0) return null;
-
-    return (
-      <div style={{ 
-        marginTop: 12, 
-        background: "#fff", 
-        borderRadius: "8px", 
-        overflow: "hidden",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-      }}>
-        <table className="users-table" style={{ margin: 0 }}>
-          <thead>
-            <tr style={{ background: "#1C302F" }}>
-              <th style={{ color: "#fff" }}>Field</th>
-              <th style={{ color: "#fff", borderLeft: "1px solid rgba(255,255,255,0.2)" }}>Before</th>
-              <th style={{ color: "#fff", borderLeft: "1px solid rgba(255,255,255,0.2)" }}>After</th>
-            </tr>
-          </thead>
-          <tbody>
-            {changes.map((change, index) => (
-              <tr key={index}>
-                <td style={{ fontWeight: "500" }}>
-                  {change.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </td>
-                <td style={{ color: "#c1121f", borderLeft: "1px solid #eee" }}>
-                  {change.before !== null && change.before !== undefined ? 
-                    (Array.isArray(change.before) ? change.before.join(', ') : String(change.before)) : 'N/A'}
-                </td>
-                <td style={{ color: "#4f772d", borderLeft: "1px solid #eee" }}>
-                  {change.after !== null && change.after !== undefined ? 
-                    (Array.isArray(change.after) ? change.after.join(', ') : String(change.after)) : 'N/A'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
+    
+    return changed;
   }
 
-  function renderFullImage(image, title) {
-    if (!image) return null;
+  function renderBeforeAfterColumns(before, after) {
+    const changedFields = getChangedFields(before, after);
+    const allKeys = new Set([
+      ...Object.keys(before || {}),
+      ...Object.keys(after || {})
+    ]);
 
+    // If no before image, treat it as a new record
+    if (!before && after) {
+      return (
+        <div style={{ 
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "16px",
+          marginTop: 12
+        }}>
+          {/* Before Column - New Record */}
+          <div style={{ 
+            background: "#fff", 
+            borderRadius: "8px", 
+            overflow: "hidden",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+          }}>
+            <div style={{ 
+              background: "#1C302F", 
+              padding: "12px 16px",
+              color: "#fff",
+              fontWeight: "600",
+              fontSize: "0.9em"
+            }}>
+              Before
+            </div>
+            <div style={{ padding: "16px" }}>
+              <div style={{ 
+                textAlign: "center", 
+                padding: "40px 20px",
+                color: "#888",
+                fontStyle: "italic"
+              }}>
+                New Record
+              </div>
+            </div>
+          </div>
+
+          {/* After Column - Complete Record */}
+          <div style={{ 
+            background: "#fff", 
+            borderRadius: "8px", 
+            overflow: "hidden",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+          }}>
+            <div style={{ 
+              background: "#1C302F", 
+              padding: "12px 16px",
+              color: "#fff",
+              fontWeight: "600",
+              fontSize: "0.9em"
+            }}>
+              After (New Record Added)
+            </div>
+            <table className="users-table" style={{ margin: 0 }}>
+              <thead>
+                <tr style={{ background: "#f8f9fa" }}>
+                  <th style={{ width: "40%", padding: "8px 12px", textAlign: "left", fontSize: "0.85em", fontWeight: "600" }}>Field</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "0.85em", fontWeight: "600", borderLeft: "1px solid #eee" }}>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(after).map(([key, value], index) => (
+                  <tr key={index} style={{ backgroundColor: "#fff" }}>
+                    <td style={{ 
+                      fontWeight: "500", 
+                      padding: "10px 12px",
+                      fontSize: "0.9em"
+                    }}>
+                      {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </td>
+                    <td style={{ 
+                      borderLeft: "1px solid #eee",
+                      padding: "10px 12px",
+                      fontSize: "0.9em",
+                      color: "#4f772d",
+                      fontWeight: "500"
+                    }}>
+                      {value !== null && value !== undefined ? 
+                        (Array.isArray(value) ? value.join(', ') : String(value)) : 'N/A'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    // Both before and after exist - show side by side
     return (
       <div style={{ 
-        marginTop: 12, 
-        background: "#fff", 
-        borderRadius: "8px", 
-        overflow: "hidden",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "16px",
+        marginTop: 12
       }}>
-        <table className="users-table" style={{ margin: 0 }}>
-          <thead>
-            <tr style={{ background: "#1C302F" }}>
-              <th style={{ width: "35%", color: "#fff" }}>Field</th>
-              <th style={{ color: "#fff", borderLeft: "1px solid rgba(255, 255, 255, 0.07)" }}>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(image).map(([key, value], index) => (
-              <tr key={index}>
-                <td style={{ fontWeight: "500" }}>
-                  {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </td>
-                <td style={{ borderLeft: "1px solid #eee" }}>
-                  {value !== null && value !== undefined ? 
-                    (Array.isArray(value) ? value.join(', ') : String(value)) : 'N/A'}
-                </td>
+        {/* Before Column */}
+        <div style={{ 
+          background: "#fff", 
+          borderRadius: "8px", 
+          overflow: "hidden",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+        }}>
+          <div style={{ 
+            background: "#1C302F", 
+            padding: "12px 16px",
+            color: "#fff",
+            fontWeight: "600",
+            fontSize: "0.9em"
+          }}>
+            Before
+          </div>
+          <table className="users-table" style={{ margin: 0 }}>
+            <thead>
+              <tr style={{ background: "#f8f9fa" }}>
+                <th style={{ width: "40%", padding: "8px 12px", textAlign: "left", fontSize: "0.85em", fontWeight: "600" }}>Field</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "0.85em", fontWeight: "600", borderLeft: "1px solid #eee" }}>Value</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {Array.from(allKeys).map((key, index) => {
+                const value = before?.[key];
+                const isChanged = changedFields.has(key);
+                return (
+                  <tr key={index} style={{ 
+                    backgroundColor: isChanged ? "#fff5f5" : "#fff"
+                  }}>
+                    <td style={{ 
+                      fontWeight: "500", 
+                      padding: "10px 12px",
+                      fontSize: "0.9em"
+                    }}>
+                      {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {isChanged && (
+                        <span style={{ 
+                          marginLeft: "8px",
+                          fontSize: "0.75em",
+                          color: "#c1121f",
+                          fontWeight: "600"
+                        }}>
+                          (Changed)
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ 
+                      borderLeft: "1px solid #eee",
+                      padding: "10px 12px",
+                      fontSize: "0.9em",
+                      color: isChanged ? "#c1121f" : "#333",
+                      fontWeight: isChanged ? "600" : "400"
+                    }}>
+                      {value !== null && value !== undefined ? 
+                        (Array.isArray(value) ? value.join(', ') : String(value)) : 'N/A'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* After Column */}
+        <div style={{ 
+          background: "#fff", 
+          borderRadius: "8px", 
+          overflow: "hidden",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+        }}>
+          <div style={{ 
+            background: "#1C302F", 
+            padding: "12px 16px",
+            color: "#fff",
+            fontWeight: "600",
+            fontSize: "0.9em"
+          }}>
+            After
+          </div>
+          <table className="users-table" style={{ margin: 0 }}>
+            <thead>
+              <tr style={{ background: "#f8f9fa" }}>
+                <th style={{ width: "40%", padding: "8px 12px", textAlign: "left", fontSize: "0.85em", fontWeight: "600" }}>Field</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "0.85em", fontWeight: "600", borderLeft: "1px solid #eee" }}>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from(allKeys).map((key, index) => {
+                const value = after?.[key];
+                const isChanged = changedFields.has(key);
+                return (
+                  <tr key={index} style={{ 
+                    backgroundColor: isChanged ? "#f0fff4" : "#fff"
+                  }}>
+                    <td style={{ 
+                      fontWeight: "500", 
+                      padding: "10px 12px",
+                      fontSize: "0.9em"
+                    }}>
+                      {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {isChanged && (
+                        <span style={{ 
+                          marginLeft: "8px",
+                          fontSize: "0.75em",
+                          color: "#4f772d",
+                          fontWeight: "600"
+                        }}>
+                          (Changed)
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ 
+                      borderLeft: "1px solid #eee",
+                      padding: "10px 12px",
+                      fontSize: "0.9em",
+                      color: isChanged ? "#4f772d" : "#333",
+                      fontWeight: isChanged ? "600" : "400"
+                    }}>
+                      {value !== null && value !== undefined ? 
+                        (Array.isArray(value) ? value.join(', ') : String(value)) : 'N/A'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
@@ -222,9 +415,194 @@ export default function AdminEvents() {
         </button>
       </div>
 
+      {/* Date Range Filter */}
+      <div className="card" style={{ marginBottom: "24px" }}>
+        <div style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          gap: "16px"
+        }}>
+          <div style={{ 
+            fontSize: "0.9em", 
+            fontWeight: "600", 
+            color: "#333",
+            marginBottom: "8px",
+            fontFamily: "Playfair Display"
+          }}>
+            Filter by Date Range
+          </div>
+          
+          <div style={{ 
+            display: "flex", 
+            flexWrap: "wrap", 
+            gap: "12px", 
+            alignItems: "flex-end" 
+          }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", minWidth: "150px" }}>
+              <label style={{ 
+                fontSize: "0.75em", 
+                color: "#666", 
+                fontWeight: "600",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px"
+              }}>
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  fontSize: "0.9em",
+                  fontFamily: "sans-serif"
+                }}
+              />
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", minWidth: "150px" }}>
+              <label style={{ 
+                fontSize: "0.75em", 
+                color: "#666", 
+                fontWeight: "600",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px"
+              }}>
+                End Date
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  fontSize: "0.9em",
+                  fontFamily: "sans-serif"
+                }}
+              />
+            </div>
+
+            <div style={{ 
+              display: "flex", 
+              gap: "8px", 
+              flexWrap: "wrap",
+              alignItems: "center"
+            }}>
+              <button
+                onClick={() => setQuickFilter(0)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#f8f9fa",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "0.85em",
+                  fontWeight: "500",
+                  color: "#333"
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = "#e9ecef"}
+                onMouseOut={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setQuickFilter(7)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#f8f9fa",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "0.85em",
+                  fontWeight: "500",
+                  color: "#333"
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = "#e9ecef"}
+                onMouseOut={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+              >
+                Last 7 Days
+              </button>
+              <button
+                onClick={() => setQuickFilter(30)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#f8f9fa",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "0.85em",
+                  fontWeight: "500",
+                  color: "#333"
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = "#e9ecef"}
+                onMouseOut={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+              >
+                Last 30 Days
+              </button>
+              <button
+                onClick={() => setQuickFilter(90)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#f8f9fa",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "0.85em",
+                  fontWeight: "500",
+                  color: "#333"
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = "#e9ecef"}
+                onMouseOut={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+              >
+                Last 90 Days
+              </button>
+              {(startDate || endDate) && (
+                <button
+                  onClick={clearFilters}
+                  style={{
+                    padding: "8px 16px",
+                    backgroundColor: "#1C5C59",
+                    border: "1px solid #1C5C59",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "0.85em",
+                    fontWeight: "500",
+                    color: "white"
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = "#1a4d4a"}
+                  onMouseOut={(e) => e.target.style.backgroundColor = "#1C5C59"}
+                  title="Clear date filters"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {(startDate || endDate) && (
+            <div style={{ 
+              fontSize: "0.8em", 
+              color: "#666",
+              fontStyle: "italic",
+              marginTop: "4px"
+            }}>
+              Showing events from {startDate || "beginning"} to {endDate || "now"}
+            </div>
+          )}
+        </div>
+      </div>
+
       {events.length === 0 ? (
         <div className="card" style={{ textAlign: "center", padding: "60px 40px", background: "#f8f9fa" }}>
-          <p style={{ margin: 0, color: "#666", fontSize: "1.1em" }}>No events logged yet.</p>
+          <p style={{ margin: 0, color: "#666", fontSize: "1.1em" }}>
+            {startDate || endDate 
+              ? "No events found for the selected date range." 
+              : "No events logged yet."}
+          </p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -246,11 +624,7 @@ export default function AdminEvents() {
                     Changes Made
                   </h3>
                   
-                  {event.before_image && event.after_image ? (
-                    renderChangeDetails(event.before_image, event.after_image)
-                  ) : event.after_image ? (
-                    renderFullImage(event.after_image, "Created Record")
-                  ) : null}
+                  {renderBeforeAfterColumns(event.before_image, event.after_image)}
                 </div>
               )}
 

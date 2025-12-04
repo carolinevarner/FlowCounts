@@ -1,7 +1,6 @@
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from datetime import datetime
-from datetime import date
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 from django.db import transaction
 from django.db.models import Q, Sum
@@ -1060,9 +1059,23 @@ class EventLogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = EventLogSerializer
     
     def get_queryset(self):
-        """Filter events based on user role."""
+        """Filter events based on user role and date range."""
         qs = super().get_queryset()
         user = self.request.user
+        
+        # Filter by date range
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            qs = qs.filter(created_at__gte=start_date)
+        if end_date:
+            # Add one day to end_date to include the entire end date
+            try:
+                end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+                end_date_obj = end_date_obj + timedelta(days=1)
+                qs = qs.filter(created_at__lt=end_date_obj)
+            except ValueError:
+                qs = qs.filter(created_at__lte=end_date)
         
         # Admins can see all events
         if getattr(user, "role", "") == "ADMIN":

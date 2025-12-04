@@ -557,24 +557,13 @@ export default function TrialBalance() {
                     }}>
                       <button
                         onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${account.account_number}`)}
+                        className="clickable-link"
                         style={{
                           background: "none",
                           border: "none",
-                          color: "inherit",
-                          cursor: "pointer",
                           padding: 0,
                           fontFamily: "inherit",
                           fontSize: "inherit"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.textDecoration = "underline";
-                          e.currentTarget.style.color = "#1C5C59";
-                          e.currentTarget.style.fontWeight = "bold";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.textDecoration = "none";
-                          e.currentTarget.style.color = "inherit";
-                          e.currentTarget.style.fontWeight = "inherit";
                         }}
                         title="Open ledger for this account"
                       >

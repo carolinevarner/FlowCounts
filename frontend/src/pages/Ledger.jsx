@@ -602,24 +602,13 @@ export default function Ledger() {
                       {tx.journal_entry_id ? (
                         <button
                           onClick={() => navigate(`/${userRole.toLowerCase()}/journal/view/${tx.journal_entry_id}`)}
+                          className="clickable-link"
                           style={{
                             background: "none",
                             border: "none",
-                            color: "#1C5C59",
-                            textDecoration: "none",
-                            cursor: "pointer",
-                            fontSize: "inherit",
-                            fontFamily: "inherit",
                             padding: 0,
-                            fontWeight: "normal"
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.textDecoration = "underline";
-                            e.target.style.fontWeight = "bold";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.textDecoration = "none";
-                            e.target.style.fontWeight = "normal";
+                            fontSize: "inherit",
+                            fontFamily: "inherit"
                           }}
                           title="Click to view journal entry details"
                         >

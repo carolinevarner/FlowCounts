@@ -813,7 +813,14 @@ export default function JournalList() {
                         fontSize: "0.85em",
                         verticalAlign: 'top'
                       }}>
-                        <div>{formatDate(entry.entry_date)}</div>
+                        <div 
+                          onClick={() => navigate(`/${rolePrefix}/journal/view/${entry.id}`)}
+                          className="clickable-link"
+                          style={{ cursor: 'pointer' }}
+                          title="Click to view journal entry"
+                        >
+                          {formatDate(entry.entry_date)}
+                        </div>
                         <div style={{ marginTop: 4 }}>
                           <span style={{
                             display: "inline-block",

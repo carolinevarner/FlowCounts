@@ -327,25 +327,13 @@ export default function JournalView() {
                   <td style={{ padding: '12px', fontWeight: '500' }}>
                     <button
                       onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${line.account_number}`)}
+                      className="clickable-link"
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: 'inherit',
-                        cursor: 'pointer',
                         padding: 0,
-                        fontWeight: 'inherit',
                         fontSize: 'inherit',
                         fontFamily: 'inherit'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.textDecoration = 'underline';
-                        e.currentTarget.style.color = '#1C5C59';
-                        e.currentTarget.style.fontWeight = 'bold';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.textDecoration = 'none';
-                        e.currentTarget.style.color = 'inherit';
-                        e.currentTarget.style.fontWeight = 'inherit';
                       }}
                       title="Open ledger for this account"
                     >
@@ -355,24 +343,13 @@ export default function JournalView() {
                   <td style={{ padding: '12px' }}>
                     <button
                       onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${line.account_number}`)}
+                      className="clickable-link"
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: 'inherit',
-                        cursor: 'pointer',
                         padding: 0,
                         fontSize: 'inherit',
                         fontFamily: 'inherit'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.textDecoration = 'underline';
-                        e.currentTarget.style.color = '#1C5C59';
-                        e.currentTarget.style.fontWeight = 'bold';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.textDecoration = 'none';
-                        e.currentTarget.style.color = 'inherit';
-                        e.currentTarget.style.fontWeight = 'inherit';
                       }}
                       title="Open ledger for this account"
                     >
@@ -382,24 +359,13 @@ export default function JournalView() {
                   <td style={{ padding: '12px', textAlign: 'center' }}>
                     <button
                       onClick={() => navigate(`/${(userRole || 'manager').toLowerCase()}/ledger/${line.account_number}`)}
+                      className="clickable-link"
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: 'inherit',
-                        cursor: 'pointer',
                         padding: 0,
                         fontSize: 'inherit',
                         fontFamily: 'inherit'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.textDecoration = 'underline';
-                        e.currentTarget.style.color = '#1C5C59';
-                        e.currentTarget.style.fontWeight = 'bold';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.textDecoration = 'none';
-                        e.currentTarget.style.color = 'inherit';
-                        e.currentTarget.style.fontWeight = 'inherit';
                       }}
                       title="Post to ledger"
                     >
