@@ -10,6 +10,7 @@ djangorestframework-simplejwt==5.3.1
 argon2-cffi>=23.1.0
 bcrypt>=4.1.2
 python-dotenv>=1.0.0
+dj-database-url>=2.1.0  # For easy database URL parsing
 
 # Database drivers (choose what your DB is)
 psycopg2-binary==2.9.10   # For PostgreSQL

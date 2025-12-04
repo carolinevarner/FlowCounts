@@ -2,13 +2,17 @@ import axios from "axios";
 
 // Determine API base URL based on environment
 // In development with Vite proxy, use relative path
-// In production, Django serves both frontend and backend, so relative path works
+// In production, use environment variable if set, otherwise relative path
 const getBaseURL = () => {
+  // Use VITE_API_URL if set (for separate frontend/backend deployments)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
   // Check if we're in development (Vite dev server)
   if (import.meta.env.DEV) {
     return "/api";
   }
-  // In production, Django serves the API from the same origin
+  // In production, Django serves the API from the same origin (if same domain)
   return "/api";
 };
 
@@ -65,7 +69,8 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem("refresh");
         if (refreshToken) {
-          const response = await axios.post("/api/auth/token/refresh/", {
+          const baseURL = getBaseURL();
+          const response = await axios.post(`${baseURL}/auth/token/refresh/`, {
             refresh: refreshToken
           });
           
