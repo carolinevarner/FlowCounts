@@ -1,4 +1,5 @@
 from django.urls import path, re_path, include
+from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
@@ -39,6 +40,7 @@ router.register(r"chart-of-accounts", ChartOfAccountsViewSet, basename="chart-of
 router.register(r"journal-entries", JournalEntryViewSet, basename="journal-entries")
 
 urlpatterns = [
+    path("admin/", admin.site.urls),  # Django admin
     path("api/", include(router.urls)),
     path("api/auth/token/", FlowTokenView.as_view()),
     path("api/auth/me/", me),
@@ -60,6 +62,17 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Catch-all for frontend routes - MUST be last!
-urlpatterns += [
-    re_path(r'^(?!api/|media/).*$', never_cache(TemplateView.as_view(template_name='index.html'))),
-]
+# Exclude api/, media/, admin/, static/ from catch-all
+# Only serve frontend in development (when template exists)
+if settings.DEBUG:
+    urlpatterns += [
+        re_path(r'^(?!api/|media/|admin/|static/).*$', never_cache(TemplateView.as_view(template_name='index.html'))),
+    ]
+else:
+    # In production, return simple response for root path
+    from django.http import JsonResponse
+    def root_view(request):
+        return JsonResponse({"message": "FlowCounts API", "docs": "/api/"})
+    urlpatterns += [
+        path("", root_view),
+    ]
