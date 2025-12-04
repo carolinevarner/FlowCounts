@@ -222,10 +222,14 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Additional directories to look for static files (Vite build static)
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/dist'),  # Vite production build
-    os.path.join(BASE_DIR, 'frontend/build'),  # Fallback for older builds
-]
+# Only include directories that exist to avoid warnings in production
+STATICFILES_DIRS = []
+frontend_dist = os.path.join(BASE_DIR, 'frontend/dist')
+frontend_build = os.path.join(BASE_DIR, 'frontend/build')
+if os.path.exists(frontend_dist):
+    STATICFILES_DIRS.append(frontend_dist)
+if os.path.exists(frontend_build):
+    STATICFILES_DIRS.append(frontend_build)
 
 # Use Whitenoise to serve static files efficiently
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
