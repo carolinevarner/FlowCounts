@@ -117,11 +117,18 @@ You need to generate a Django secret key for production. Here's how:
    - Click "Connect"
 3. **Configure Service**:
    - **Name**: `flowcounts-backend` (this becomes your URL: `flowcounts-backend.onrender.com`)
-   - **Environment**: `Python 3`
+   - **Language**: **Select "Python 3"** (⚠️ Important: Do NOT select "Docker" - select "Python 3" from the dropdown)
+     - Once you select "Python 3", the Build Command and Start Command fields will appear!
+   - **Branch**: `main` (or your default branch)
+   - **Region**: Choose closest to you (e.g., Ohio, Oregon)
    - **Root Directory**: `FlowCounts` (if your repo structure is `FlowCounts/backend/`, otherwise leave empty)
    - **Build Command**: `cd backend && pip install -r requirements.txt`
    - **Start Command**: `cd backend && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT`
    - **Plan**: **Free**
+   
+   **⚠️ If you don't see Build Command/Start Command fields:**
+   - Make sure you selected **"Python 3"** as the Language (not "Docker")
+   - The fields appear after selecting Python 3
 
 4. **Add Environment Variables** (Click "Advanced" → "Add Environment Variable"):
    
@@ -139,34 +146,61 @@ You need to generate a Django secret key for production. Here's how:
 6. Wait for deployment (~5-10 minutes for first build)
 7. **Note your backend URL**: It will be `https://flowcounts-backend.onrender.com` (replace with your service name)
 
-#### 2.3 Run Migrations
-1. In Render dashboard, go to your **backend service** (`flowcounts-backend`)
-2. Click the **"Shell"** tab (or "Logs" tab, then click "Shell" button)
-3. Wait for shell to connect
-4. Run these commands one by one:
+#### 2.3 Run Migrations (Free Tier - No Shell Access Needed)
 
-```bash
-cd backend
-python manage.py migrate
-```
+Since the free tier doesn't include shell access, we'll run migrations automatically during deployment.
 
-This creates all your database tables. You should see output showing migrations being applied.
+**✅ A management command has been created for you!** (`create_superuser.py`)
 
-5. **Initialize error messages** (if you have this command):
-```bash
-python manage.py init_error_messages
-```
+**Steps:**
 
-6. **Create a superuser** (admin account):
-```bash
-python manage.py createsuperuser
-```
-   - Enter username, email, and password when prompted
-   - **Save these credentials** - you'll use them to log into your deployed app!
+1. **Update your Start Command** in Render:
+   - Go to your **backend service** in Render dashboard
+   - Click **"Settings"** tab
+   - Scroll down to **"Start Command"**
+   - **Replace** the existing start command with:
+     ```
+     cd backend && python manage.py migrate --noinput && python manage.py init_error_messages && python manage.py create_superuser && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+     ```
+     This will automatically:
+     - Run database migrations
+     - Initialize error messages
+     - Create a superuser (if environment variables are set)
+     - Start the server
+   
+2. **Add Environment Variables** for superuser creation:
+   - Still in the **"Settings"** tab, scroll to **"Environment Variables"**
+   - Click **"Add Environment Variable"** and add these:
+   
+   | Key | Value | Example |
+   |-----|-------|---------|
+   | `SUPERUSER_USERNAME` | Your admin username | `admin` |
+   | `SUPERUSER_EMAIL` | Your admin email | `admin@example.com` |
+   | `SUPERUSER_PASSWORD` | Your admin password | `YourSecurePassword123!` |
+   
+   **⚠️ Important**: Use a strong password for `SUPERUSER_PASSWORD`!
 
-7. **Verify backend is working**:
+3. **Commit and push** the new management command (if you haven't already):
+   ```bash
+   git add .
+   git commit -m "Add create_superuser management command for deployment"
+   git push origin main
+   ```
+
+4. **Save Changes** in Render - it will automatically redeploy
+
+5. **Check the logs** to verify everything worked:
+   - Go to **"Logs"** tab in your backend service
+   - You should see messages like:
+     - "Operations to perform: Apply all migrations..."
+     - "Successfully created default error messages!"
+     - "Superuser admin created successfully!"
+     - "Starting gunicorn..."
+
+6. **Verify backend is working**:
    - Go to: `https://flowcounts-backend.onrender.com/api/`
    - You should see the Django REST Framework API browser (or a JSON response)
+   - Try logging in at: `https://flowcounts-backend.onrender.com/admin/` with your superuser credentials
 
 #### 2.4 Deploy Frontend
 1. Click "New +" → "Static Site"
