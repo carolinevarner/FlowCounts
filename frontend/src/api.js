@@ -6,7 +6,9 @@ import axios from "axios";
 const getBaseURL = () => {
   // Use VITE_API_URL if set (for separate frontend/backend deployments)
   if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+    // Ensure VITE_API_URL ends with /api
+    const baseUrl = import.meta.env.VITE_API_URL.trim();
+    return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
   }
   // Check if we're in development (Vite dev server)
   if (import.meta.env.DEV) {
