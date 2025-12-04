@@ -160,7 +160,7 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
    - Scroll down to **"Start Command"**
    - **Replace** the existing start command with:
      ```
-      cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py init_error_messages && python manage.py create_superuser && python manage.py check_user --email varner4262@gmail.com && (python manage.py reset_user_password --email varner4262@gmail.com --password "$RESET_PASSWORD" || true) && (python manage.py set_user_role --email varner4262@gmail.com --role ADMIN || true) && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+      cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py init_error_messages && python manage.py create_superuser && python manage.py seed_sprint_users && python manage.py seed_chart_accounts && python manage.py check_user --email varner4262@gmail.com && (python manage.py reset_user_password --email varner4262@gmail.com --password "$RESET_PASSWORD" || true) && (python manage.py set_user_role --email varner4262@gmail.com --role ADMIN || true) && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
      ```
      **Note**: 
      - Replace `varner4262@gmail.com` with your email
@@ -171,6 +171,9 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
      - Collect static files (required for Django admin)
      - Initialize error messages
      - Create a superuser (if environment variables are set)
+     - Seed users (Caroline, Brenden, Ali, etc.) with their correct names and roles
+     - Seed chart of accounts (so you can see accounts immediately)
+     - Reset your password and set your role to ADMIN
      - Start the server
    
 2. **Add Environment Variables**:
@@ -207,14 +210,18 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
      - "Operations to perform: Apply all migrations..."
       - "Successfully created default error messages!"
       - "Superuser admin created successfully!"
+      - "Created/Updated users" (from seed_sprint_users)
+      - "Successfully seeded X accounts!" (from seed_chart_accounts)
       - "[RESET_PASSWORD] ✅ SUCCESS!" (if password reset ran)
       - "[SET_ROLE] ✅ SUCCESS!" (if role was set)
       - "Starting gunicorn..."
 
-6. **Verify backend is working**:
-   - Go to: `https://flowcounts-backend.onrender.com/api/`
-   - You should see the Django REST Framework API browser (or a JSON response)
-   - Try logging in at: `https://flowcounts-backend.onrender.com/admin/` with your superuser credentials
+ 6. **Verify backend is working**:
+    - Go to: `https://flowcounts-backend.onrender.com/api/`
+    - You should see the Django REST Framework API browser (or a JSON response)
+    - Try logging in at: `https://flowcounts-backend.onrender.com/admin/` with your superuser credentials
+    - **Verify database connection**: Check the logs for "Operations to perform: Apply all migrations" - if you see this, the database is connected!
+    - **Verify data was seeded**: Check logs for "Successfully seeded X accounts!" and "Created/Updated users" - this confirms data is in the database
 
 #### 2.4 Deploy Frontend
 1. Click "New +" → "Static Site"
@@ -302,6 +309,15 @@ Update your email settings in environment variables for production.
 ### Database errors:
 - Run migrations: `python manage.py migrate`
 - Check database is running in Render dashboard
+- **Database appears empty (no accounts/users showing)**:
+  - This means the database was created but not seeded with data
+  - Update your Start Command to include:
+    ```
+    python manage.py seed_sprint_users && python manage.py seed_chart_accounts &&
+    ```
+  - Save and redeploy
+  - After redeployment, check logs for "Successfully seeded X accounts!" to confirm data was added
+  - Log out and log back in - you should now see accounts and users
 
 ### Account Suspended / Can't Login / Password Mismatch:
 1. **Reset password and unsuspend** (Recommended):

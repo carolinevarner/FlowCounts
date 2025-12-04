@@ -6,9 +6,10 @@ class Command(BaseCommand):
     help = 'Seed the Chart of Accounts with typical business accounts'
 
     def handle(self, *args, **kwargs):
-        # Clear existing accounts
-        ChartOfAccounts.objects.all().delete()
-        self.stdout.write(self.style.SUCCESS('Cleared existing accounts'))
+        # Don't clear existing accounts - just add missing ones
+        existing_count = ChartOfAccounts.objects.count()
+        if existing_count > 0:
+            self.stdout.write(self.style.WARNING(f'Found {existing_count} existing accounts. Will only add missing accounts.'))
 
         # Get the first admin user to assign as creator
         admin_user = User.objects.filter(role='ADMIN').first()
@@ -244,12 +245,18 @@ class Command(BaseCommand):
             },
         ]
 
-        # Create accounts
+        # Create accounts (only if they don't exist)
+        created_count = 0
         for account_data in accounts:
+            # Check if account with this number already exists
+            if ChartOfAccounts.objects.filter(account_number=account_data['account_number']).exists():
+                continue
+            
             if admin_user:
                 account_data['created_by'] = admin_user
             
             account = ChartOfAccounts.objects.create(**account_data)
+            created_count += 1
             self.stdout.write(
                 self.style.SUCCESS(
                     f'Created account: {account.account_number} - {account.account_name}'
@@ -257,6 +264,6 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(
-            self.style.SUCCESS(f'\nSuccessfully seeded {len(accounts)} accounts!')
+            self.style.SUCCESS(f'\nSuccessfully created {created_count} new accounts (out of {len(accounts)} total).')
         )
 
