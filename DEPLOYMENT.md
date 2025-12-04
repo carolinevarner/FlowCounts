@@ -21,8 +21,8 @@ This guide covers the **easiest free deployment options** for your Django + Reac
 
 #### 1.2 Verify Backend Requirements ✅
 **Location**: `FlowCounts/backend/requirements.txt`
-- Must include: `gunicorn`, `whitenoise`, `psycopg2-binary`, `python-dotenv`, `dj-database-url`
-- ✅ Already updated
+- Must include: `gunicorn`, `whitenoise`, `psycopg2-binary`, `python-dotenv`, `dj-database-url`, `Pillow`
+- ✅ Already updated (Pillow added for ImageField support)
 
 #### 1.3 Verify Backend Settings ✅
 **Location**: `FlowCounts/backend/core/settings.py`
@@ -160,25 +160,35 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
    - Scroll down to **"Start Command"**
    - **Replace** the existing start command with:
      ```
-     cd backend && python manage.py migrate --noinput && python manage.py init_error_messages && python manage.py create_superuser && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+     cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py init_error_messages && python manage.py create_superuser && python manage.py check_user --email varner4262@gmail.com && (python manage.py reset_user_password --email varner4262@gmail.com --password "$RESET_PASSWORD" || true) && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
      ```
+     **Note**: 
+     - Replace `varner4262@gmail.com` with your email
+     - The `|| true` ensures commands don't fail if user doesn't exist
+     - You'll need to set `RESET_PASSWORD` environment variable (see step 2b below)
      This will automatically:
      - Run database migrations
+     - Collect static files (required for Django admin)
      - Initialize error messages
      - Create a superuser (if environment variables are set)
      - Start the server
    
-2. **Add Environment Variables** for superuser creation:
+2. **Add Environment Variables**:
    - Still in the **"Settings"** tab, scroll to **"Environment Variables"**
    - Click **"Add Environment Variable"** and add these:
    
-   | Key | Value | Example |
-   |-----|-------|---------|
-   | `SUPERUSER_USERNAME` | Your admin username | `admin` |
-   | `SUPERUSER_EMAIL` | Your admin email | `admin@example.com` |
-   | `SUPERUSER_PASSWORD` | Your admin password | `YourSecurePassword123!` |
+   | Key | Value | Example | Required |
+   |-----|-------|---------|----------|
+   | `SUPERUSER_USERNAME` | Your admin username | `admin` | Yes |
+   | `SUPERUSER_EMAIL` | Your admin email | `admin@example.com` | Yes |
+   | `SUPERUSER_PASSWORD` | Your admin password | `YourSecurePassword123!` | Yes |
+   | `RESET_PASSWORD` | Password to reset for varner4262@gmail.com | `YourKnownPassword123!` | Optional* |
+   | `RESET_PASSWORD_EMAIL` | Email to reset password for | `varner4262@gmail.com` | Optional* |
    
-   **⚠️ Important**: Use a strong password for `SUPERUSER_PASSWORD`!
+   **⚠️ Important**: 
+   - Use a strong password for `SUPERUSER_PASSWORD`!
+   - *Set `RESET_PASSWORD` and `RESET_PASSWORD_EMAIL` if you want to reset your account password during deployment
+   - This will unsuspend your account and set the password to the value you specify
 
 3. **Commit and push** the new management command (if you haven't already):
    ```bash
@@ -212,7 +222,9 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
    - **Publish Directory**: `frontend/dist`
 
 4. Add Environment Variable:
-   - `VITE_API_URL`: `https://flowcounts-backend.onrender.com` (replace with your backend URL)
+   - **Key**: `VITE_API_URL`
+   - **Value**: `https://flowcounts-backend.onrender.com` (replace with your actual backend URL - do NOT include `/api` at the end, it's added automatically)
+   - **Example**: If your backend is at `https://flowcounts-backend.onrender.com`, use exactly that (without trailing slash)
 
 5. Click "Create Static Site"
 
@@ -252,14 +264,146 @@ Update your email settings in environment variables for production.
 - Verify `DATABASE_URL` is set correctly
 - Check logs in Render dashboard
 
-### Frontend can't connect to backend:
-- Verify `CORS_ALLOWED_ORIGINS` includes frontend URL
-- Check `VITE_API_URL` is set correctly
-- Ensure backend is running (may be spinning up)
+### Frontend can't connect to backend / "Invalid credentials" on login:
+1. **Check `VITE_API_URL` is set correctly**:
+   - Go to frontend service → Settings → Environment Variables
+   - `VITE_API_URL` should be: `https://your-backend-name.onrender.com` (without `/api` at the end)
+   - **Do NOT include `/api`** - the code adds it automatically
+   - Make sure there's no trailing slash
+
+2. **Verify CORS settings**:
+   - Go to backend service → Settings → Environment Variables
+   - `CORS_ALLOWED_ORIGINS` should include: `https://your-frontend-name.onrender.com`
+   - Or `CORS_ALLOW_ALL_ORIGINS` should be `True` (if you want to allow all origins)
+
+3. **Check browser console**:
+   - Open browser DevTools (F12) → Console tab
+   - Try logging in and look for errors
+   - Check Network tab to see if API calls are being made and what the response is
+
+4. **Verify backend is running**:
+   - Go to `https://your-backend-name.onrender.com/api/`
+   - You should see the Django REST Framework API browser
+   - If you see 401, that's normal (it requires auth)
+
+5. **Check if superuser exists**:
+   - The superuser should have been created during deployment
+   - Check the deployment logs to see if "Superuser created successfully!" appeared
+   - If not, verify `SUPERUSER_USERNAME`, `SUPERUSER_EMAIL`, and `SUPERUSER_PASSWORD` are set in backend environment variables
+
+6. **After fixing, redeploy frontend**:
+   - If you changed `VITE_API_URL`, you need to redeploy the frontend
+   - Go to frontend service → Manual Deploy → Deploy latest commit
 
 ### Database errors:
 - Run migrations: `python manage.py migrate`
 - Check database is running in Render dashboard
+
+### Account Suspended / Can't Login / Password Mismatch:
+1. **Reset password and unsuspend** (Recommended):
+   - Go to backend service → Settings → Environment Variables
+   - Add these variables:
+     - `RESET_PASSWORD_EMAIL` = `varner4262@gmail.com` (your email)
+     - `RESET_PASSWORD` = `YourNewPassword123!` (the password you want to use)
+   - Update Start Command to include:
+     ```
+     (python manage.py reset_user_password --email varner4262@gmail.com --password "$RESET_PASSWORD" || true) &&
+     ```
+   - Save and redeploy
+   - After successful login, you can remove these from the start command
+
+2. **Just unsuspend (if password is correct)**:
+   - Go to backend service → Settings → Start Command
+   - Add to start command (before gunicorn):
+     ```
+     (python manage.py unsuspend_user --email varner4262@gmail.com || true) &&
+     ```
+   - Save and redeploy
+
+3. **Use Django admin to fix** (if you have superuser access):
+   - Go to: `https://your-backend.onrender.com/admin/`
+   - Login with superuser credentials
+   - Go to Users → Find your user
+   - Click on your user → Change password (enter new password twice)
+   - Set "Is active" to checked
+   - Set "Failed attempts" to 0
+   - Clear "Suspend from" and "Suspend to" dates
+   - Save
+
+4. **Check logs to see what's happening**:
+   - Go to backend service → Logs tab
+   - Look for "Login failed" messages
+   - Check if password reset command ran successfully
+   - Look for "check_user" output to see user status
+   - Look for "Successfully reset password" message
+
+5. **Debug step-by-step**:
+   - First, check if user exists: Look for "check_user" output in logs
+   - If user doesn't exist, you may need to create it first
+   - If user exists but password reset failed, check the error message
+   - Verify `RESET_PASSWORD` environment variable is set correctly
+   - Try using Django admin to reset password manually (see step 3)
+
+6. **If password reset command isn't running**:
+   - Check that `RESET_PASSWORD` environment variable is set
+   - Check that the email in the command matches your actual email
+   - Look for errors in the deployment logs
+   - The command should show "✅ Successfully reset password" if it worked
+
+### "Cannot use ImageField because Pillow is not installed":
+- **Fixed!** Pillow has been added to `requirements.txt`
+- Commit and push the updated requirements.txt:
+  ```bash
+  git add backend/requirements.txt
+  git commit -m "Add Pillow to requirements"
+  git push origin main
+  ```
+- Render will automatically redeploy with Pillow installed
+
+### Static files directory warnings:
+- **Fixed!** Settings now only include directories that exist
+- These are just warnings and won't prevent deployment
+- Commit and push the updated settings.py if you see these warnings
+
+### Server Error (500) when accessing admin:
+1. **Check the logs first**:
+   - Go to your backend service → **"Logs"** tab
+   - Scroll to the bottom to see the most recent errors
+   - Look for Python tracebacks or error messages
+   
+2. **Most common causes**:
+   - **Django admin URLs not included**: ✅ **Fixed!** Admin URLs have been added to `urls.py`
+   - **Static files not collected**: Update your Start Command to include `python manage.py collectstatic --noinput`
+   - **Database connection issue**: Verify `DATABASE_URL` is set correctly
+   - **Missing migrations**: Check if migrations ran successfully in logs
+   - **Missing environment variables**: Verify all required env vars are set
+
+3. **Fix static files issue** (if still having issues):
+   - Go to Settings → Start Command
+   - Make sure it includes: `python manage.py collectstatic --noinput`
+   - Should look like:
+     ```
+     cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py init_error_messages && python manage.py create_superuser && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+     ```
+   - Save changes and wait for redeploy
+
+4. **If you still get 500 errors after fixes**:
+   - Commit and push the updated `urls.py` file:
+     ```bash
+     git add backend/core/urls.py
+     git commit -m "Add Django admin URLs and fix catch-all pattern"
+     git push origin main
+     ```
+   - Render will automatically redeploy
+   - The admin panel should now work at `/admin/`
+
+5. **Check specific error in logs**:
+   - The logs will show the exact Python error
+   - Common errors:
+     - `No such table`: Migrations didn't run - check migration logs
+     - `Static files not found`: Need to run collectstatic
+     - `Database connection failed`: Check DATABASE_URL
+     - `Template not found`: Admin URLs not included (now fixed)
 
 ---
 
