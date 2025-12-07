@@ -82,9 +82,43 @@ class Command(BaseCommand):
                     return
                 import_file = input_source
             
-            # Use Django's loaddata command
+            # Use Django's loaddata command with verbose output
             self.stdout.write(f'[IMPORT_DATA] Loading data into database...')
-            call_command('loaddata', import_file, verbosity=1)
+            self.stdout.write(f'[IMPORT_DATA] File: {import_file}')
+            
+            # Count objects before import
+            from accounts.models import ChartOfAccounts, JournalEntry, JournalEntryLine, User
+            accounts_before = ChartOfAccounts.objects.count()
+            entries_before = JournalEntry.objects.count()
+            lines_before = JournalEntryLine.objects.count()
+            users_before = User.objects.count()
+            
+            self.stdout.write(f'[IMPORT_DATA] Before import: {accounts_before} accounts, {entries_before} entries, {lines_before} lines, {users_before} users')
+            
+            # Import with error handling
+            try:
+                result = call_command('loaddata', import_file, verbosity=2)
+                self.stdout.write(f'[IMPORT_DATA] Loaddata command completed')
+            except Exception as e:
+                self.stdout.write(
+                    self.style.ERROR(f'[IMPORT_DATA] ❌ Error during loaddata: {str(e)}')
+                )
+                import traceback
+                self.stdout.write(f'[IMPORT_DATA] Traceback: {traceback.format_exc()}')
+                raise
+            
+            # Count objects after import
+            accounts_after = ChartOfAccounts.objects.count()
+            entries_after = JournalEntry.objects.count()
+            lines_after = JournalEntryLine.objects.count()
+            users_after = User.objects.count()
+            
+            self.stdout.write(
+                f'[IMPORT_DATA] After import: {accounts_after} accounts (+{accounts_after - accounts_before}), '
+                f'{entries_after} entries (+{entries_after - entries_before}), '
+                f'{lines_after} lines (+{lines_after - lines_before}), '
+                f'{users_after} users (+{users_after - users_before})'
+            )
             
             self.stdout.write(
                 self.style.SUCCESS(

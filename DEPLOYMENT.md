@@ -160,7 +160,7 @@ Since the free tier doesn't include shell access, we'll run migrations automatic
    - Scroll down to **"Start Command"**
    - **Replace** the existing start command with:
      ```
-      cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py init_error_messages && (python manage.py create_superuser || true) && (python manage.py import_data --file "$IMPORT_DATA_FILE" || true) && python manage.py seed_sprint_users && python manage.py seed_chart_accounts && python manage.py recalculate_balances && python manage.py reset_all_passwords && python manage.py check_user --email varner4262@gmail.com && (python manage.py reset_user_password --email varner4262@gmail.com --password "$RESET_PASSWORD" || true) && (python manage.py set_user_role --email varner4262@gmail.com --role ADMIN || true) && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+      cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py init_error_messages && (python manage.py create_superuser || true) && (python manage.py import_data --file "$IMPORT_DATA_FILE" || true) && python manage.py verify_import && python manage.py seed_sprint_users && python manage.py seed_chart_accounts && python manage.py recalculate_balances && python manage.py reset_all_passwords && python manage.py check_user --email varner4262@gmail.com && (python manage.py reset_user_password --email varner4262@gmail.com --password "$RESET_PASSWORD" || true) && (python manage.py set_user_role --email varner4262@gmail.com --role ADMIN || true) && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
      ```
      **Note**: 
      - Replace `varner4262@gmail.com` with your email
