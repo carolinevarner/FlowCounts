@@ -1664,11 +1664,17 @@ class ChartOfAccountsViewSet(viewsets.ModelViewSet):
         """
         account = self.get_object()
         
-        # Get all journal entry lines for this account from approved entries
-        lines = JournalEntryLine.objects.filter(
-            account=account,
-            journal_entry__status='APPROVED'
-        ).select_related('journal_entry', 'journal_entry__created_by').order_by('journal_entry__entry_date', 'journal_entry__created_at')
+        # Get all journal entry lines for this account
+        # Show APPROVED entries by default, but allow filtering by status
+        status_filter = request.query_params.get('status', 'APPROVED')
+        if status_filter.upper() == 'ALL':
+            lines = JournalEntryLine.objects.filter(account=account)
+        else:
+            lines = JournalEntryLine.objects.filter(
+                account=account,
+                journal_entry__status=status_filter.upper()
+            )
+        lines = lines.select_related('journal_entry', 'journal_entry__created_by').order_by('journal_entry__entry_date', 'journal_entry__created_at')
         
         # Format the data for ledger display
         ledger_data = []
