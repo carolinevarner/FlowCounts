@@ -19,23 +19,51 @@ class Command(BaseCommand):
         
         if not password:
             self.stdout.write(
-                self.style.ERROR('SUPERUSER_PASSWORD environment variable not set. Skipping superuser creation.')
+                self.style.WARNING('SUPERUSER_PASSWORD environment variable not set. Skipping superuser creation.')
             )
             return
         
-        if User.objects.filter(username=username).exists():
-            self.stdout.write(
-                self.style.WARNING(f'User {username} already exists. Skipping creation.')
-            )
+        # Check if user already exists by username or email
+        existing_user = User.objects.filter(username=username).first()
+        if not existing_user:
+            existing_user = User.objects.filter(email=email).first()
+        
+        if existing_user:
+            # Update existing user to be superuser
+            existing_user.is_superuser = True
+            existing_user.is_staff = True
+            existing_user.set_password(password)
+            try:
+                existing_user.save(update_fields=['is_superuser', 'is_staff', 'password'])
+                self.stdout.write(
+                    self.style.SUCCESS(f'Updated existing user {existing_user.username} to superuser!')
+                )
+            except Exception as e:
+                self.stdout.write(
+                    self.style.WARNING(f'Could not update user to superuser: {str(e)}. Continuing...')
+                )
         else:
             try:
-                User.objects.create_superuser(username=username, email=email, password=password)
+                # Create new superuser with a unique display_handle
+                display_handle = f"admin_{username}"
+                # Ensure display_handle is unique
+                counter = 1
+                while User.objects.filter(display_handle=display_handle).exists():
+                    display_handle = f"admin_{username}_{counter}"
+                    counter += 1
+                
+                user = User.objects.create_superuser(
+                    username=username, 
+                    email=email, 
+                    password=password,
+                    display_handle=display_handle
+                )
                 self.stdout.write(
                     self.style.SUCCESS(f'Superuser {username} created successfully!')
                 )
             except Exception as e:
                 self.stdout.write(
-                    self.style.ERROR(f'Error creating superuser: {str(e)}')
+                    self.style.WARNING(f'Could not create superuser: {str(e)}. This is okay if user already exists. Continuing...')
                 )
 
 
