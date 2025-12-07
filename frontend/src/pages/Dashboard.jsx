@@ -200,6 +200,11 @@ export default function Dashboard() {
 
   // Ratio color coding based on normal ranges
   const getRatioColor = (ratioName, ratio) => {
+    // Asset turnover always shows green like other categories
+    if (ratioName === "assetTurnover") {
+      return "#4f772d"; // Green - Good
+    }
+    
     const ranges = {
       currentRatio: { green: [150, Infinity], yellow: [100, 150], red: [0, 100] },
       quickRatio: { green: [100, Infinity], yellow: [50, 100], red: [0, 50] },
@@ -216,6 +221,11 @@ export default function Dashboard() {
   };
 
   const getRatioStatus = (ratioName, ratio) => {
+    // Asset turnover always shows "Good" status like other categories
+    if (ratioName === "assetTurnover") {
+      return "Good";
+    }
+    
     const ranges = {
       currentRatio: { good: [150, Infinity], warning: [100, 150], bad: [0, 100] },
       quickRatio: { good: [100, Infinity], warning: [50, 100], bad: [0, 50] },

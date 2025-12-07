@@ -41,6 +41,7 @@ class Command(BaseCommand):
 
         created = 0
         updated = 0
+        skipped = 0
         for u in users:
             # Try to find user by email first, then by display_handle
             user = User.objects.filter(email=u["email"]).first()
@@ -48,8 +49,23 @@ class Command(BaseCommand):
                 user = User.objects.filter(display_handle=u["display_handle"]).first()
             
             if user:
-                # Update existing user
-                user.display_handle = u["display_handle"]
+                # Check if display_handle is already taken by a different user
+                existing_with_handle = User.objects.filter(display_handle=u["display_handle"]).exclude(id=user.id).first()
+                if existing_with_handle:
+                    # Display handle is taken by another user - skip updating it
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Skipping display_handle update for {user.email}: '{u['display_handle']}' already taken by {existing_with_handle.email}"
+                        )
+                    )
+                    # Update other fields but not display_handle
+                    update_fields = ['first_name', 'last_name', 'role', 'address', 'dob', 'is_active']
+                else:
+                    # Display handle is available or belongs to this user - safe to update
+                    user.display_handle = u["display_handle"]
+                    update_fields = ['display_handle', 'first_name', 'last_name', 'role', 'address', 'dob', 'is_active']
+                
+                # Update user fields
                 user.first_name = u["first"]
                 user.last_name = u["last"]
                 user.role = u["role"]
@@ -57,13 +73,24 @@ class Command(BaseCommand):
                 user.dob = u["dob"]
                 user.is_active = True
                 user.set_password(u["pwd"])
-                user.save()
+                user.save(update_fields=update_fields)
+                
                 # Add security questions if they don't exist
                 if not SecurityQuestion.objects.filter(user=user).exists():
                     add_questions(user)
                 updated += 1
-                self.stdout.write(self.style.SUCCESS(f"Updated {u['display_handle']} (db username -> {user.username})"))
+                self.stdout.write(self.style.SUCCESS(f"Updated {user.email} (display_handle: {user.display_handle}, username: {user.username})"))
             else:
+                # Check if display_handle is already taken before creating
+                if User.objects.filter(display_handle=u["display_handle"]).exists():
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Skipping creation of {u['email']}: display_handle '{u['display_handle']}' already exists"
+                        )
+                    )
+                    skipped += 1
+                    continue
+                
                 # Create new user
                 user = User.objects.create(
                     display_handle=u["display_handle"],
@@ -76,5 +103,7 @@ class Command(BaseCommand):
                 add_questions(user)
                 created += 1
                 self.stdout.write(self.style.SUCCESS(f"Created {u['display_handle']} (db username -> {user.username})"))
+
+        self.stdout.write(self.style.SUCCESS(f"Done. New users: {created}, Updated users: {updated}, Skipped: {skipped}"))
 
         self.stdout.write(self.style.SUCCESS(f"Done. New users: {created}, Updated users: {updated}"))

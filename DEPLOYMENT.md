@@ -319,6 +319,18 @@ Update your email settings in environment variables for production.
   - After redeployment, check logs for "Successfully seeded X accounts!" to confirm data was added
   - Log out and log back in - you should now see accounts and users
 
+### Database not fully connected / Missing data from local database:
+- **The production database is separate from your local SQLite database**
+- To migrate your local data to production, see `DATA_MIGRATION.md` for detailed instructions
+- **Quick steps**:
+  1. Export local data: `python manage.py export_data --output data_export.json`
+  2. Upload the JSON file to a file hosting service (Pastebin, GitHub Gist, etc.)
+  3. Get the raw URL
+  4. Add environment variable `IMPORT_DATA_FILE` with the URL
+  5. Update Start Command to include: `(python manage.py import_data --file "$IMPORT_DATA_FILE" || true) &&`
+  6. Save and redeploy
+  7. Check logs for "[IMPORT_DATA] ✅ SUCCESS!"
+
 ### Account Suspended / Can't Login / Password Mismatch:
 1. **Reset password and unsuspend** (Recommended):
    - Go to backend service → Settings → Environment Variables

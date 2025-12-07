@@ -98,3 +98,5 @@ class Command(BaseCommand):
                 self.style.ERROR(f'[UPDATE_PROFILE] ❌ Error: {str(e)}')
             )
 
+
+
