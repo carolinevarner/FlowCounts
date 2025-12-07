@@ -1,1 +1,6047 @@
-[{"model": "auth.permission", "fields": {"name": "Can add log entry", "content_type": ["admin", "logentry"], "codename": "add_logentry"}}, {"model": "auth.permission", "fields": {"name": "Can change log entry", "content_type": ["admin", "logentry"], "codename": "change_logentry"}}, {"model": "auth.permission", "fields": {"name": "Can delete log entry", "content_type": ["admin", "logentry"], "codename": "delete_logentry"}}, {"model": "auth.permission", "fields": {"name": "Can view log entry", "content_type": ["admin", "logentry"], "codename": "view_logentry"}}, {"model": "auth.permission", "fields": {"name": "Can add permission", "content_type": ["auth", "permission"], "codename": "add_permission"}}, {"model": "auth.permission", "fields": {"name": "Can change permission", "content_type": ["auth", "permission"], "codename": "change_permission"}}, {"model": "auth.permission", "fields": {"name": "Can delete permission", "content_type": ["auth", "permission"], "codename": "delete_permission"}}, {"model": "auth.permission", "fields": {"name": "Can view permission", "content_type": ["auth", "permission"], "codename": "view_permission"}}, {"model": "auth.permission", "fields": {"name": "Can add group", "content_type": ["auth", "group"], "codename": "add_group"}}, {"model": "auth.permission", "fields": {"name": "Can change group", "content_type": ["auth", "group"], "codename": "change_group"}}, {"model": "auth.permission", "fields": {"name": "Can delete group", "content_type": ["auth", "group"], "codename": "delete_group"}}, {"model": "auth.permission", "fields": {"name": "Can view group", "content_type": ["auth", "group"], "codename": "view_group"}}, {"model": "auth.permission", "fields": {"name": "Can add content type", "content_type": ["contenttypes", "contenttype"], "codename": "add_contenttype"}}, {"model": "auth.permission", "fields": {"name": "Can change content type", "content_type": ["contenttypes", "contenttype"], "codename": "change_contenttype"}}, {"model": "auth.permission", "fields": {"name": "Can delete content type", "content_type": ["contenttypes", "contenttype"], "codename": "delete_contenttype"}}, {"model": "auth.permission", "fields": {"name": "Can view content type", "content_type": ["contenttypes", "contenttype"], "codename": "view_contenttype"}}, {"model": "auth.permission", "fields": {"name": "Can add session", "content_type": ["sessions", "session"], "codename": "add_session"}}, {"model": "auth.permission", "fields": {"name": "Can change session", "content_type": ["sessions", "session"], "codename": "change_session"}}, {"model": "auth.permission", "fields": {"name": "Can delete session", "content_type": ["sessions", "session"], "codename": "delete_session"}}, {"model": "auth.permission", "fields": {"name": "Can view session", "content_type": ["sessions", "session"], "codename": "view_session"}}, {"model": "auth.permission", "fields": {"name": "Can add user", "content_type": ["accounts", "user"], "codename": "add_user"}}, {"model": "auth.permission", "fields": {"name": "Can change user", "content_type": ["accounts", "user"], "codename": "change_user"}}, {"model": "auth.permission", "fields": {"name": "Can delete user", "content_type": ["accounts", "user"], "codename": "delete_user"}}, {"model": "auth.permission", "fields": {"name": "Can view user", "content_type": ["accounts", "user"], "codename": "view_user"}}, {"model": "auth.permission", "fields": {"name": "Can add password history", "content_type": ["accounts", "passwordhistory"], "codename": "add_passwordhistory"}}, {"model": "auth.permission", "fields": {"name": "Can change password history", "content_type": ["accounts", "passwordhistory"], "codename": "change_passwordhistory"}}, {"model": "auth.permission", "fields": {"name": "Can delete password history", "content_type": ["accounts", "passwordhistory"], "codename": "delete_passwordhistory"}}, {"model": "auth.permission", "fields": {"name": "Can view password history", "content_type": ["accounts", "passwordhistory"], "codename": "view_passwordhistory"}}, {"model": "auth.permission", "fields": {"name": "Can add registration request", "content_type": ["accounts", "registrationrequest"], "codename": "add_registrationrequest"}}, {"model": "auth.permission", "fields": {"name": "Can change registration request", "content_type": ["accounts", "registrationrequest"], "codename": "change_registrationrequest"}}, {"model": "auth.permission", "fields": {"name": "Can delete registration request", "content_type": ["accounts", "registrationrequest"], "codename": "delete_registrationrequest"}}, {"model": "auth.permission", "fields": {"name": "Can view registration request", "content_type": ["accounts", "registrationrequest"], "codename": "view_registrationrequest"}}, {"model": "auth.permission", "fields": {"name": "Can add security question", "content_type": ["accounts", "securityquestion"], "codename": "add_securityquestion"}}, {"model": "auth.permission", "fields": {"name": "Can change security question", "content_type": ["accounts", "securityquestion"], "codename": "change_securityquestion"}}, {"model": "auth.permission", "fields": {"name": "Can delete security question", "content_type": ["accounts", "securityquestion"], "codename": "delete_securityquestion"}}, {"model": "auth.permission", "fields": {"name": "Can view security question", "content_type": ["accounts", "securityquestion"], "codename": "view_securityquestion"}}, {"model": "auth.permission", "fields": {"name": "Can add event log", "content_type": ["accounts", "eventlog"], "codename": "add_eventlog"}}, {"model": "auth.permission", "fields": {"name": "Can change event log", "content_type": ["accounts", "eventlog"], "codename": "change_eventlog"}}, {"model": "auth.permission", "fields": {"name": "Can delete event log", "content_type": ["accounts", "eventlog"], "codename": "delete_eventlog"}}, {"model": "auth.permission", "fields": {"name": "Can view event log", "content_type": ["accounts", "eventlog"], "codename": "view_eventlog"}}, {"model": "auth.permission", "fields": {"name": "Can add error message", "content_type": ["accounts", "errormessage"], "codename": "add_errormessage"}}, {"model": "auth.permission", "fields": {"name": "Can change error message", "content_type": ["accounts", "errormessage"], "codename": "change_errormessage"}}, {"model": "auth.permission", "fields": {"name": "Can delete error message", "content_type": ["accounts", "errormessage"], "codename": "delete_errormessage"}}, {"model": "auth.permission", "fields": {"name": "Can view error message", "content_type": ["accounts", "errormessage"], "codename": "view_errormessage"}}, {"model": "auth.permission", "fields": {"name": "Can add error log", "content_type": ["accounts", "errorlog"], "codename": "add_errorlog"}}, {"model": "auth.permission", "fields": {"name": "Can change error log", "content_type": ["accounts", "errorlog"], "codename": "change_errorlog"}}, {"model": "auth.permission", "fields": {"name": "Can delete error log", "content_type": ["accounts", "errorlog"], "codename": "delete_errorlog"}}, {"model": "auth.permission", "fields": {"name": "Can view error log", "content_type": ["accounts", "errorlog"], "codename": "view_errorlog"}}, {"model": "auth.permission", "fields": {"name": "Can add Chart of Account", "content_type": ["accounts", "chartofaccounts"], "codename": "add_chartofaccounts"}}, {"model": "auth.permission", "fields": {"name": "Can change Chart of Account", "content_type": ["accounts", "chartofaccounts"], "codename": "change_chartofaccounts"}}, {"model": "auth.permission", "fields": {"name": "Can delete Chart of Account", "content_type": ["accounts", "chartofaccounts"], "codename": "delete_chartofaccounts"}}, {"model": "auth.permission", "fields": {"name": "Can view Chart of Account", "content_type": ["accounts", "chartofaccounts"], "codename": "view_chartofaccounts"}}, {"model": "auth.permission", "fields": {"name": "Can add Journal Entry", "content_type": ["accounts", "journalentry"], "codename": "add_journalentry"}}, {"model": "auth.permission", "fields": {"name": "Can change Journal Entry", "content_type": ["accounts", "journalentry"], "codename": "change_journalentry"}}, {"model": "auth.permission", "fields": {"name": "Can delete Journal Entry", "content_type": ["accounts", "journalentry"], "codename": "delete_journalentry"}}, {"model": "auth.permission", "fields": {"name": "Can view Journal Entry", "content_type": ["accounts", "journalentry"], "codename": "view_journalentry"}}, {"model": "auth.permission", "fields": {"name": "Can add journal entry attachment", "content_type": ["accounts", "journalentryattachment"], "codename": "add_journalentryattachment"}}, {"model": "auth.permission", "fields": {"name": "Can change journal entry attachment", "content_type": ["accounts", "journalentryattachment"], "codename": "change_journalentryattachment"}}, {"model": "auth.permission", "fields": {"name": "Can delete journal entry attachment", "content_type": ["accounts", "journalentryattachment"], "codename": "delete_journalentryattachment"}}, {"model": "auth.permission", "fields": {"name": "Can view journal entry attachment", "content_type": ["accounts", "journalentryattachment"], "codename": "view_journalentryattachment"}}, {"model": "auth.permission", "fields": {"name": "Can add journal entry line", "content_type": ["accounts", "journalentryline"], "codename": "add_journalentryline"}}, {"model": "auth.permission", "fields": {"name": "Can change journal entry line", "content_type": ["accounts", "journalentryline"], "codename": "change_journalentryline"}}, {"model": "auth.permission", "fields": {"name": "Can delete journal entry line", "content_type": ["accounts", "journalentryline"], "codename": "delete_journalentryline"}}, {"model": "auth.permission", "fields": {"name": "Can view journal entry line", "content_type": ["accounts", "journalentryline"], "codename": "view_journalentryline"}}]
+[
+  {
+    "model": "accounts.user",
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$bmFScjRaMEdyWUxkSHphbVhwdXNEVQ$4/d8IwYkuozf7kQg80UMdreetLrwuOuzzJXJ7B2DZlg",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "cvarner0925",
+      "first_name": "Caroline",
+      "last_name": "Varner",
+      "email": "varner4262@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-09-21T19:13:43.018Z",
+      "display_handle": "adminUser",
+      "role": "ADMIN",
+      "picture": "",
+      "suspend_from": null,
+      "suspend_to": null,
+      "failed_attempts": 0,
+      "last_password_change": "2025-10-07T21:10:20.489Z",
+      "password_expires_at": "2026-01-05T21:10:20.489Z",
+      "is_temporary_password": false,
+      "password_must_change_by": null,
+      "last_expiration_reminder_sent": null,
+      "profile_image": "profiles/user_1_1759854306.jpg",
+      "address": "1107 Oaks Court",
+      "dob": "2002-04-26",
+      "security_question_1": "What is your favorite color?",
+      "security_answer_1": "blue",
+      "security_question_2": "What was the name of your first pet?",
+      "security_answer_2": "buddy",
+      "security_question_3": "What city were you born in?",
+      "security_answer_3": "atlanta",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "accounts.user",
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$YVliS2xIZUN4eEhlWFNyNHhTOThlZA$0jSOp/fbTx6jqQPPynVJmyeeuHX4W6Q904+/4UkgJqA",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "bhorne0925",
+      "first_name": "Brenden",
+      "last_name": "Horne",
+      "email": "brendenhorne03@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-09-21T19:13:48.222Z",
+      "display_handle": "managerUser",
+      "role": "MANAGER",
+      "picture": "",
+      "suspend_from": null,
+      "suspend_to": null,
+      "failed_attempts": 0,
+      "last_password_change": "2025-10-07T05:16:54.518Z",
+      "password_expires_at": "2026-01-05T05:16:54.518Z",
+      "is_temporary_password": false,
+      "password_must_change_by": null,
+      "last_expiration_reminder_sent": null,
+      "profile_image": "",
+      "address": "5 Night Heron Way",
+      "dob": "2003-02-25",
+      "security_question_1": "What is your favorite color?",
+      "security_answer_1": "blue",
+      "security_question_2": "What was the name of your first pet?",
+      "security_answer_2": "buddy",
+      "security_question_3": "What city were you born in?",
+      "security_answer_3": "atlanta",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "accounts.user",
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$eFJIS3BzMDBlTVI2MHlUeHBBWjNOWg$4RYe8V5sfYi46mD1N9/jfmjh5q9KKSUJ8AbZCfExj/g",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "adabdoub0925",
+      "first_name": "Ali",
+      "last_name": "Dabdoub",
+      "email": "alidabdoub0@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-09-21T19:13:53.512Z",
+      "display_handle": "accountantUser",
+      "role": "ACCOUNTANT",
+      "picture": "",
+      "suspend_from": null,
+      "suspend_to": null,
+      "failed_attempts": 0,
+      "last_password_change": "2025-09-25T03:09:09.950Z",
+      "password_expires_at": "2025-12-24T03:09:09.950Z",
+      "is_temporary_password": false,
+      "password_must_change_by": null,
+      "last_expiration_reminder_sent": null,
+      "profile_image": "",
+      "address": "3061 Barrett Creek Rd",
+      "dob": "2003-01-31",
+      "security_question_1": "What is your favorite color?",
+      "security_answer_1": "blue",
+      "security_question_2": "What was the name of your first pet?",
+      "security_answer_2": "buddy",
+      "security_question_3": "What city were you born in?",
+      "security_answer_3": "atlanta",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "accounts.user",
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$R1FuV25TNlNuQm5GelZFTUNiVUkzTQ$PEvz+Fsio0X5iv4kD2uvrYrlRFc7A6egPT26/V/voBc",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "cvarner09252",
+      "first_name": "Caroline",
+      "last_name": "Varner",
+      "email": "cvarner5@students.kennesaw.edu",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-09-24T02:38:36.873Z",
+      "display_handle": "",
+      "role": "ACCOUNTANT",
+      "picture": "",
+      "suspend_from": null,
+      "suspend_to": null,
+      "failed_attempts": 0,
+      "last_password_change": "2025-10-14T18:30:18.778Z",
+      "password_expires_at": "2026-01-12T18:30:18.778Z",
+      "is_temporary_password": false,
+      "password_must_change_by": null,
+      "last_expiration_reminder_sent": null,
+      "profile_image": "",
+      "address": "3061 George Busbee Pwky NW",
+      "dob": "2025-09-10",
+      "security_question_1": "What is your favorite color?",
+      "security_answer_1": "blue",
+      "security_question_2": "What was the name of your first pet?",
+      "security_answer_2": "buddy",
+      "security_question_3": "What city were you born in?",
+      "security_answer_3": "atlanta",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "accounts.user",
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$WUJnU0lRMVJaVW5oOFFXUnhPVXB3SQ$lYrrKDE7TtlAYwok6uqMcAoTA99asBdzq/4IlycR+Hs",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "nvelezvega1025",
+      "first_name": "Noel",
+      "last_name": "Velez Vega",
+      "email": "nvelezvega@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-10-06T15:29:23.687Z",
+      "display_handle": "nvelezvega",
+      "role": "MANAGER",
+      "picture": "",
+      "suspend_from": null,
+      "suspend_to": null,
+      "failed_attempts": 0,
+      "last_password_change": "2025-10-06T15:29:23.795Z",
+      "password_expires_at": "2026-01-04T15:29:23.795Z",
+      "is_temporary_password": false,
+      "password_must_change_by": null,
+      "last_expiration_reminder_sent": null,
+      "profile_image": "",
+      "address": "205 Cumberland Point",
+      "dob": "2007-01-30",
+      "security_question_1": "What is your favorite color?",
+      "security_answer_1": "blue",
+      "security_question_2": "What was the name of your first pet?",
+      "security_answer_2": "buddy",
+      "security_question_3": "What city were you born in?",
+      "security_answer_3": "atlanta",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "accounts.user",
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$UzZveWFXc1FnZlU4MGp0UU1vc1BiNQ$4wvae98bOm3ij7qHV1lK7Gpo5L+bdnXaBqVPHVOA2Dw",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "cvarner1025",
+      "first_name": "Caroline",
+      "last_name": "Varner",
+      "email": "carolinevarner04@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-10-08T02:11:06.167Z",
+      "display_handle": "cvarner",
+      "role": "MANAGER",
+      "picture": "",
+      "suspend_from": null,
+      "suspend_to": null,
+      "failed_attempts": 0,
+      "last_password_change": "2025-10-08T02:11:06.328Z",
+      "password_expires_at": "2026-01-06T02:11:06.328Z",
+      "is_temporary_password": true,
+      "password_must_change_by": "2025-10-11T02:11:06.318Z",
+      "last_expiration_reminder_sent": null,
+      "profile_image": "",
+      "address": "108 Annie Dr",
+      "dob": "2005-03-02",
+      "security_question_1": "What is your favorite color?",
+      "security_answer_1": "black",
+      "security_question_2": "What was the name of your first pet?",
+      "security_answer_2": "carl",
+      "security_question_3": "What city were you born in?",
+      "security_answer_3": "Guyton",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 1,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "",
+      "created_at": "2025-09-21T19:13:43.045Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 2,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "pbkdf2_sha256$1000000$pPJjvT3tO4FBmx9N1VP6HO$Wf+dpe0vsriFnogsyWQ0g1lSS5CsQTkmPxCwx/wbT5w=",
+      "created_at": "2025-09-21T19:13:44.305Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 3,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "password": "",
+      "created_at": "2025-09-21T19:13:48.236Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 4,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "password": "pbkdf2_sha256$1000000$wmwfYDMAlFkKqHabIFBP3s$94+4FMIYfWbN3X8KzNRfDP0LaIAuZZMQVZspwN9um+w=",
+      "created_at": "2025-09-21T19:13:49.717Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 5,
+    "fields": {
+      "user": [
+        "adabdoub0925"
+      ],
+      "password": "",
+      "created_at": "2025-09-21T19:13:53.526Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 6,
+    "fields": {
+      "user": [
+        "adabdoub0925"
+      ],
+      "password": "pbkdf2_sha256$1000000$UsEFUznPSeWa8wWPKCVi8T$mbmLtTGaxJoXBDNGYALoDS+Os8JpcQJJD0Fi8YDTxZs=",
+      "created_at": "2025-09-21T19:13:54.928Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 11,
+    "fields": {
+      "user": [
+        "cvarner09252"
+      ],
+      "password": "!z5tah9vEuVoI2aICuoBEvWuWzQG6w8RmMHMriFD2",
+      "created_at": "2025-09-24T02:38:36.877Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 12,
+    "fields": {
+      "user": [
+        "cvarner09252"
+      ],
+      "password": "pbkdf2_sha256$1000000$Em3mjXuYagvfjtNUx91jT1$HyMAT1lsakAQMTJYZvP0IQoGaPk0r7ROcRUPjrmxSi4=",
+      "created_at": "2025-09-24T02:38:38.209Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 13,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "pbkdf2_sha256$1000000$pPJjvT3tO4FBmx9N1VP6HO$Wf+dpe0vsriFnogsyWQ0g1lSS5CsQTkmPxCwx/wbT5w=",
+      "created_at": "2025-09-24T04:38:05.354Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 14,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "pbkdf2_sha256$1000000$pPJjvT3tO4FBmx9N1VP6HO$Wf+dpe0vsriFnogsyWQ0g1lSS5CsQTkmPxCwx/wbT5w=",
+      "created_at": "2025-09-24T16:29:27.951Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 15,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$MWZhUXVHUXhQRGNhUTh6YU04Zkc0RQ$cMpBtMrXUGFdKCaaMA+brYRW/RiUdYss6/TDlTxf5eU",
+      "created_at": "2025-09-24T16:29:27.977Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 16,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "password": "pbkdf2_sha256$1000000$wmwfYDMAlFkKqHabIFBP3s$94+4FMIYfWbN3X8KzNRfDP0LaIAuZZMQVZspwN9um+w=",
+      "created_at": "2025-09-25T03:08:33.092Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 17,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$WG4xYlZBbGs2OE9yV0dLQnZoamszZQ$uC5arKETDKLL5tMZtwaLDRy+7vIUik+rk6YgxORiSMk",
+      "created_at": "2025-09-25T03:08:33.129Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 18,
+    "fields": {
+      "user": [
+        "adabdoub0925"
+      ],
+      "password": "pbkdf2_sha256$1000000$UsEFUznPSeWa8wWPKCVi8T$mbmLtTGaxJoXBDNGYALoDS+Os8JpcQJJD0Fi8YDTxZs=",
+      "created_at": "2025-09-25T03:09:09.916Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 19,
+    "fields": {
+      "user": [
+        "adabdoub0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$eFJIS3BzMDBlTVI2MHlUeHBBWjNOWg$4RYe8V5sfYi46mD1N9/jfmjh5q9KKSUJ8AbZCfExj/g",
+      "created_at": "2025-09-25T03:09:09.940Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 21,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$MWZhUXVHUXhQRGNhUTh6YU04Zkc0RQ$cMpBtMrXUGFdKCaaMA+brYRW/RiUdYss6/TDlTxf5eU",
+      "created_at": "2025-10-02T19:35:43.634Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 22,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Sk4zWWlqZ2d0N3M1TDkwUDdrQWZiUQ$1woC96P4LtoGUYQuzvADH0bVKVzD2JhliIl/JqLj2rU",
+      "created_at": "2025-10-02T19:35:43.663Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 24,
+    "fields": {
+      "user": [
+        "nvelezvega1025"
+      ],
+      "password": "!ruk7yduSO5UYNbbuYpNCeQCXW5TlRZaaGTP88HiU",
+      "created_at": "2025-10-06T15:29:23.690Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 25,
+    "fields": {
+      "user": [
+        "nvelezvega1025"
+      ],
+      "password": "!ruk7yduSO5UYNbbuYpNCeQCXW5TlRZaaGTP88HiU",
+      "created_at": "2025-10-06T15:29:23.791Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 26,
+    "fields": {
+      "user": [
+        "nvelezvega1025"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$WUJnU0lRMVJaVW5oOFFXUnhPVXB3SQ$lYrrKDE7TtlAYwok6uqMcAoTA99asBdzq/4IlycR+Hs",
+      "created_at": "2025-10-06T15:29:23.795Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 27,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Sk4zWWlqZ2d0N3M1TDkwUDdrQWZiUQ$1woC96P4LtoGUYQuzvADH0bVKVzD2JhliIl/JqLj2rU",
+      "created_at": "2025-10-06T16:46:49.647Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 28,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$S244Q0s3V1hKWGhWeXJiVHVPeGJROQ$zO9yTQwHGoNMyQrTxDsBmDwcNbgNHLbA2eIZtUp6fnA",
+      "created_at": "2025-10-06T16:46:49.689Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 29,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$S244Q0s3V1hKWGhWeXJiVHVPeGJROQ$zO9yTQwHGoNMyQrTxDsBmDwcNbgNHLbA2eIZtUp6fnA",
+      "created_at": "2025-10-06T18:05:58.299Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 30,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$WlNoMGxiWlVrYm9mWHdiQnlYTDdkUw$8+7mjXJ4Qpgo7egMz6ObwZ9pfWtyoPOFmyUfZyGQcd8",
+      "created_at": "2025-10-06T18:05:58.357Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 31,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$WG4xYlZBbGs2OE9yV0dLQnZoamszZQ$uC5arKETDKLL5tMZtwaLDRy+7vIUik+rk6YgxORiSMk",
+      "created_at": "2025-10-07T05:16:54.477Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 32,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$YVliS2xIZUN4eEhlWFNyNHhTOThlZA$0jSOp/fbTx6jqQPPynVJmyeeuHX4W6Q904+/4UkgJqA",
+      "created_at": "2025-10-07T05:16:54.506Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 40,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$WlNoMGxiWlVrYm9mWHdiQnlYTDdkUw$8+7mjXJ4Qpgo7egMz6ObwZ9pfWtyoPOFmyUfZyGQcd8",
+      "created_at": "2025-10-07T21:10:20.448Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 41,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$bmFScjRaMEdyWUxkSHphbVhwdXNEVQ$4/d8IwYkuozf7kQg80UMdreetLrwuOuzzJXJ7B2DZlg",
+      "created_at": "2025-10-07T21:10:20.478Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 43,
+    "fields": {
+      "user": [
+        "cvarner1025"
+      ],
+      "password": "!oBqsaWYIwgze19p1q5dDWSiBWotU3Bk9tSwzAznn",
+      "created_at": "2025-10-08T02:11:06.172Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 44,
+    "fields": {
+      "user": [
+        "cvarner1025"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$UzZveWFXc1FnZlU4MGp0UU1vc1BiNQ$4wvae98bOm3ij7qHV1lK7Gpo5L+bdnXaBqVPHVOA2Dw",
+      "created_at": "2025-10-08T02:11:06.318Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 45,
+    "fields": {
+      "user": [
+        "cvarner1025"
+      ],
+      "password": "!oBqsaWYIwgze19p1q5dDWSiBWotU3Bk9tSwzAznn",
+      "created_at": "2025-10-08T02:11:06.322Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 46,
+    "fields": {
+      "user": [
+        "cvarner1025"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$UzZveWFXc1FnZlU4MGp0UU1vc1BiNQ$4wvae98bOm3ij7qHV1lK7Gpo5L+bdnXaBqVPHVOA2Dw",
+      "created_at": "2025-10-08T02:11:06.327Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 47,
+    "fields": {
+      "user": [
+        "cvarner09252"
+      ],
+      "password": "pbkdf2_sha256$1000000$Em3mjXuYagvfjtNUx91jT1$HyMAT1lsakAQMTJYZvP0IQoGaPk0r7ROcRUPjrmxSi4=",
+      "created_at": "2025-10-14T18:30:18.552Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 48,
+    "fields": {
+      "user": [
+        "cvarner09252"
+      ],
+      "password": "pbkdf2_sha256$1000000$Em3mjXuYagvfjtNUx91jT1$HyMAT1lsakAQMTJYZvP0IQoGaPk0r7ROcRUPjrmxSi4=",
+      "created_at": "2025-10-14T18:30:18.730Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 49,
+    "fields": {
+      "user": [
+        "cvarner09252"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$R1FuV25TNlNuQm5GelZFTUNiVUkzTQ$PEvz+Fsio0X5iv4kD2uvrYrlRFc7A6egPT26/V/voBc",
+      "created_at": "2025-10-14T18:30:18.766Z"
+    }
+  },
+  {
+    "model": "accounts.passwordhistory",
+    "pk": 50,
+    "fields": {
+      "user": [
+        "cvarner09252"
+      ],
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$R1FuV25TNlNuQm5GelZFTUNiVUkzTQ$PEvz+Fsio0X5iv4kD2uvrYrlRFc7A6egPT26/V/voBc",
+      "created_at": "2025-10-14T18:30:18.790Z"
+    }
+  },
+  {
+    "model": "accounts.registrationrequest",
+    "pk": 1,
+    "fields": {
+      "first_name": "Test",
+      "last_name": "Registrant",
+      "address": "123 Test St",
+      "dob": "2000-01-02",
+      "email": "test.recipient@example.com",
+      "created_at": "2025-09-21T21:29:25.115Z",
+      "approved": false,
+      "assigned_role": null,
+      "reviewed_by": [
+        "cvarner0925"
+      ],
+      "review_note": "",
+      "security_question_1": "",
+      "security_answer_1": "",
+      "security_question_2": "",
+      "security_answer_2": "",
+      "security_question_3": "",
+      "security_answer_3": ""
+    }
+  },
+  {
+    "model": "accounts.registrationrequest",
+    "pk": 3,
+    "fields": {
+      "first_name": "Caroline",
+      "last_name": "Varner",
+      "address": "3061 George Busbee Pwky NW",
+      "dob": "2025-09-10",
+      "email": "cvarner5@students.kennesaw.edu",
+      "created_at": "2025-09-24T02:10:12.529Z",
+      "approved": true,
+      "assigned_role": null,
+      "reviewed_by": [
+        "cvarner0925"
+      ],
+      "review_note": "",
+      "security_question_1": "",
+      "security_answer_1": "",
+      "security_question_2": "",
+      "security_answer_2": "",
+      "security_question_3": "",
+      "security_answer_3": ""
+    }
+  },
+  {
+    "model": "accounts.registrationrequest",
+    "pk": 4,
+    "fields": {
+      "first_name": "Tyler",
+      "last_name": "Ercole",
+      "address": "666 Ercole Ln",
+      "dob": "2005-06-07",
+      "email": "tercole@students.kennesaw.edu",
+      "created_at": "2025-10-06T14:36:03.054Z",
+      "approved": true,
+      "assigned_role": "ACCOUNTANT",
+      "reviewed_by": [
+        "cvarner0925"
+      ],
+      "review_note": "",
+      "security_question_1": "",
+      "security_answer_1": "",
+      "security_question_2": "",
+      "security_answer_2": "",
+      "security_question_3": "",
+      "security_answer_3": ""
+    }
+  },
+  {
+    "model": "accounts.registrationrequest",
+    "pk": 5,
+    "fields": {
+      "first_name": "Noel",
+      "last_name": "Velez Vega",
+      "address": "205 Cumberland Point",
+      "dob": "2007-01-30",
+      "email": "nvelezvega@gmail.com",
+      "created_at": "2025-10-06T14:58:06.151Z",
+      "approved": true,
+      "assigned_role": null,
+      "reviewed_by": [
+        "cvarner0925"
+      ],
+      "review_note": "",
+      "security_question_1": "",
+      "security_answer_1": "",
+      "security_question_2": "",
+      "security_answer_2": "",
+      "security_question_3": "",
+      "security_answer_3": ""
+    }
+  },
+  {
+    "model": "accounts.registrationrequest",
+    "pk": 6,
+    "fields": {
+      "first_name": "caroline",
+      "last_name": "varner",
+      "address": "cvc@gmail.com",
+      "dob": "2010-02-02",
+      "email": "adabdou6@students.kennesaw.edu",
+      "created_at": "2025-10-07T21:11:51.654Z",
+      "approved": null,
+      "assigned_role": null,
+      "reviewed_by": null,
+      "review_note": "",
+      "security_question_1": "What is your favorite color?",
+      "security_answer_1": "red",
+      "security_question_2": "What was the name of your first pet?",
+      "security_answer_2": "jerry",
+      "security_question_3": "What city were you born in?",
+      "security_answer_3": "Roswell"
+    }
+  },
+  {
+    "model": "accounts.registrationrequest",
+    "pk": 7,
+    "fields": {
+      "first_name": "Caroline",
+      "last_name": "Varner",
+      "address": "108 Annie Dr",
+      "dob": "2005-03-02",
+      "email": "carolinevarner04@gmail.com",
+      "created_at": "2025-10-08T02:08:08.123Z",
+      "approved": true,
+      "assigned_role": "ADMIN",
+      "reviewed_by": [
+        "cvarner0925"
+      ],
+      "review_note": "",
+      "security_question_1": "What is your favorite color?",
+      "security_answer_1": "black",
+      "security_question_2": "What was the name of your first pet?",
+      "security_answer_2": "carl",
+      "security_question_3": "What city were you born in?",
+      "security_answer_3": "Guyton"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 1,
+    "fields": {
+      "action": "USER_CREATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Test event",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-02T20:47:17.802Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 2,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User deactivated",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-02T20:48:59.879Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 3,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User suspended from 2025-10-02 to 2026-04-26",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-02T20:49:17.693Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 4,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User deactivated",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-02T21:47:58.248Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 5,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": null,
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User suspended due to 3 failed login attempts",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T13:40:56.493Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 6,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": null,
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User suspended due to 3 failed login attempts",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T13:40:58.191Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 7,
+    "fields": {
+      "action": "USER_UNSUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User unsuspended",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T13:59:52.805Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 8,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User suspended from 2025-10-06 to 2026-10-20",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T14:04:36.191Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 9,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User suspended from 2025-10-06 to 2025-10-12",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T14:22:58.138Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 10,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User suspended from 2025-10-06 to 2025-10-16",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T14:25:22.158Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 11,
+    "fields": {
+      "action": "USER_UNSUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User unsuspended",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T14:29:01.619Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 12,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User suspended from 2025-10-06 to 2025-10-20",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T14:32:18.269Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 13,
+    "fields": {
+      "action": "USER_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User activated",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T14:32:48.735Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 14,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User deactivated",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T14:32:50.199Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 15,
+    "fields": {
+      "action": "REQUEST_APPROVED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "nvelezvega1025"
+      ],
+      "details": "Approved registration for nvelezvega@gmail.com; created username=nvelezvega1025",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T15:29:25.431Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 16,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "adabdoub0925"
+      ],
+      "details": "User updated: role changed from ADMIN to ACCOUNTANT",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T15:57:40.786Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 17,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "adabdoub0925"
+      ],
+      "details": "User updated: last name changed from 'Dabdoub' to 'Dab'",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T15:58:56.445Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 18,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "adabdoub0925"
+      ],
+      "details": "User updated: last name changed from 'Dab' to 'Dabdoub'",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T15:59:12.408Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 19,
+    "fields": {
+      "action": "PASSWORD_RESET",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner0925"
+      ],
+      "details": "Password reset via security questions",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T16:46:49.736Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 20,
+    "fields": {
+      "action": "PASSWORD_RESET",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner0925"
+      ],
+      "details": "Password reset via security questions",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-06T18:05:58.403Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 21,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": null,
+      "target_user": [
+        "bhorne0925"
+      ],
+      "details": "User suspended due to 3 failed login attempts",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T03:12:27.738Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 22,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": null,
+      "target_user": [
+        "bhorne0925"
+      ],
+      "details": "User suspended due to 3 failed login attempts",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T03:19:51.897Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 23,
+    "fields": {
+      "action": "USER_UNSUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "bhorne0925"
+      ],
+      "details": "User unsuspended",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T03:20:17.149Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 24,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": null,
+      "target_user": [
+        "bhorne0925"
+      ],
+      "details": "User suspended due to 3 failed login attempts",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T03:22:50.128Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 25,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": null,
+      "target_user": [
+        "bhorne0925"
+      ],
+      "details": "User suspended due to 3 failed login attempts",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T03:22:51.405Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 26,
+    "fields": {
+      "action": "PASSWORD_RESET",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": [
+        "bhorne0925"
+      ],
+      "details": "Password reset via security questions",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T05:16:54.529Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 27,
+    "fields": {
+      "action": "REQUEST_APPROVED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Approved registration for tercole@students.kennesaw.edu; created username=tercole1025",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T21:04:50.515Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 28,
+    "fields": {
+      "action": "REQUEST_APPROVED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Approved registration for tercole@students.kennesaw.edu; created username=tercole10252",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T21:04:53.115Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 29,
+    "fields": {
+      "action": "USER_CREATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Created user adabdoub1025 (alialidabdoub@gmail.com)",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T21:06:50.613Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 30,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User deactivated",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T21:07:13.173Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 31,
+    "fields": {
+      "action": "USER_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User activated",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T21:08:04.426Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 32,
+    "fields": {
+      "action": "USER_SUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "adabdoub0925"
+      ],
+      "details": "User suspended from 2025-10-07 to 2025-10-17",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T21:08:37.972Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 33,
+    "fields": {
+      "action": "USER_UNSUSPENDED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "adabdoub0925"
+      ],
+      "details": "User unsuspended",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T21:09:00.220Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 34,
+    "fields": {
+      "action": "PASSWORD_RESET",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner0925"
+      ],
+      "details": "Password reset via security questions",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-07T21:10:20.499Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 35,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User updated: role changed from ACCOUNTANT to MANAGER",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-08T01:12:26.861Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 36,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "User updated: role changed from MANAGER to ACCOUNTANT",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-08T01:12:40.227Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 37,
+    "fields": {
+      "action": "USER_CREATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Created user cvarner1025 (carolinevarner04@gmail.com)",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-08T01:47:38.722Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 38,
+    "fields": {
+      "action": "REQUEST_APPROVED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner1025"
+      ],
+      "details": "Approved registration for carolinevarner04@gmail.com; created username=cvarner1025",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-08T02:11:08.150Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 39,
+    "fields": {
+      "action": "ACCOUNT_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Updated account 2000 - Accounts Payable",
+      "before_image": {
+        "id": 22,
+        "account_name": "Accounts Payable",
+        "account_number": "2000",
+        "account_description": "Money owed to suppliers and vendors",
+        "normal_side": "CREDIT",
+        "account_category": "LIABILITY",
+        "account_subcategory": "Current Liabilities",
+        "initial_balance": "$15000.00",
+        "debit": "$12500.00",
+        "credit": "$28500.00",
+        "balance": "$16000.00",
+        "order": 6,
+        "statement": "BS",
+        "comment": "Vendor invoices due within 30 days",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:10.895931+00:00",
+        "created_by": "cvarner0925"
+      },
+      "after_image": {
+        "id": 22,
+        "account_name": "Accounts Payable",
+        "account_number": "2000",
+        "account_description": "Money owed to suppliers and vendors",
+        "normal_side": "CREDIT",
+        "account_category": "LIABILITY",
+        "account_subcategory": "Current Liabilities",
+        "initial_balance": "$15000.00",
+        "debit": "$12500.00",
+        "credit": "$28500.00",
+        "balance": "$0.00",
+        "order": 6,
+        "statement": "BS",
+        "comment": "Vendor invoices due within 30 days",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:10.895931+00:00",
+        "created_by": "cvarner0925"
+      },
+      "record_type": "Account",
+      "record_id": 22,
+      "created_at": "2025-10-13T15:22:32.358Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 40,
+    "fields": {
+      "action": "ACCOUNT_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Deactivated account 2000 - Accounts Payable",
+      "before_image": {
+        "id": 22,
+        "account_name": "Accounts Payable",
+        "account_number": "2000",
+        "account_description": "Money owed to suppliers and vendors",
+        "normal_side": "CREDIT",
+        "account_category": "LIABILITY",
+        "account_subcategory": "Current Liabilities",
+        "initial_balance": "$15000.00",
+        "debit": "$12500.00",
+        "credit": "$28500.00",
+        "balance": "$0.00",
+        "order": 6,
+        "statement": "BS",
+        "comment": "Vendor invoices due within 30 days",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:10.895931+00:00",
+        "created_by": "cvarner0925"
+      },
+      "after_image": {
+        "id": 22,
+        "account_name": "Accounts Payable",
+        "account_number": "2000",
+        "account_description": "Money owed to suppliers and vendors",
+        "normal_side": "CREDIT",
+        "account_category": "LIABILITY",
+        "account_subcategory": "Current Liabilities",
+        "initial_balance": "$15000.00",
+        "debit": "$12500.00",
+        "credit": "$28500.00",
+        "balance": "$0.00",
+        "order": 6,
+        "statement": "BS",
+        "comment": "Vendor invoices due within 30 days",
+        "is_active": false,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:10.895931+00:00",
+        "created_by": "cvarner0925"
+      },
+      "record_type": "Account",
+      "record_id": 22,
+      "created_at": "2025-10-13T15:23:14.847Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 41,
+    "fields": {
+      "action": "ACCOUNT_CREATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Created account 444 - ojoij",
+      "before_image": null,
+      "after_image": {
+        "id": 32,
+        "account_name": "ojoij",
+        "account_number": "444",
+        "account_description": "ijiji",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "jnin",
+        "initial_balance": "$0.00",
+        "debit": "$0.00",
+        "credit": "$0.00",
+        "balance": "$0.00",
+        "order": 2,
+        "statement": "BS",
+        "comment": "",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-13T17:59:24.626965+00:00",
+        "created_by": "cvarner0925"
+      },
+      "record_type": "Account",
+      "record_id": 32,
+      "created_at": "2025-10-13T17:59:24.652Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 42,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User updated: role changed from ADMIN to ACCOUNTANT",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ADMIN",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": "2025-10-06",
+        "suspend_to": "2025-10-20",
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": "2025-10-06",
+        "suspend_to": "2025-10-20",
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:27:13.861Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 43,
+    "fields": {
+      "action": "PASSWORD_RESET",
+      "actor": [
+        "cvarner09252"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "Password reset via security questions",
+      "before_image": null,
+      "after_image": null,
+      "record_type": "",
+      "record_id": null,
+      "created_at": "2025-10-14T18:30:18.802Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 44,
+    "fields": {
+      "action": "USER_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User activated",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": "2025-10-06",
+        "suspend_to": "2025-10-20",
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:32:00.656Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 45,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User updated: role changed from ACCOUNTANT to MANAGER",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "MANAGER",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:39:24.823Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 46,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User updated: role changed from MANAGER to ACCOUNTANT",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "MANAGER",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:39:51.985Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 47,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User deactivated",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:40:06.907Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 48,
+    "fields": {
+      "action": "USER_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User activated",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:40:33.145Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 49,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User deactivated",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:41:42.852Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 50,
+    "fields": {
+      "action": "USER_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User activated",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:42:55.805Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 51,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User deactivated",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:43:08.764Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 52,
+    "fields": {
+      "action": "USER_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner09252"
+      ],
+      "details": "User activated",
+      "before_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": false,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "after_image": {
+        "id": 6,
+        "username": "cvarner09252",
+        "display_handle": "",
+        "email": "cvarner5@students.kennesaw.edu",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ACCOUNTANT",
+        "is_active": true,
+        "address": "3061 George Busbee Pwky NW",
+        "dob": "2025-09-10",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-09-24T02:38:36.873617+00:00"
+      },
+      "record_type": "User",
+      "record_id": 6,
+      "created_at": "2025-10-14T18:43:14.972Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 53,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "nvelezvega1025"
+      ],
+      "details": "User deactivated",
+      "before_image": {
+        "id": 9,
+        "username": "nvelezvega1025",
+        "display_handle": "nvelezvega",
+        "email": "nvelezvega@gmail.com",
+        "first_name": "Noel",
+        "last_name": "Velez Vega",
+        "role": "MANAGER",
+        "is_active": true,
+        "address": "205 Cumberland Point",
+        "dob": "2007-01-30",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-06T15:29:23.687835+00:00"
+      },
+      "after_image": {
+        "id": 9,
+        "username": "nvelezvega1025",
+        "display_handle": "nvelezvega",
+        "email": "nvelezvega@gmail.com",
+        "first_name": "Noel",
+        "last_name": "Velez Vega",
+        "role": "MANAGER",
+        "is_active": false,
+        "address": "205 Cumberland Point",
+        "dob": "2007-01-30",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-06T15:29:23.687835+00:00"
+      },
+      "record_type": "User",
+      "record_id": 9,
+      "created_at": "2025-10-14T18:43:25.418Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 54,
+    "fields": {
+      "action": "USER_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "nvelezvega1025"
+      ],
+      "details": "User activated",
+      "before_image": {
+        "id": 9,
+        "username": "nvelezvega1025",
+        "display_handle": "nvelezvega",
+        "email": "nvelezvega@gmail.com",
+        "first_name": "Noel",
+        "last_name": "Velez Vega",
+        "role": "MANAGER",
+        "is_active": false,
+        "address": "205 Cumberland Point",
+        "dob": "2007-01-30",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-06T15:29:23.687835+00:00"
+      },
+      "after_image": {
+        "id": 9,
+        "username": "nvelezvega1025",
+        "display_handle": "nvelezvega",
+        "email": "nvelezvega@gmail.com",
+        "first_name": "Noel",
+        "last_name": "Velez Vega",
+        "role": "MANAGER",
+        "is_active": true,
+        "address": "205 Cumberland Point",
+        "dob": "2007-01-30",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-06T15:29:23.687835+00:00"
+      },
+      "record_type": "User",
+      "record_id": 9,
+      "created_at": "2025-10-14T18:43:36.073Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 55,
+    "fields": {
+      "action": "USER_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "nvelezvega1025"
+      ],
+      "details": "User deactivated",
+      "before_image": {
+        "id": 9,
+        "username": "nvelezvega1025",
+        "display_handle": "nvelezvega",
+        "email": "nvelezvega@gmail.com",
+        "first_name": "Noel",
+        "last_name": "Velez Vega",
+        "role": "MANAGER",
+        "is_active": true,
+        "address": "205 Cumberland Point",
+        "dob": "2007-01-30",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-06T15:29:23.687835+00:00"
+      },
+      "after_image": {
+        "id": 9,
+        "username": "nvelezvega1025",
+        "display_handle": "nvelezvega",
+        "email": "nvelezvega@gmail.com",
+        "first_name": "Noel",
+        "last_name": "Velez Vega",
+        "role": "MANAGER",
+        "is_active": false,
+        "address": "205 Cumberland Point",
+        "dob": "2007-01-30",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-06T15:29:23.687835+00:00"
+      },
+      "record_type": "User",
+      "record_id": 9,
+      "created_at": "2025-10-14T18:43:38.106Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 56,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "cvarner09252"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 31 for 2025-10-14",
+      "before_image": null,
+      "after_image": {
+        "id": 31,
+        "entry_date": "2025-10-14",
+        "description": "",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1000 - Cash: $40.00 Dr / $0.00 Cr",
+          "1000 - Cash: $0.00 Dr / $40.00 Cr"
+        ],
+        "total_debits": "$40.00",
+        "total_credits": "$40.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 31,
+      "created_at": "2025-10-14T18:56:59.157Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 57,
+    "fields": {
+      "action": "ACCOUNT_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Updated account 1250 - Supplies",
+      "before_image": {
+        "id": 31,
+        "account_name": "Supplies",
+        "account_number": "1250",
+        "account_description": "Office supplies and materials on hand",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$2500.00",
+        "debit": "$3500.00",
+        "credit": "$1000.00",
+        "balance": "$0.00",
+        "order": 15,
+        "statement": "BS",
+        "comment": "Paper, pens, toner, and general office supplies",
+        "is_active": false,
+        "deactivate_from": "2025-10-12",
+        "deactivate_to": "2025-10-14",
+        "created_at": "2025-10-12T04:45:11.044972+00:00",
+        "created_by": "cvarner0925"
+      },
+      "after_image": {
+        "id": 31,
+        "account_name": "Supplies",
+        "account_number": "1250",
+        "account_description": "Office supplies and materials on hand",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$2500.00",
+        "debit": "$3500.00",
+        "credit": "$1000.00",
+        "balance": "$20.00",
+        "order": 15,
+        "statement": "BS",
+        "comment": "Paper, pens, toner, and general office supplies",
+        "is_active": false,
+        "deactivate_from": "2025-10-12",
+        "deactivate_to": "2025-10-14",
+        "created_at": "2025-10-12T04:45:11.044972+00:00",
+        "created_by": "cvarner0925"
+      },
+      "record_type": "Account",
+      "record_id": 31,
+      "created_at": "2025-10-14T20:39:04.751Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 58,
+    "fields": {
+      "action": "ACCOUNT_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Activated account 1250 - Supplies",
+      "before_image": {
+        "id": 31,
+        "account_name": "Supplies",
+        "account_number": "1250",
+        "account_description": "Office supplies and materials on hand",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$2500.00",
+        "debit": "$3500.00",
+        "credit": "$1000.00",
+        "balance": "$20.00",
+        "order": 15,
+        "statement": "BS",
+        "comment": "Paper, pens, toner, and general office supplies",
+        "is_active": false,
+        "deactivate_from": "2025-10-12",
+        "deactivate_to": "2025-10-14",
+        "created_at": "2025-10-12T04:45:11.044972+00:00",
+        "created_by": "cvarner0925"
+      },
+      "after_image": {
+        "id": 31,
+        "account_name": "Supplies",
+        "account_number": "1250",
+        "account_description": "Office supplies and materials on hand",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$2500.00",
+        "debit": "$3500.00",
+        "credit": "$1000.00",
+        "balance": "$20.00",
+        "order": 15,
+        "statement": "BS",
+        "comment": "Paper, pens, toner, and general office supplies",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:11.044972+00:00",
+        "created_by": "cvarner0925"
+      },
+      "record_type": "Account",
+      "record_id": 31,
+      "created_at": "2025-10-14T20:39:32.761Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 59,
+    "fields": {
+      "action": "ACCOUNT_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Updated account 1250 - Supplies",
+      "before_image": {
+        "id": 31,
+        "account_name": "Supplies",
+        "account_number": "1250",
+        "account_description": "Office supplies and materials on hand",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$2500.00",
+        "debit": "$3500.00",
+        "credit": "$1000.00",
+        "balance": "$20.00",
+        "order": 15,
+        "statement": "BS",
+        "comment": "Paper, pens, toner, and general office supplies",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:11.044972+00:00",
+        "created_by": "cvarner0925"
+      },
+      "after_image": {
+        "id": 31,
+        "account_name": "Supplies",
+        "account_number": "1250",
+        "account_description": "Office supplies and materials on hand",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$2500.00",
+        "debit": "$3500.00",
+        "credit": "$1000.00",
+        "balance": "$0.00",
+        "order": 15,
+        "statement": "BS",
+        "comment": "Paper, pens, toner, and general office supplies",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:11.044972+00:00",
+        "created_by": "cvarner0925"
+      },
+      "record_type": "Account",
+      "record_id": 31,
+      "created_at": "2025-10-14T20:39:44.993Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 60,
+    "fields": {
+      "action": "ACCOUNT_DEACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Deactivated account 1250 - Supplies",
+      "before_image": {
+        "id": 31,
+        "account_name": "Supplies",
+        "account_number": "1250",
+        "account_description": "Office supplies and materials on hand",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$2500.00",
+        "debit": "$3500.00",
+        "credit": "$1000.00",
+        "balance": "$0.00",
+        "order": 15,
+        "statement": "BS",
+        "comment": "Paper, pens, toner, and general office supplies",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:11.044972+00:00",
+        "created_by": "cvarner0925"
+      },
+      "after_image": {
+        "id": 31,
+        "account_name": "Supplies",
+        "account_number": "1250",
+        "account_description": "Office supplies and materials on hand",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$2500.00",
+        "debit": "$3500.00",
+        "credit": "$1000.00",
+        "balance": "$0.00",
+        "order": 15,
+        "statement": "BS",
+        "comment": "Paper, pens, toner, and general office supplies",
+        "is_active": false,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:11.044972+00:00",
+        "created_by": "cvarner0925"
+      },
+      "record_type": "Account",
+      "record_id": 31,
+      "created_at": "2025-10-14T20:39:52.806Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 61,
+    "fields": {
+      "action": "ACCOUNT_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": null,
+      "details": "Updated account 1000 - Cash",
+      "before_image": {
+        "id": 17,
+        "account_name": "Cash",
+        "account_number": "1000",
+        "account_description": "Primary operating cash account for daily transactions",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Current Assets",
+        "initial_balance": "$50000.00",
+        "debit": "$106300.00",
+        "credit": "$43400.00",
+        "balance": "$62900.00",
+        "order": 1,
+        "statement": "BS",
+        "comment": "Main checking account at First National Bank",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:10.811309+00:00",
+        "created_by": "cvarner0925"
+      },
+      "after_image": {
+        "id": 17,
+        "account_name": "Cash",
+        "account_number": "1000",
+        "account_description": "Primary operating cash account for daily transactions",
+        "normal_side": "DEBIT",
+        "account_category": "ASSET",
+        "account_subcategory": "Intangible Assets",
+        "initial_balance": "$50000.00",
+        "debit": "$106300.00",
+        "credit": "$43400.00",
+        "balance": "$62900.00",
+        "order": 1,
+        "statement": "BS",
+        "comment": "Main checking account at First National Bank",
+        "is_active": true,
+        "deactivate_from": null,
+        "deactivate_to": null,
+        "created_at": "2025-10-12T04:45:10.811309+00:00",
+        "created_by": "cvarner0925"
+      },
+      "record_type": "Account",
+      "record_id": 17,
+      "created_at": "2025-10-14T21:10:03.743Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 62,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 32 for 2025-10-15",
+      "before_image": null,
+      "after_image": {
+        "id": 32,
+        "entry_date": "2025-10-15",
+        "description": "",
+        "status": "APPROVED",
+        "created_by": "bhorne0925",
+        "lines": [
+          "1000 - Cash: $1000.00 Dr / $0.00 Cr",
+          "1200 - Accounts Receivable: $50.00 Dr / $0.00 Cr",
+          "1400 - Prepaid Insurance: $0.00 Dr / $1050.00 Cr"
+        ],
+        "total_debits": "$1050.00",
+        "total_credits": "$1050.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 32,
+      "created_at": "2025-10-15T00:07:15.396Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 63,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "cvarner09252"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 34 for 2025-10-15",
+      "before_image": null,
+      "after_image": {
+        "id": 34,
+        "entry_date": "2025-10-15",
+        "description": "Adjusting Entry",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1200 - Accounts Receivable: $200.00 Dr / $0.00 Cr",
+          "1000 - Cash: $0.00 Dr / $200.00 Cr"
+        ],
+        "total_debits": "$200.00",
+        "total_credits": "$200.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 34,
+      "created_at": "2025-10-15T01:29:54.317Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 64,
+    "fields": {
+      "action": "USER_UPDATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "cvarner1025"
+      ],
+      "details": "User updated: role changed from ADMIN to MANAGER",
+      "before_image": {
+        "id": 14,
+        "username": "cvarner1025",
+        "display_handle": "cvarner",
+        "email": "carolinevarner04@gmail.com",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "ADMIN",
+        "is_active": true,
+        "address": "108 Annie Dr",
+        "dob": "2005-03-02",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-08T02:11:06.167718+00:00"
+      },
+      "after_image": {
+        "id": 14,
+        "username": "cvarner1025",
+        "display_handle": "cvarner",
+        "email": "carolinevarner04@gmail.com",
+        "first_name": "Caroline",
+        "last_name": "Varner",
+        "role": "MANAGER",
+        "is_active": true,
+        "address": "108 Annie Dr",
+        "dob": "2005-03-02",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-08T02:11:06.167718+00:00"
+      },
+      "record_type": "User",
+      "record_id": 14,
+      "created_at": "2025-10-15T01:32:46.166Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 65,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "cvarner09252"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 35 for 2025-10-15",
+      "before_image": null,
+      "after_image": {
+        "id": 35,
+        "entry_date": "2025-10-15",
+        "description": "Adjusting Entry",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "3000 - Common Stock: $2000.00 Dr / $0.00 Cr",
+          "1500 - Office Equipment: $0.00 Dr / $2000.00 Cr"
+        ],
+        "total_debits": "$2000.00",
+        "total_credits": "$2000.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 35,
+      "created_at": "2025-10-15T01:34:04.140Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 66,
+    "fields": {
+      "action": "JOURNAL_ENTRY_APPROVED",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": null,
+      "details": "Approved journal entry 35",
+      "before_image": {
+        "id": 35,
+        "entry_date": "2025-10-15",
+        "description": "Adjusting Entry",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "3000 - Common Stock: $2000.00 Dr / $0.00 Cr",
+          "1500 - Office Equipment: $0.00 Dr / $2000.00 Cr"
+        ],
+        "total_debits": "$2000.00",
+        "total_credits": "$2000.00"
+      },
+      "after_image": {
+        "id": 35,
+        "entry_date": "2025-10-15",
+        "description": "Adjusting Entry",
+        "status": "APPROVED",
+        "created_by": "cvarner09252",
+        "lines": [
+          "3000 - Common Stock: $2000.00 Dr / $0.00 Cr",
+          "1500 - Office Equipment: $0.00 Dr / $2000.00 Cr"
+        ],
+        "total_debits": "$2000.00",
+        "total_credits": "$2000.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 35,
+      "created_at": "2025-10-15T02:45:00.394Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 67,
+    "fields": {
+      "action": "JOURNAL_ENTRY_REJECTED",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": null,
+      "details": "Rejected journal entry 34: test rejection",
+      "before_image": {
+        "id": 34,
+        "entry_date": "2025-10-15",
+        "description": "Adjusting Entry",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1200 - Accounts Receivable: $200.00 Dr / $0.00 Cr",
+          "1000 - Cash: $0.00 Dr / $200.00 Cr"
+        ],
+        "total_debits": "$200.00",
+        "total_credits": "$200.00"
+      },
+      "after_image": {
+        "id": 34,
+        "entry_date": "2025-10-15",
+        "description": "Adjusting Entry",
+        "status": "REJECTED",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1200 - Accounts Receivable: $200.00 Dr / $0.00 Cr",
+          "1000 - Cash: $0.00 Dr / $200.00 Cr"
+        ],
+        "total_debits": "$200.00",
+        "total_credits": "$200.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 34,
+      "created_at": "2025-10-15T02:45:50.232Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 68,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "cvarner09252"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 94 for 2025-10-21",
+      "before_image": null,
+      "after_image": {
+        "id": 94,
+        "entry_date": "2025-10-21",
+        "description": "",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1000 - Cash: $500.00 Dr / $0.00 Cr",
+          "1100 - Accounts Receivable: $0.00 Dr / $500.00 Cr"
+        ],
+        "total_debits": "$500.00",
+        "total_credits": "$500.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 94,
+      "created_at": "2025-10-21T19:19:02.778Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 69,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "cvarner09252"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 95 for 2025-10-21",
+      "before_image": null,
+      "after_image": {
+        "id": 95,
+        "entry_date": "2025-10-21",
+        "description": "",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1400 - Supplies: $2000.00 Dr / $0.00 Cr",
+          "2200 - Unearned Revenue: $0.00 Dr / $2000.00 Cr"
+        ],
+        "total_debits": "$2000.00",
+        "total_credits": "$2000.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 95,
+      "created_at": "2025-10-21T19:19:38.417Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 70,
+    "fields": {
+      "action": "JOURNAL_ENTRY_APPROVED",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": null,
+      "details": "Approved journal entry 91",
+      "before_image": {
+        "id": 91,
+        "entry_date": "2025-01-20",
+        "description": "Record usage of office supplies during the month",
+        "status": "PENDING",
+        "created_by": "adabdoub0925",
+        "lines": [
+          "5300 - Supplies Expense: $150.00 Dr / $0.00 Cr",
+          "1400 - Supplies: $0.00 Dr / $150.00 Cr"
+        ],
+        "total_debits": "$150.00",
+        "total_credits": "$150.00"
+      },
+      "after_image": {
+        "id": 91,
+        "entry_date": "2025-01-20",
+        "description": "Record usage of office supplies during the month",
+        "status": "APPROVED",
+        "created_by": "adabdoub0925",
+        "lines": [
+          "5300 - Supplies Expense: $150.00 Dr / $0.00 Cr",
+          "1400 - Supplies: $0.00 Dr / $150.00 Cr"
+        ],
+        "total_debits": "$150.00",
+        "total_credits": "$150.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 91,
+      "created_at": "2025-10-21T19:20:20.956Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 71,
+    "fields": {
+      "action": "JOURNAL_ENTRY_APPROVED",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": null,
+      "details": "Approved journal entry 94",
+      "before_image": {
+        "id": 94,
+        "entry_date": "2025-10-21",
+        "description": "",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1000 - Cash: $500.00 Dr / $0.00 Cr",
+          "1100 - Accounts Receivable: $0.00 Dr / $500.00 Cr"
+        ],
+        "total_debits": "$500.00",
+        "total_credits": "$500.00"
+      },
+      "after_image": {
+        "id": 94,
+        "entry_date": "2025-10-21",
+        "description": "",
+        "status": "APPROVED",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1000 - Cash: $500.00 Dr / $0.00 Cr",
+          "1100 - Accounts Receivable: $0.00 Dr / $500.00 Cr"
+        ],
+        "total_debits": "$500.00",
+        "total_credits": "$500.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 94,
+      "created_at": "2025-10-21T19:55:46.224Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 72,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 96 for 2025-10-21",
+      "before_image": null,
+      "after_image": {
+        "id": 96,
+        "entry_date": "2025-10-21",
+        "description": "",
+        "status": "APPROVED",
+        "created_by": "bhorne0925",
+        "lines": [
+          "1500 - Office Equipment: $50.00 Dr / $0.00 Cr",
+          "1100 - Accounts Receivable: $0.00 Dr / $50.00 Cr"
+        ],
+        "total_debits": "$50.00",
+        "total_credits": "$50.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 96,
+      "created_at": "2025-10-21T19:56:54.630Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 73,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 97 for 2025-10-21",
+      "before_image": null,
+      "after_image": {
+        "id": 97,
+        "entry_date": "2025-10-21",
+        "description": "",
+        "status": "APPROVED",
+        "created_by": "bhorne0925",
+        "lines": [
+          "1100 - Accounts Receivable: $20.00 Dr / $0.00 Cr",
+          "1200 - Prepaid Rent: $0.00 Dr / $20.00 Cr"
+        ],
+        "total_debits": "$20.00",
+        "total_credits": "$20.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 97,
+      "created_at": "2025-10-21T19:59:22.251Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 74,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "bhorne0925"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 98 for 2025-10-21",
+      "before_image": null,
+      "after_image": {
+        "id": 98,
+        "entry_date": "2025-10-21",
+        "description": "",
+        "status": "APPROVED",
+        "created_by": "bhorne0925",
+        "lines": [
+          "1100 - Accounts Receivable: $20.00 Dr / $0.00 Cr",
+          "1000 - Cash: $0.00 Dr / $20.00 Cr"
+        ],
+        "total_debits": "$20.00",
+        "total_credits": "$20.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 98,
+      "created_at": "2025-10-21T20:07:22.757Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 75,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "cvarner09252"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 131 for 2025-10-22",
+      "before_image": null,
+      "after_image": {
+        "id": 131,
+        "entry_date": "2025-10-22",
+        "description": "",
+        "status": "PENDING",
+        "created_by": "cvarner09252",
+        "lines": [
+          "1000 - Cash: $500.00 Dr / $0.00 Cr",
+          "1200 - Prepaid Rent: $0.00 Dr / $500.00 Cr"
+        ],
+        "total_debits": "$500.00",
+        "total_credits": "$500.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 131,
+      "created_at": "2025-10-22T02:08:17.806Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 76,
+    "fields": {
+      "action": "JOURNAL_ENTRY_CREATED",
+      "actor": [
+        "adabdoub0925"
+      ],
+      "target_user": null,
+      "details": "Created journal entry 132 for 2025-11-04",
+      "before_image": null,
+      "after_image": {
+        "id": 132,
+        "entry_date": "2025-11-04",
+        "description": "",
+        "status": "PENDING",
+        "created_by": "adabdoub0925",
+        "lines": [
+          "5400 - Salaries Expense: $500.00 Dr / $0.00 Cr",
+          "2000 - Accounts Payable: $0.00 Dr / $500.00 Cr"
+        ],
+        "total_debits": "$500.00",
+        "total_credits": "$500.00"
+      },
+      "record_type": "JournalEntry",
+      "record_id": 132,
+      "created_at": "2025-11-04T01:25:44.796Z"
+    }
+  },
+  {
+    "model": "accounts.eventlog",
+    "pk": 77,
+    "fields": {
+      "action": "USER_ACTIVATED",
+      "actor": [
+        "cvarner0925"
+      ],
+      "target_user": [
+        "nvelezvega1025"
+      ],
+      "details": "User activated",
+      "before_image": {
+        "id": 9,
+        "username": "nvelezvega1025",
+        "display_handle": "nvelezvega",
+        "email": "nvelezvega@gmail.com",
+        "first_name": "Noel",
+        "last_name": "Velez Vega",
+        "role": "MANAGER",
+        "is_active": false,
+        "address": "205 Cumberland Point",
+        "dob": "2007-01-30",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-06T15:29:23.687835+00:00"
+      },
+      "after_image": {
+        "id": 9,
+        "username": "nvelezvega1025",
+        "display_handle": "nvelezvega",
+        "email": "nvelezvega@gmail.com",
+        "first_name": "Noel",
+        "last_name": "Velez Vega",
+        "role": "MANAGER",
+        "is_active": true,
+        "address": "205 Cumberland Point",
+        "dob": "2007-01-30",
+        "suspend_from": null,
+        "suspend_to": null,
+        "date_joined": "2025-10-06T15:29:23.687835+00:00"
+      },
+      "record_type": "User",
+      "record_id": 9,
+      "created_at": "2025-11-04T01:42:25.211Z"
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 1,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "question": "What is your favorite color?",
+      "answer_hash": "pbkdf2_sha256$1000000$HhhP4SXyvfshDSOux3xNmQ$5ySO6HPQu4oNnQNEbxSRNH0jmzun8k35/ltyrrstd6g="
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 2,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "question": "What is your mother’s maiden name?",
+      "answer_hash": "pbkdf2_sha256$1000000$ZtgdXOE4CZcxo5lwghcsVe$uRCCmCRB3U2YCfv1g6CJkyuS5cUhLp5JxnJ5uXnw+CA="
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 3,
+    "fields": {
+      "user": [
+        "cvarner0925"
+      ],
+      "question": "What was the make of your first car?",
+      "answer_hash": "pbkdf2_sha256$1000000$yyXsGx9aqPRfIO0MTAax6c$3S+SO+8G+N/1ojsGcjRlthSeMY6a6PS7g2MNH/XfkdA="
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 4,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "question": "What is your favorite color?",
+      "answer_hash": "pbkdf2_sha256$1000000$Xr23ri8TYEMy3n2Hwc0qrf$xb9DLkUEvY0F96guJqwY13xa/3HfFGEVXu1ZcsqAHTI="
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 5,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "question": "What was the make of your first car?",
+      "answer_hash": "pbkdf2_sha256$1000000$1vpNHT1lOUK2nPVYHyTJHI$/STmO+H7tgtIzU2GcEqeGgtRHawDO6r0KJW6k3ojdlo="
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 6,
+    "fields": {
+      "user": [
+        "bhorne0925"
+      ],
+      "question": "What city were you born in?",
+      "answer_hash": "pbkdf2_sha256$1000000$ZKAChVLOQKfeZf5Pzrvrde$aV2fOp//KZ/OMcySnmbWPkK4HpauhGi1tv4L7ebNW2M="
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 7,
+    "fields": {
+      "user": [
+        "adabdoub0925"
+      ],
+      "question": "What was the name of your first pet?",
+      "answer_hash": "pbkdf2_sha256$1000000$FO1j2axwFyKSGZT9Ab3kG8$Tn4BybwNT+G6OETx2wUrx80sWOPA/FJkprmyL+XJ6UI="
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 8,
+    "fields": {
+      "user": [
+        "adabdoub0925"
+      ],
+      "question": "What city were you born in?",
+      "answer_hash": "pbkdf2_sha256$1000000$cpusm1KgVnwkgm2aXo2FQB$GlJhVh440sUsrxi2Vlu9OCOUiWM7pDo6pal/1XHT2Og="
+    }
+  },
+  {
+    "model": "accounts.securityquestion",
+    "pk": 9,
+    "fields": {
+      "user": [
+        "adabdoub0925"
+      ],
+      "question": "What was the make of your first car?",
+      "answer_hash": "pbkdf2_sha256$1000000$Kcf0CejZQpty7io6akk4yC$jVeDBJIKZqE7q/bz8qwYE4cOoJtIJ7z0kcDYanGXpN4="
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 1,
+    "fields": {
+      "code": "AUTH_INVALID_CREDENTIALS",
+      "error_type": "AUTH",
+      "title": "Invalid Login Credentials",
+      "message": "The email address or password you entered is incorrect. Please try again.",
+      "technical_details": "User provided incorrect login credentials.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.068Z",
+      "updated_at": "2025-10-08T02:02:29.068Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 2,
+    "fields": {
+      "code": "AUTH_ACCOUNT_SUSPENDED",
+      "error_type": "AUTH",
+      "title": "Account Suspended",
+      "message": "Your account has been suspended due to too many failed login attempts. Please contact your administrator.",
+      "technical_details": "Account suspended due to failed login attempts.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.089Z",
+      "updated_at": "2025-10-08T02:02:29.089Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 3,
+    "fields": {
+      "code": "AUTH_SESSION_EXPIRED",
+      "error_type": "AUTH",
+      "title": "Session Expired",
+      "message": "Your session has expired. Please log in again.",
+      "technical_details": "JWT token expired or invalid.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.107Z",
+      "updated_at": "2025-10-08T02:02:29.107Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 4,
+    "fields": {
+      "code": "AUTH_PERMISSION_DENIED",
+      "error_type": "PERMISSION",
+      "title": "Access Denied",
+      "message": "You do not have permission to perform this action.",
+      "technical_details": "User lacks required permissions for this operation.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.124Z",
+      "updated_at": "2025-10-08T02:02:29.124Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 5,
+    "fields": {
+      "code": "VALIDATION_PASSWORD_REQUIREMENTS",
+      "error_type": "VALIDATION",
+      "title": "Password Requirements Not Met",
+      "message": "Password must be at least 8 characters, start with a letter, and contain at least one letter, one number, and one special character.",
+      "technical_details": "Password validation failed against security requirements.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.142Z",
+      "updated_at": "2025-10-08T02:02:29.142Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 6,
+    "fields": {
+      "code": "VALIDATION_PASSWORD_MIN_LENGTH",
+      "error_type": "VALIDATION",
+      "title": "Password Too Short",
+      "message": "Password must be at least 8 characters long.",
+      "technical_details": "Password does not meet minimum length requirement.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.159Z",
+      "updated_at": "2025-10-08T02:02:29.159Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 7,
+    "fields": {
+      "code": "VALIDATION_PASSWORD_START_LETTER",
+      "error_type": "VALIDATION",
+      "title": "Password Must Start with Letter",
+      "message": "Password must start with a letter (A-Z or a-z).",
+      "technical_details": "Password does not start with a letter.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.179Z",
+      "updated_at": "2025-10-08T02:02:29.179Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 8,
+    "fields": {
+      "code": "VALIDATION_PASSWORD_MISSING_LETTER",
+      "error_type": "VALIDATION",
+      "title": "Password Missing Letter",
+      "message": "Password must contain at least one letter (A-Z or a-z).",
+      "technical_details": "Password does not contain any letters.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.195Z",
+      "updated_at": "2025-10-08T02:02:29.196Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 9,
+    "fields": {
+      "code": "VALIDATION_PASSWORD_MISSING_NUMBER",
+      "error_type": "VALIDATION",
+      "title": "Password Missing Number",
+      "message": "Password must contain at least one number (0-9).",
+      "technical_details": "Password does not contain any numbers.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.215Z",
+      "updated_at": "2025-10-08T02:02:29.215Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 10,
+    "fields": {
+      "code": "VALIDATION_PASSWORD_MISSING_SPECIAL",
+      "error_type": "VALIDATION",
+      "title": "Password Missing Special Character",
+      "message": "Password must contain at least one special character (e.g., !@#$%^&*).",
+      "technical_details": "Password does not contain any special characters.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.233Z",
+      "updated_at": "2025-10-08T02:02:29.233Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 11,
+    "fields": {
+      "code": "VALIDATION_EMAIL_EXISTS",
+      "error_type": "VALIDATION",
+      "title": "Email Already Exists",
+      "message": "An account with this email address already exists.",
+      "technical_details": "Email address is already registered in the system.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.250Z",
+      "updated_at": "2025-10-08T02:02:29.250Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 12,
+    "fields": {
+      "code": "VALIDATION_REQUIRED_FIELD",
+      "error_type": "VALIDATION",
+      "title": "Required Field Missing",
+      "message": "Please fill in all required fields.",
+      "technical_details": "One or more required form fields are empty.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.273Z",
+      "updated_at": "2025-10-08T02:02:29.273Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 13,
+    "fields": {
+      "code": "VALIDATION_PASSWORD_MISMATCH",
+      "error_type": "VALIDATION",
+      "title": "Passwords Do Not Match",
+      "message": "The passwords you entered do not match. Please try again.",
+      "technical_details": "Password and confirmation password do not match.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.293Z",
+      "updated_at": "2025-10-08T02:02:29.293Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 14,
+    "fields": {
+      "code": "VALIDATION_PASSWORD_REUSE",
+      "error_type": "VALIDATION",
+      "title": "Password Already Used",
+      "message": "You cannot reuse a recent password. Please choose a different password.",
+      "technical_details": "New password matches one of the user's recent passwords.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.317Z",
+      "updated_at": "2025-10-08T02:02:29.317Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 15,
+    "fields": {
+      "code": "SYSTEM_DATABASE_ERROR",
+      "error_type": "SYSTEM",
+      "title": "Database Error",
+      "message": "A database error occurred. Please try again later.",
+      "technical_details": "Database connection or query failed.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.338Z",
+      "updated_at": "2025-10-08T02:02:29.338Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 16,
+    "fields": {
+      "code": "SYSTEM_EMAIL_ERROR",
+      "error_type": "SYSTEM",
+      "title": "Email Service Error",
+      "message": "Unable to send email. Please try again later.",
+      "technical_details": "Email service failed to send message.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.358Z",
+      "updated_at": "2025-10-08T02:02:29.358Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 17,
+    "fields": {
+      "code": "SYSTEM_FILE_UPLOAD_ERROR",
+      "error_type": "SYSTEM",
+      "title": "File Upload Error",
+      "message": "Failed to upload file. Please check the file format and size.",
+      "technical_details": "File upload process failed.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.383Z",
+      "updated_at": "2025-10-08T02:02:29.383Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 18,
+    "fields": {
+      "code": "USER_SECURITY_QUESTIONS_WRONG",
+      "error_type": "USER_ACTION",
+      "title": "Security Questions Incorrect",
+      "message": "The answers to your security questions are incorrect. Please try again.",
+      "technical_details": "User provided incorrect answers to security questions.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.402Z",
+      "updated_at": "2025-10-08T02:02:29.402Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 19,
+    "fields": {
+      "code": "USER_ACCOUNT_NOT_FOUND",
+      "error_type": "USER_ACTION",
+      "title": "Account Not Found",
+      "message": "No account found with the provided information.",
+      "technical_details": "User account lookup failed.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.434Z",
+      "updated_at": "2025-10-08T02:02:29.434Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 20,
+    "fields": {
+      "code": "USER_ROLE_NOT_ASSIGNED",
+      "error_type": "USER_ACTION",
+      "title": "Role Required",
+      "message": "A role must be assigned before approving this request.",
+      "technical_details": "Registration request missing assigned role.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.456Z",
+      "updated_at": "2025-10-08T02:02:29.456Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 21,
+    "fields": {
+      "code": "USER_SUSPENSION_FAILED",
+      "error_type": "USER_ACTION",
+      "title": "Suspension Failed",
+      "message": "Failed to suspend user. Please try again.",
+      "technical_details": "User suspension operation failed.",
+      "is_active": true,
+      "created_at": "2025-10-08T02:02:29.483Z",
+      "updated_at": "2025-10-08T02:02:29.483Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 22,
+    "fields": {
+      "code": "JOURNAL_MIN_LINES",
+      "error_type": "VALIDATION",
+      "title": "Minimum Lines Required",
+      "message": "A journal entry must have at least 2 lines (minimum one debit and one credit). Please add more lines.",
+      "technical_details": "Journal entry does not have minimum required lines.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.378Z",
+      "updated_at": "2025-10-15T01:45:36.378Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 23,
+    "fields": {
+      "code": "JOURNAL_NO_LINES",
+      "error_type": "VALIDATION",
+      "title": "No Lines Added",
+      "message": "Journal entry must have at least one line. Please add debit and credit entries.",
+      "technical_details": "Journal entry has no lines.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.406Z",
+      "updated_at": "2025-10-15T01:45:36.406Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 24,
+    "fields": {
+      "code": "JOURNAL_NO_ACCOUNT",
+      "error_type": "VALIDATION",
+      "title": "Account Required",
+      "message": "All lines must have an account selected. Please select an account for each line.",
+      "technical_details": "Journal entry line missing account selection.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.423Z",
+      "updated_at": "2025-10-15T01:45:36.423Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 25,
+    "fields": {
+      "code": "JOURNAL_NO_DEBIT",
+      "error_type": "VALIDATION",
+      "title": "Debit Entry Required",
+      "message": "Journal entry must have at least one debit entry. Please add a line with a debit amount.",
+      "technical_details": "Journal entry does not have any debit entries.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.439Z",
+      "updated_at": "2025-10-15T01:45:36.439Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 26,
+    "fields": {
+      "code": "JOURNAL_NO_CREDIT",
+      "error_type": "VALIDATION",
+      "title": "Credit Entry Required",
+      "message": "Journal entry must have at least one credit entry. Please add a line with a credit amount.",
+      "technical_details": "Journal entry does not have any credit entries.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.457Z",
+      "updated_at": "2025-10-15T01:45:36.457Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 27,
+    "fields": {
+      "code": "JOURNAL_OUT_OF_BALANCE",
+      "error_type": "VALIDATION",
+      "title": "Journal Entry Out of Balance",
+      "message": "Journal entry is out of balance! Total debits must equal total credits. Please adjust your amounts to balance the entry.",
+      "technical_details": "Journal entry debits and credits do not match.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.478Z",
+      "updated_at": "2025-10-15T01:45:36.478Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 28,
+    "fields": {
+      "code": "JOURNAL_LINE_NO_ACCOUNT",
+      "error_type": "VALIDATION",
+      "title": "Account Required",
+      "message": "Please select an account for this line.",
+      "technical_details": "Journal entry line missing account selection.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.494Z",
+      "updated_at": "2025-10-15T01:45:36.494Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 29,
+    "fields": {
+      "code": "JOURNAL_LINE_NEGATIVE",
+      "error_type": "VALIDATION",
+      "title": "Negative Amount Not Allowed",
+      "message": "Debit and credit amounts cannot be negative. Please enter positive values or zero.",
+      "technical_details": "Journal entry line has negative amount.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.508Z",
+      "updated_at": "2025-10-15T01:45:36.508Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 30,
+    "fields": {
+      "code": "JOURNAL_LINE_BOTH_AMOUNTS",
+      "error_type": "VALIDATION",
+      "title": "Debit or Credit Only",
+      "message": "A journal entry line cannot have both debit and credit amounts. Please enter only one amount per line.",
+      "technical_details": "Journal entry line has both debit and credit amounts.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.521Z",
+      "updated_at": "2025-10-15T01:45:36.521Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 31,
+    "fields": {
+      "code": "JOURNAL_LINE_NO_AMOUNT",
+      "error_type": "VALIDATION",
+      "title": "Amount Required",
+      "message": "Each line must have either a debit or credit amount. Please enter an amount greater than zero.",
+      "technical_details": "Journal entry line has no debit or credit amount.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.536Z",
+      "updated_at": "2025-10-15T01:45:36.536Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 32,
+    "fields": {
+      "code": "JOURNAL_EDIT_NOT_PENDING",
+      "error_type": "VALIDATION",
+      "title": "Cannot Edit Entry",
+      "message": "Cannot edit an entry that has been approved or rejected.",
+      "technical_details": "User attempted to edit non-pending journal entry.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.550Z",
+      "updated_at": "2025-10-15T01:45:36.550Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 33,
+    "fields": {
+      "code": "USER_INACTIVE_SUSPENDED",
+      "error_type": "AUTH",
+      "title": "Account Inactive",
+      "message": "User is inactive/suspended",
+      "technical_details": "User account is not active or has been suspended.",
+      "is_active": true,
+      "created_at": "2025-10-15T01:45:36.566Z",
+      "updated_at": "2025-10-15T01:45:36.566Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 34,
+    "fields": {
+      "code": "FINANCIAL_MISSING_DATE_PARAMS",
+      "error_type": "VALIDATION",
+      "title": "Date Parameters Required",
+      "message": "Either as_of_date or both start_date and end_date are required.",
+      "technical_details": "Financial statement API call missing required date parameters.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:07.981Z",
+      "updated_at": "2025-10-22T02:28:07.981Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 35,
+    "fields": {
+      "code": "FINANCIAL_MISSING_START_END_DATES",
+      "error_type": "VALIDATION",
+      "title": "Start and End Dates Required",
+      "message": "Both start_date and end_date are required.",
+      "technical_details": "Financial statement API call missing start_date or end_date parameters.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.004Z",
+      "updated_at": "2025-10-22T02:28:08.004Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 36,
+    "fields": {
+      "code": "FINANCIAL_MISSING_AS_OF_DATE",
+      "error_type": "VALIDATION",
+      "title": "As Of Date Required",
+      "message": "as_of_date is required.",
+      "technical_details": "Financial statement API call missing as_of_date parameter.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.023Z",
+      "updated_at": "2025-10-22T02:28:08.023Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 37,
+    "fields": {
+      "code": "FINANCIAL_TRIAL_BALANCE_ERROR",
+      "error_type": "SYSTEM",
+      "title": "Trial Balance Generation Failed",
+      "message": "Failed to generate trial balance. Please try again later.",
+      "technical_details": "Error occurred while generating trial balance financial statement.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.048Z",
+      "updated_at": "2025-10-22T02:28:08.048Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 38,
+    "fields": {
+      "code": "FINANCIAL_INCOME_STATEMENT_ERROR",
+      "error_type": "SYSTEM",
+      "title": "Income Statement Generation Failed",
+      "message": "Failed to generate income statement. Please try again later.",
+      "technical_details": "Error occurred while generating income statement financial report.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.074Z",
+      "updated_at": "2025-10-22T02:28:08.074Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 39,
+    "fields": {
+      "code": "FINANCIAL_BALANCE_SHEET_ERROR",
+      "error_type": "SYSTEM",
+      "title": "Balance Sheet Generation Failed",
+      "message": "Failed to generate balance sheet. Please try again later.",
+      "technical_details": "Error occurred while generating balance sheet financial report.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.094Z",
+      "updated_at": "2025-10-22T02:28:08.094Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 40,
+    "fields": {
+      "code": "FINANCIAL_RETAINED_EARNINGS_ERROR",
+      "error_type": "SYSTEM",
+      "title": "Retained Earnings Statement Generation Failed",
+      "message": "Failed to generate retained earnings statement. Please try again later.",
+      "technical_details": "Error occurred while generating retained earnings statement financial report.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.114Z",
+      "updated_at": "2025-10-22T02:28:08.114Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 41,
+    "fields": {
+      "code": "ACCOUNT_ID_REQUIRED",
+      "error_type": "VALIDATION",
+      "title": "Account ID Required",
+      "message": "Account ID is required.",
+      "technical_details": "Account management operation missing required account ID parameter.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.136Z",
+      "updated_at": "2025-10-22T02:28:08.136Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 42,
+    "fields": {
+      "code": "ACCOUNT_CLOSURE_REASON_REQUIRED",
+      "error_type": "VALIDATION",
+      "title": "Closure Reason Required",
+      "message": "Closure reason is required.",
+      "technical_details": "Account closure operation missing required closure reason.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.156Z",
+      "updated_at": "2025-10-22T02:28:08.156Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 43,
+    "fields": {
+      "code": "ACCOUNT_CLOSURE_PERMISSION_DENIED",
+      "error_type": "PERMISSION",
+      "title": "Permission Denied",
+      "message": "Only managers and admins can close accounts.",
+      "technical_details": "User lacks permission to close accounts.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.180Z",
+      "updated_at": "2025-10-22T02:28:08.180Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 44,
+    "fields": {
+      "code": "ACCOUNT_NOT_FOUND",
+      "error_type": "USER_ACTION",
+      "title": "Account Not Found",
+      "message": "Account not found.",
+      "technical_details": "Account lookup failed for the provided account ID.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.201Z",
+      "updated_at": "2025-10-22T02:28:08.201Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 45,
+    "fields": {
+      "code": "ACCOUNT_ALREADY_CLOSED",
+      "error_type": "USER_ACTION",
+      "title": "Account Already Closed",
+      "message": "Account is already closed.",
+      "technical_details": "User attempted to close an account that is already closed.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.225Z",
+      "updated_at": "2025-10-22T02:28:08.225Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 46,
+    "fields": {
+      "code": "ACCOUNT_NON_ZERO_BALANCE",
+      "error_type": "VALIDATION",
+      "title": "Account Has Non-Zero Balance",
+      "message": "Cannot close account. Account must have zero balance to be closed.",
+      "technical_details": "User attempted to close an account with non-zero balance.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.246Z",
+      "updated_at": "2025-10-22T02:28:08.246Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 47,
+    "fields": {
+      "code": "ACCOUNT_CLOSURE_FAILED",
+      "error_type": "SYSTEM",
+      "title": "Account Closure Failed",
+      "message": "Failed to close account. Please try again later.",
+      "technical_details": "Error occurred while closing account.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.266Z",
+      "updated_at": "2025-10-22T02:28:08.266Z"
+    }
+  },
+  {
+    "model": "accounts.errormessage",
+    "pk": 48,
+    "fields": {
+      "code": "MANAGERS_ADMINS_FETCH_FAILED",
+      "error_type": "SYSTEM",
+      "title": "Failed to Load Users",
+      "message": "Failed to load managers and administrators. Please try again later.",
+      "technical_details": "Error occurred while fetching managers and administrators list.",
+      "is_active": true,
+      "created_at": "2025-10-22T02:28:08.288Z",
+      "updated_at": "2025-10-22T02:28:08.289Z"
+    }
+  },
+  {
+    "model": "accounts.errorlog",
+    "pk": 1,
+    "fields": {
+      "error_code": "AUTH_INVALID_CREDENTIALS",
+      "level": "WARNING",
+      "user": [
+        "adabdoub0925"
+      ],
+      "request_path": "/api/auth/token/",
+      "request_method": "POST",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "ip_address": "127.0.0.1",
+      "error_message": "An error occurred (Code: AUTH_INVALID_CREDENTIALS)",
+      "technical_details": "Error code AUTH_INVALID_CREDENTIALS not found in database\n\nAdditional Details: Failed login attempts: 1, Attempts left: 2",
+      "stack_trace": "",
+      "resolved": false,
+      "resolved_at": null,
+      "resolved_by": null,
+      "created_at": "2025-10-07T21:13:20.309Z"
+    }
+  },
+  {
+    "model": "accounts.errorlog",
+    "pk": 2,
+    "fields": {
+      "error_code": "AUTH_INVALID_CREDENTIALS",
+      "level": "WARNING",
+      "user": [
+        "adabdoub0925"
+      ],
+      "request_path": "/api/auth/token/",
+      "request_method": "POST",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "ip_address": "127.0.0.1",
+      "error_message": "The email address or password you entered is incorrect. Please try again.",
+      "technical_details": "User provided incorrect login credentials.\n\nAdditional Details: Failed login attempts: 1, Attempts left: 2",
+      "stack_trace": "",
+      "resolved": false,
+      "resolved_at": null,
+      "resolved_by": null,
+      "created_at": "2025-10-14T18:24:05.351Z"
+    }
+  },
+  {
+    "model": "accounts.errorlog",
+    "pk": 3,
+    "fields": {
+      "error_code": "AUTH_INVALID_CREDENTIALS",
+      "level": "WARNING",
+      "user": null,
+      "request_path": "/api/auth/token/",
+      "request_method": "POST",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "ip_address": "127.0.0.1",
+      "error_message": "The email address or password you entered is incorrect. Please try again.",
+      "technical_details": "User provided incorrect login credentials.\n\nAdditional Details: Reason: user_not_found, Mapped: cvc@gmail.com",
+      "stack_trace": "",
+      "resolved": false,
+      "resolved_at": null,
+      "resolved_by": null,
+      "created_at": "2025-10-14T18:24:22.240Z"
+    }
+  },
+  {
+    "model": "accounts.errorlog",
+    "pk": 4,
+    "fields": {
+      "error_code": "AUTH_INVALID_CREDENTIALS",
+      "level": "WARNING",
+      "user": [
+        "cvarner09252"
+      ],
+      "request_path": "/api/auth/token/",
+      "request_method": "POST",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "ip_address": "127.0.0.1",
+      "error_message": "The email address or password you entered is incorrect. Please try again.",
+      "technical_details": "User provided incorrect login credentials.\n\nAdditional Details: Failed login attempts: 1, Attempts left: 2",
+      "stack_trace": "",
+      "resolved": false,
+      "resolved_at": null,
+      "resolved_by": null,
+      "created_at": "2025-10-15T01:33:25.258Z"
+    }
+  },
+  {
+    "model": "accounts.errorlog",
+    "pk": 5,
+    "fields": {
+      "error_code": "AUTH_INVALID_CREDENTIALS",
+      "level": "WARNING",
+      "user": null,
+      "request_path": "/api/auth/token/",
+      "request_method": "POST",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "ip_address": "127.0.0.1",
+      "error_message": "The email address or password you entered is incorrect. Please try again.",
+      "technical_details": "User provided incorrect login credentials.\n\nAdditional Details: Reason: user_not_found, Mapped: alialidabdoub@gmail.com",
+      "stack_trace": "",
+      "resolved": false,
+      "resolved_at": null,
+      "resolved_by": null,
+      "created_at": "2025-11-04T01:44:36.423Z"
+    }
+  },
+  {
+    "model": "accounts.errorlog",
+    "pk": 6,
+    "fields": {
+      "error_code": "AUTH_INVALID_CREDENTIALS",
+      "level": "WARNING",
+      "user": null,
+      "request_path": "/api/auth/token/",
+      "request_method": "POST",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "ip_address": "127.0.0.1",
+      "error_message": "The email address or password you entered is incorrect. Please try again.",
+      "technical_details": "User provided incorrect login credentials.\n\nAdditional Details: Reason: user_not_found, Mapped: alialidabdoub@gmail.com",
+      "stack_trace": "",
+      "resolved": false,
+      "resolved_at": null,
+      "resolved_by": null,
+      "created_at": "2025-11-04T01:50:52.799Z"
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 76,
+    "fields": {
+      "account_name": "Cash",
+      "account_number": "1000",
+      "account_description": "Account for Cash",
+      "normal_side": "DEBIT",
+      "account_category": "ASSET",
+      "account_subcategory": "Current Asset",
+      "initial_balance": "0.00",
+      "debit": "22975.00",
+      "credit": "13600.00",
+      "balance": "8875.00",
+      "order": 1,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.578Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.160Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 77,
+    "fields": {
+      "account_name": "Accounts Receivable",
+      "account_number": "1100",
+      "account_description": "Account for Accounts Receivable",
+      "normal_side": "DEBIT",
+      "account_category": "ASSET",
+      "account_subcategory": "Current Asset",
+      "initial_balance": "0.00",
+      "debit": "5850.00",
+      "credit": "2900.00",
+      "balance": "3450.00",
+      "order": 2,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.595Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.191Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 78,
+    "fields": {
+      "account_name": "Prepaid Rent",
+      "account_number": "1200",
+      "account_description": "Account for Prepaid Rent",
+      "normal_side": "DEBIT",
+      "account_category": "ASSET",
+      "account_subcategory": "Current Asset",
+      "initial_balance": "0.00",
+      "debit": "4500.00",
+      "credit": "1500.00",
+      "balance": "3000.00",
+      "order": 3,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.613Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.217Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 79,
+    "fields": {
+      "account_name": "Prepaid Insurance",
+      "account_number": "1300",
+      "account_description": "Account for Prepaid Insurance",
+      "normal_side": "DEBIT",
+      "account_category": "ASSET",
+      "account_subcategory": "Current Asset",
+      "initial_balance": "0.00",
+      "debit": "1800.00",
+      "credit": "150.00",
+      "balance": "1650.00",
+      "order": 4,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.633Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.239Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 80,
+    "fields": {
+      "account_name": "Supplies",
+      "account_number": "1400",
+      "account_description": "Account for Supplies",
+      "normal_side": "DEBIT",
+      "account_category": "ASSET",
+      "account_subcategory": "Other Assets",
+      "initial_balance": "0.00",
+      "debit": "2000.00",
+      "credit": "1130.00",
+      "balance": "1020.00",
+      "order": 5,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.655Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-11-04T22:14:20.845Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 81,
+    "fields": {
+      "account_name": "Office Equipment",
+      "account_number": "1500",
+      "account_description": "Account for Office Equipment",
+      "normal_side": "DEBIT",
+      "account_category": "ASSET",
+      "account_subcategory": "Fixed Asset",
+      "initial_balance": "0.00",
+      "debit": "9300.00",
+      "credit": "0.00",
+      "balance": "9300.00",
+      "order": 6,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.672Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.274Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 82,
+    "fields": {
+      "account_name": "Accumulated Depreciation - Office Equipment",
+      "account_number": "1501",
+      "account_description": "Account for Accumulated Depreciation - Office Equipment",
+      "normal_side": "CREDIT",
+      "account_category": "ASSET",
+      "account_subcategory": "Contra Asset",
+      "initial_balance": "0.00",
+      "debit": "0.00",
+      "credit": "500.00",
+      "balance": "500.00",
+      "order": 7,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.691Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.292Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 83,
+    "fields": {
+      "account_name": "Accounts Payable",
+      "account_number": "2000",
+      "account_description": "Account for Accounts Payable",
+      "normal_side": "CREDIT",
+      "account_category": "LIABILITY",
+      "account_subcategory": "Current Liability",
+      "initial_balance": "0.00",
+      "debit": "800.00",
+      "credit": "1800.00",
+      "balance": "1000.00",
+      "order": 8,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.709Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.309Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 84,
+    "fields": {
+      "account_name": "Salaries Payable",
+      "account_number": "2100",
+      "account_description": "Account for Salaries Payable",
+      "normal_side": "CREDIT",
+      "account_category": "LIABILITY",
+      "account_subcategory": "Current Liability",
+      "initial_balance": "0.00",
+      "debit": "0.00",
+      "credit": "20.00",
+      "balance": "20.00",
+      "order": 9,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.725Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.326Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 85,
+    "fields": {
+      "account_name": "Unearned Revenue",
+      "account_number": "2200",
+      "account_description": "Account for Unearned Revenue",
+      "normal_side": "CREDIT",
+      "account_category": "LIABILITY",
+      "account_subcategory": "Current Liability",
+      "initial_balance": "0.00",
+      "debit": "2000.00",
+      "credit": "3000.00",
+      "balance": "1000.00",
+      "order": 10,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.743Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:15:23.343Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 86,
+    "fields": {
+      "account_name": "Contributed Capital",
+      "account_number": "3000",
+      "account_description": "Account for Contributed Capital",
+      "normal_side": "CREDIT",
+      "account_category": "EQUITY",
+      "account_subcategory": "Owner Equity",
+      "initial_balance": "0.00",
+      "debit": "0.00",
+      "credit": "20250.00",
+      "balance": "20250.00",
+      "order": 11,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.758Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.273Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 87,
+    "fields": {
+      "account_name": "Retained Earnings",
+      "account_number": "3100",
+      "account_description": "Account for Retained Earnings",
+      "normal_side": "CREDIT",
+      "account_category": "EQUITY",
+      "account_subcategory": "Owner Equity",
+      "initial_balance": "0.00",
+      "debit": "0.00",
+      "credit": "4525.00",
+      "balance": "4525.00",
+      "order": 12,
+      "statement": "BS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.775Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.303Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 88,
+    "fields": {
+      "account_name": "Dividends Declared",
+      "account_number": "3200",
+      "account_description": "Account for Dividends Declared",
+      "normal_side": "DEBIT",
+      "account_category": "EQUITY",
+      "account_subcategory": "Owner Equity",
+      "initial_balance": "0.00",
+      "debit": "0.00",
+      "credit": "0.00",
+      "balance": "0.00",
+      "order": 13,
+      "statement": "RE",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.793Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.331Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 89,
+    "fields": {
+      "account_name": "Service Revenue",
+      "account_number": "4000",
+      "account_description": "Account for Service Revenue",
+      "normal_side": "CREDIT",
+      "account_category": "REVENUE",
+      "account_subcategory": "Operating Revenue",
+      "initial_balance": "0.00",
+      "debit": "13425.00",
+      "credit": "13425.00",
+      "balance": "0.00",
+      "order": 14,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.809Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.356Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 90,
+    "fields": {
+      "account_name": "Insurance Expense",
+      "account_number": "5000",
+      "account_description": "Account for Insurance Expense",
+      "normal_side": "DEBIT",
+      "account_category": "EXPENSE",
+      "account_subcategory": "Operating Expense",
+      "initial_balance": "0.00",
+      "debit": "150.00",
+      "credit": "150.00",
+      "balance": "0.00",
+      "order": 15,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.831Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.380Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 91,
+    "fields": {
+      "account_name": "Depreciation Expense",
+      "account_number": "5100",
+      "account_description": "Account for Depreciation Expense",
+      "normal_side": "DEBIT",
+      "account_category": "EXPENSE",
+      "account_subcategory": "Operating Expense",
+      "initial_balance": "0.00",
+      "debit": "500.00",
+      "credit": "500.00",
+      "balance": "0.00",
+      "order": 16,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.854Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.498Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 92,
+    "fields": {
+      "account_name": "Rent Expense",
+      "account_number": "5200",
+      "account_description": "Account for Rent Expense",
+      "normal_side": "DEBIT",
+      "account_category": "EXPENSE",
+      "account_subcategory": "Operating Expense",
+      "initial_balance": "0.00",
+      "debit": "1500.00",
+      "credit": "1500.00",
+      "balance": "0.00",
+      "order": 17,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.870Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.680Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 93,
+    "fields": {
+      "account_name": "Supplies Expense",
+      "account_number": "5300",
+      "account_description": "Account for Supplies Expense",
+      "normal_side": "DEBIT",
+      "account_category": "EXPENSE",
+      "account_subcategory": "Operating Expense",
+      "initial_balance": "0.00",
+      "debit": "1130.00",
+      "credit": "980.00",
+      "balance": "0.00",
+      "order": 18,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.886Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.715Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 94,
+    "fields": {
+      "account_name": "Salaries Expense",
+      "account_number": "5400",
+      "account_description": "Account for Salaries Expense",
+      "normal_side": "DEBIT",
+      "account_category": "EXPENSE",
+      "account_subcategory": "Operating Expense",
+      "initial_balance": "0.00",
+      "debit": "5320.00",
+      "credit": "5320.00",
+      "balance": "0.00",
+      "order": 19,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.903Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.802Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 95,
+    "fields": {
+      "account_name": "Telephone Expense",
+      "account_number": "5500",
+      "account_description": "Account for Telephone Expense",
+      "normal_side": "DEBIT",
+      "account_category": "EXPENSE",
+      "account_subcategory": "Operating Expense",
+      "initial_balance": "0.00",
+      "debit": "130.00",
+      "credit": "130.00",
+      "balance": "0.00",
+      "order": 20,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.919Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.846Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 96,
+    "fields": {
+      "account_name": "Utilities Expense",
+      "account_number": "5600",
+      "account_description": "Account for Utilities Expense",
+      "normal_side": "DEBIT",
+      "account_category": "EXPENSE",
+      "account_subcategory": "Operating Expense",
+      "initial_balance": "0.00",
+      "debit": "200.00",
+      "credit": "200.00",
+      "balance": "0.00",
+      "order": 21,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.935Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.967Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.chartofaccounts",
+    "pk": 97,
+    "fields": {
+      "account_name": "Advertising Expense",
+      "account_number": "5700",
+      "account_description": "Account for Advertising Expense",
+      "normal_side": "DEBIT",
+      "account_category": "EXPENSE",
+      "account_subcategory": "Operating Expense",
+      "initial_balance": "0.00",
+      "debit": "120.00",
+      "credit": "120.00",
+      "balance": "0.00",
+      "order": 22,
+      "statement": "IS",
+      "comment": "",
+      "created_at": "2025-10-21T05:22:42.952Z",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "updated_at": "2025-10-22T00:50:53.993Z",
+      "updated_by": null,
+      "is_active": true,
+      "deactivate_from": null,
+      "deactivate_to": null,
+      "is_closed": false,
+      "closed_at": null,
+      "closed_by": null,
+      "closure_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 103,
+    "fields": {
+      "entry_date": "2010-04-04",
+      "entry_type": "REGULAR",
+      "description": "Initial investment from John Addams",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.518Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 104,
+    "fields": {
+      "entry_date": "2010-04-04",
+      "entry_type": "REGULAR",
+      "description": "Paid three months rent on lease rental contract",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.624Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 105,
+    "fields": {
+      "entry_date": "2010-04-04",
+      "entry_type": "REGULAR",
+      "description": "Paid premium on property and casualty insurance policies",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.670Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 106,
+    "fields": {
+      "entry_date": "2010-04-06",
+      "entry_type": "REGULAR",
+      "description": "Received cash from clients as advance payment for services",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.719Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 107,
+    "fields": {
+      "entry_date": "2010-04-07",
+      "entry_type": "REGULAR",
+      "description": "Purchased additional office furniture on account from Morriton Company",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.772Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 108,
+    "fields": {
+      "entry_date": "2010-04-08",
+      "entry_type": "REGULAR",
+      "description": "Received cash from clients on account",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.821Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 109,
+    "fields": {
+      "entry_date": "2010-04-11",
+      "entry_type": "REGULAR",
+      "description": "Paid cash for newspaper advertisement",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.867Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 110,
+    "fields": {
+      "entry_date": "2010-04-12",
+      "entry_type": "REGULAR",
+      "description": "Paid Morriton Company for debt incurred on April 7",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.915Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 111,
+    "fields": {
+      "entry_date": "2010-04-15",
+      "entry_type": "REGULAR",
+      "description": "Recorded services provided on account for period April 1-15",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:19.961Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 112,
+    "fields": {
+      "entry_date": "2010-04-15",
+      "entry_type": "REGULAR",
+      "description": "Paid part-time receptionist for two weeks salary",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:20.012Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 113,
+    "fields": {
+      "entry_date": "2010-04-15",
+      "entry_type": "REGULAR",
+      "description": "Recorded cash from cash clients for fees earned April 4-15",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:20.064Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 114,
+    "fields": {
+      "entry_date": "2010-04-18",
+      "entry_type": "REGULAR",
+      "description": "Paid cash for supplies",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:20.117Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 115,
+    "fields": {
+      "entry_date": "2010-04-22",
+      "entry_type": "REGULAR",
+      "description": "Recorded services provided on account for April 18-22",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:20.233Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 116,
+    "fields": {
+      "entry_date": "2010-04-22",
+      "entry_type": "REGULAR",
+      "description": "Recorded cash from cash clients for fees earned April 18-22",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:20.407Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 117,
+    "fields": {
+      "entry_date": "2010-04-25",
+      "entry_type": "REGULAR",
+      "description": "Received cash from clients on account",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:20.503Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 118,
+    "fields": {
+      "entry_date": "2010-04-27",
+      "entry_type": "REGULAR",
+      "description": "Paid part-time receptionist for two weeks salary",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:20.664Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 119,
+    "fields": {
+      "entry_date": "2010-04-28",
+      "entry_type": "REGULAR",
+      "description": "Paid telephone bill for April",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:20.883Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 120,
+    "fields": {
+      "entry_date": "2010-04-29",
+      "entry_type": "REGULAR",
+      "description": "Paid electric bill for April",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:21.029Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 121,
+    "fields": {
+      "entry_date": "2010-04-29",
+      "entry_type": "REGULAR",
+      "description": "Recorded cash from cash clients for fees earned April 25-29",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:21.098Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 122,
+    "fields": {
+      "entry_date": "2010-04-29",
+      "entry_type": "REGULAR",
+      "description": "Recorded services provided on account for April 25-29",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:21.159Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 123,
+    "fields": {
+      "entry_date": "2010-04-29",
+      "entry_type": "REGULAR",
+      "description": "John received salary from the company",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:16:21.219Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 124,
+    "fields": {
+      "entry_date": "2010-04-30",
+      "entry_type": "REGULAR",
+      "description": "Insurance expired in April",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:17:17.302Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 125,
+    "fields": {
+      "entry_date": "2010-04-30",
+      "entry_type": "REGULAR",
+      "description": "Supplies on hand April 29",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:17:17.371Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 126,
+    "fields": {
+      "entry_date": "2010-04-30",
+      "entry_type": "REGULAR",
+      "description": "Depreciation for office equipment in April",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:17:17.438Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 127,
+    "fields": {
+      "entry_date": "2010-04-30",
+      "entry_type": "REGULAR",
+      "description": "Accrued receptionist salary on April 30",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:17:17.507Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 128,
+    "fields": {
+      "entry_date": "2010-04-30",
+      "entry_type": "REGULAR",
+      "description": "Rent expired in April",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:17:17.589Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 129,
+    "fields": {
+      "entry_date": "2010-04-30",
+      "entry_type": "REGULAR",
+      "description": "Earned services that were previously paid for on 4/6",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:17:17.671Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 130,
+    "fields": {
+      "entry_date": "2010-04-30",
+      "entry_type": "REGULAR",
+      "description": "Close revenues and expenses to retained earnings",
+      "status": "APPROVED",
+      "created_by": [
+        "cvarner0925"
+      ],
+      "created_at": "2025-10-22T00:17:38.532Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 131,
+    "fields": {
+      "entry_date": "2025-10-22",
+      "entry_type": "REGULAR",
+      "description": "",
+      "status": "PENDING",
+      "created_by": [
+        "cvarner09252"
+      ],
+      "created_at": "2025-10-22T02:08:17.746Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentry",
+    "pk": 132,
+    "fields": {
+      "entry_date": "2025-11-04",
+      "entry_type": "REGULAR",
+      "description": "",
+      "status": "PENDING",
+      "created_by": [
+        "adabdoub0925"
+      ],
+      "created_at": "2025-11-04T01:25:44.750Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "rejection_reason": ""
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 229,
+    "fields": {
+      "journal_entry": 103,
+      "account": 76,
+      "description": "",
+      "debit": "10000.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 230,
+    "fields": {
+      "journal_entry": 103,
+      "account": 77,
+      "description": "",
+      "debit": "1500.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 231,
+    "fields": {
+      "journal_entry": 103,
+      "account": 78,
+      "description": "",
+      "debit": "1250.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 232,
+    "fields": {
+      "journal_entry": 103,
+      "account": 81,
+      "description": "",
+      "debit": "7500.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 233,
+    "fields": {
+      "journal_entry": 103,
+      "account": 86,
+      "description": "",
+      "debit": "0.00",
+      "credit": "20250.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 234,
+    "fields": {
+      "journal_entry": 104,
+      "account": 79,
+      "description": "",
+      "debit": "4500.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 235,
+    "fields": {
+      "journal_entry": 104,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "4500.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 236,
+    "fields": {
+      "journal_entry": 105,
+      "account": 80,
+      "description": "",
+      "debit": "1800.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 237,
+    "fields": {
+      "journal_entry": 105,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "1800.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 238,
+    "fields": {
+      "journal_entry": 106,
+      "account": 76,
+      "description": "",
+      "debit": "3000.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 239,
+    "fields": {
+      "journal_entry": 106,
+      "account": 84,
+      "description": "",
+      "debit": "0.00",
+      "credit": "3000.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 240,
+    "fields": {
+      "journal_entry": 107,
+      "account": 81,
+      "description": "",
+      "debit": "1800.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 241,
+    "fields": {
+      "journal_entry": 107,
+      "account": 85,
+      "description": "",
+      "debit": "0.00",
+      "credit": "1800.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 242,
+    "fields": {
+      "journal_entry": 108,
+      "account": 76,
+      "description": "",
+      "debit": "800.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 243,
+    "fields": {
+      "journal_entry": 108,
+      "account": 77,
+      "description": "",
+      "debit": "0.00",
+      "credit": "800.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 244,
+    "fields": {
+      "journal_entry": 109,
+      "account": 91,
+      "description": "",
+      "debit": "120.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 245,
+    "fields": {
+      "journal_entry": 109,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "120.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 246,
+    "fields": {
+      "journal_entry": 110,
+      "account": 85,
+      "description": "",
+      "debit": "800.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 247,
+    "fields": {
+      "journal_entry": 110,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "800.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 248,
+    "fields": {
+      "journal_entry": 111,
+      "account": 77,
+      "description": "",
+      "debit": "2250.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 249,
+    "fields": {
+      "journal_entry": 111,
+      "account": 89,
+      "description": "",
+      "debit": "0.00",
+      "credit": "2250.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 250,
+    "fields": {
+      "journal_entry": 112,
+      "account": 94,
+      "description": "",
+      "debit": "400.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 251,
+    "fields": {
+      "journal_entry": 112,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "400.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 252,
+    "fields": {
+      "journal_entry": 113,
+      "account": 76,
+      "description": "",
+      "debit": "3175.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 253,
+    "fields": {
+      "journal_entry": 113,
+      "account": 89,
+      "description": "",
+      "debit": "0.00",
+      "credit": "3175.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 254,
+    "fields": {
+      "journal_entry": 114,
+      "account": 78,
+      "description": "",
+      "debit": "750.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 255,
+    "fields": {
+      "journal_entry": 114,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "750.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 256,
+    "fields": {
+      "journal_entry": 115,
+      "account": 77,
+      "description": "",
+      "debit": "1100.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 257,
+    "fields": {
+      "journal_entry": 115,
+      "account": 89,
+      "description": "",
+      "debit": "0.00",
+      "credit": "1100.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 258,
+    "fields": {
+      "journal_entry": 116,
+      "account": 76,
+      "description": "",
+      "debit": "1850.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 259,
+    "fields": {
+      "journal_entry": 116,
+      "account": 89,
+      "description": "",
+      "debit": "0.00",
+      "credit": "1850.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 260,
+    "fields": {
+      "journal_entry": 117,
+      "account": 76,
+      "description": "",
+      "debit": "1600.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 261,
+    "fields": {
+      "journal_entry": 117,
+      "account": 77,
+      "description": "",
+      "debit": "0.00",
+      "credit": "1600.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 262,
+    "fields": {
+      "journal_entry": 118,
+      "account": 94,
+      "description": "",
+      "debit": "400.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 263,
+    "fields": {
+      "journal_entry": 118,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "400.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 264,
+    "fields": {
+      "journal_entry": 119,
+      "account": 95,
+      "description": "",
+      "debit": "130.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 265,
+    "fields": {
+      "journal_entry": 119,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "130.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 266,
+    "fields": {
+      "journal_entry": 120,
+      "account": 96,
+      "description": "",
+      "debit": "200.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 267,
+    "fields": {
+      "journal_entry": 120,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "200.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 268,
+    "fields": {
+      "journal_entry": 121,
+      "account": 76,
+      "description": "",
+      "debit": "2050.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 269,
+    "fields": {
+      "journal_entry": 121,
+      "account": 89,
+      "description": "",
+      "debit": "0.00",
+      "credit": "2050.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 270,
+    "fields": {
+      "journal_entry": 122,
+      "account": 77,
+      "description": "",
+      "debit": "1000.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 271,
+    "fields": {
+      "journal_entry": 122,
+      "account": 89,
+      "description": "",
+      "debit": "0.00",
+      "credit": "1000.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 272,
+    "fields": {
+      "journal_entry": 123,
+      "account": 94,
+      "description": "",
+      "debit": "4500.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 273,
+    "fields": {
+      "journal_entry": 123,
+      "account": 76,
+      "description": "",
+      "debit": "0.00",
+      "credit": "4500.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 274,
+    "fields": {
+      "journal_entry": 124,
+      "account": 90,
+      "description": "",
+      "debit": "150.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 275,
+    "fields": {
+      "journal_entry": 124,
+      "account": 79,
+      "description": "",
+      "debit": "0.00",
+      "credit": "150.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 276,
+    "fields": {
+      "journal_entry": 125,
+      "account": 93,
+      "description": "",
+      "debit": "980.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 277,
+    "fields": {
+      "journal_entry": 125,
+      "account": 80,
+      "description": "",
+      "debit": "0.00",
+      "credit": "980.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 278,
+    "fields": {
+      "journal_entry": 126,
+      "account": 91,
+      "description": "",
+      "debit": "500.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 279,
+    "fields": {
+      "journal_entry": 126,
+      "account": 82,
+      "description": "",
+      "debit": "0.00",
+      "credit": "500.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 280,
+    "fields": {
+      "journal_entry": 127,
+      "account": 94,
+      "description": "",
+      "debit": "20.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 281,
+    "fields": {
+      "journal_entry": 127,
+      "account": 84,
+      "description": "",
+      "debit": "0.00",
+      "credit": "20.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 282,
+    "fields": {
+      "journal_entry": 128,
+      "account": 92,
+      "description": "",
+      "debit": "1500.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 283,
+    "fields": {
+      "journal_entry": 128,
+      "account": 78,
+      "description": "",
+      "debit": "0.00",
+      "credit": "1500.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 284,
+    "fields": {
+      "journal_entry": 129,
+      "account": 85,
+      "description": "",
+      "debit": "2000.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 285,
+    "fields": {
+      "journal_entry": 129,
+      "account": 89,
+      "description": "",
+      "debit": "0.00",
+      "credit": "2000.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 286,
+    "fields": {
+      "journal_entry": 130,
+      "account": 89,
+      "description": "",
+      "debit": "13425.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 287,
+    "fields": {
+      "journal_entry": 130,
+      "account": 90,
+      "description": "",
+      "debit": "0.00",
+      "credit": "150.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 288,
+    "fields": {
+      "journal_entry": 130,
+      "account": 91,
+      "description": "",
+      "debit": "0.00",
+      "credit": "500.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 289,
+    "fields": {
+      "journal_entry": 130,
+      "account": 92,
+      "description": "",
+      "debit": "0.00",
+      "credit": "1500.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 290,
+    "fields": {
+      "journal_entry": 130,
+      "account": 93,
+      "description": "",
+      "debit": "0.00",
+      "credit": "980.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 291,
+    "fields": {
+      "journal_entry": 130,
+      "account": 94,
+      "description": "",
+      "debit": "0.00",
+      "credit": "5320.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 292,
+    "fields": {
+      "journal_entry": 130,
+      "account": 95,
+      "description": "",
+      "debit": "0.00",
+      "credit": "130.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 293,
+    "fields": {
+      "journal_entry": 130,
+      "account": 96,
+      "description": "",
+      "debit": "0.00",
+      "credit": "200.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 294,
+    "fields": {
+      "journal_entry": 130,
+      "account": 97,
+      "description": "",
+      "debit": "0.00",
+      "credit": "120.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 295,
+    "fields": {
+      "journal_entry": 130,
+      "account": 87,
+      "description": "",
+      "debit": "0.00",
+      "credit": "4525.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 296,
+    "fields": {
+      "journal_entry": 131,
+      "account": 76,
+      "description": "",
+      "debit": "500.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 297,
+    "fields": {
+      "journal_entry": 131,
+      "account": 78,
+      "description": "",
+      "debit": "0.00",
+      "credit": "500.00",
+      "order": 1
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 298,
+    "fields": {
+      "journal_entry": 132,
+      "account": 94,
+      "description": "",
+      "debit": "500.00",
+      "credit": "0.00",
+      "order": 0
+    }
+  },
+  {
+    "model": "accounts.journalentryline",
+    "pk": 299,
+    "fields": {
+      "journal_entry": 132,
+      "account": 83,
+      "description": "",
+      "debit": "0.00",
+      "credit": "500.00",
+      "order": 1
+    }
+  }
+]
