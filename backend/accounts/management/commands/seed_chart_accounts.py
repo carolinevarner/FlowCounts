@@ -9,7 +9,16 @@ class Command(BaseCommand):
         # Don't clear existing accounts - just add missing ones
         existing_count = ChartOfAccounts.objects.count()
         if existing_count > 0:
-            self.stdout.write(self.style.WARNING(f'Found {existing_count} existing accounts. Will only add missing accounts.'))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f'Found {existing_count} existing accounts. Will only add missing accounts (if any).'
+                )
+            )
+            # Skip seeding if we already have accounts (they were imported)
+            self.stdout.write(
+                self.style.SUCCESS('Skipping account seeding - accounts already exist from import.')
+            )
+            return
 
         # Get the first admin user to assign as creator
         admin_user = User.objects.filter(role='ADMIN').first()
