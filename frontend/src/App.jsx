@@ -64,6 +64,14 @@ export default function App() {
         <Route path="accounts" element={<Accounts />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="events" element={<AdminEvents />} />
+        <Route path="journal" element={<JournalList />} />
+        <Route path="journal/new" element={<JournalEntry />} />
+        <Route path="journal/edit/:id" element={<JournalEntry />} />
+        <Route path="journal/view/:id" element={<JournalView />} />
+        <Route path="trial" element={<TrialBalance />} />
+        <Route path="income" element={<IncomeStatement />} />
+        <Route path="balance" element={<BalanceSheet />} />
+        <Route path="retained" element={<RetainedEarnings />} />
       </Route>
 
       <Route

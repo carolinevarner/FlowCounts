@@ -59,24 +59,42 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
     e.preventDefault();
     setError('');
     
-    if (!recipient || !subject || !message) {
-      setError('All fields are required');
+    // Validate recipient email
+    if (!recipient || !recipient.trim()) {
+      setError('Please select a recipient');
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipient.trim())) {
+      setError('Invalid email address. Please select a valid recipient.');
+      return;
+    }
+    
+    if (!subject || !subject.trim()) {
+      setError('Subject is required');
+      return;
+    }
+    
+    if (!message || !message.trim()) {
+      setError('Message is required');
       return;
     }
 
     setSending(true);
     try {
       console.log('Sending email with data:', {
-        recipient,
-        subject,
-        message,
+        recipient: recipient.trim(),
+        subject: subject.trim(),
+        message: message.trim(),
         recipient_type: recipientType
       });
       
       const response = await api.post('/auth/send-email/', {
-        recipient,
-        subject,
-        message,
+        recipient: recipient.trim(),
+        subject: subject.trim(),
+        message: message.trim(),
         recipient_type: recipientType
       });
       
@@ -88,7 +106,8 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
     } catch (err) {
       console.error('Failed to send email:', err);
       console.error('Error response:', err.response?.data);
-      setError(err.response?.data?.detail || 'Failed to send email');
+      const errorMessage = err.response?.data?.detail || err.response?.data?.error || 'Failed to send email';
+      setError(errorMessage);
     } finally {
       setSending(false);
     }
@@ -159,7 +178,15 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
               </label>
               <select
                 value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
+                onChange={(e) => {
+                  const selectedValue = e.target.value;
+                  console.log('Selected recipient:', selectedValue);
+                  if (selectedValue && selectedValue.trim()) {
+                    setRecipient(selectedValue.trim());
+                  } else {
+                    setRecipient('');
+                  }
+                }}
                 required
               >
                 <option value="">Select a recipient...</option>
@@ -168,25 +195,25 @@ export default function EmailModal({ onClose, recipientType = 'manager', manager
                 ) : (
                   <>
                     {/* Managers - visible to both admins and accountants */}
-                    {currentManagersAndAdmins.managers.filter(m => m.role === 'MANAGER').map((manager) => (
+                    {currentManagersAndAdmins.managers.filter(m => m.role === 'MANAGER' && m.email && m.email.trim()).map((manager) => (
                       <option key={manager.id} value={manager.email}>
                         {manager.first_name} {manager.last_name} (Manager) - {manager.email}
                       </option>
                     ))}
                     {/* Accountants - only visible to admins */}
-                    {senderRole === 'ADMIN' && currentManagersAndAdmins.managers.filter(m => m.role === 'ACCOUNTANT').map((accountant) => (
+                    {senderRole === 'ADMIN' && currentManagersAndAdmins.managers.filter(m => m.role === 'ACCOUNTANT' && m.email && m.email.trim()).map((accountant) => (
                       <option key={accountant.id} value={accountant.email}>
                         {accountant.first_name} {accountant.last_name} (Accountant) - {accountant.email}
                       </option>
                     ))}
                     {/* Administrators - only visible to accountants (not admins messaging themselves) */}
-                    {senderRole === 'ACCOUNTANT' && currentManagersAndAdmins.managers.filter(m => m.role === 'ADMIN').map((admin) => (
+                    {senderRole === 'ACCOUNTANT' && currentManagersAndAdmins.managers.filter(m => m.role === 'ADMIN' && m.email && m.email.trim()).map((admin) => (
                       <option key={admin.id} value={admin.email}>
                         {admin.first_name} {admin.last_name} (Administrator) - {admin.email}
                       </option>
                     ))}
                     {/* Additional admin emails from settings - only visible to accountants */}
-                    {senderRole === 'ACCOUNTANT' && currentManagersAndAdmins.admin_emails.map((email, index) => (
+                    {senderRole === 'ACCOUNTANT' && currentManagersAndAdmins.admin_emails.filter(email => email && email.trim()).map((email, index) => (
                       <option key={`admin-email-${index}`} value={email}>
                         Administrator - {email}
                       </option>

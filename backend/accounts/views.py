@@ -1719,14 +1719,11 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
         status_filter = self.request.query_params.get('status')
         
         if user_role == 'ACCOUNTANT':
-            if status_filter and status_filter.upper() == 'PENDING':
-                qs = qs.filter(status='PENDING')
-            elif status_filter and status_filter.upper() in ['APPROVED', 'REJECTED']:
-                qs = qs.filter(created_by=user, status=status_filter.upper())
-            else:
-                pending_entries = qs.filter(status='PENDING')
-                own_entries = qs.filter(created_by=user, status__in=['APPROVED', 'REJECTED'])
-                qs = (pending_entries | own_entries).distinct()
+            # Accountants can see all journal entries regardless of status
+            # If status filter is provided, filter by that status
+            if status_filter:
+                qs = qs.filter(status=status_filter.upper())
+            # Otherwise, show all entries (no filtering by status or creator)
         elif status_filter:
             qs = qs.filter(status=status_filter.upper())
         
@@ -2056,18 +2053,84 @@ def send_email_to_user(request):
     
     logger.info(f"Email request from {request.user.username}: recipient={recipient}, subject={subject}")
     
-    if not recipient or not subject or not message_body:
-        logger.warning(f"Missing required fields: recipient={recipient}, subject={subject}, message={bool(message_body)}")
+    if not recipient or not recipient.strip():
+        logger.warning(f"Missing recipient email: recipient={recipient}")
         log_error(
             'EMAIL_REQUIRED_FIELDS',
             level='WARNING',
             user=request.user,
             request=request,
-            additional_details=f"Attempted to send email with missing fields: recipient={bool(recipient)}, subject={bool(subject)}, message={bool(message_body)}"
+            additional_details=f"Attempted to send email with empty recipient"
+        )
+        return DatabaseErrorResponse.create_response('EMAIL_REQUIRED_FIELDS', status_code=400)
+    
+    # Validate email format
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, recipient):
+        logger.warning(f"Invalid email format: recipient={recipient}")
+        log_error(
+            'EMAIL_INVALID_FORMAT',
+            level='WARNING',
+            user=request.user,
+            request=request,
+            additional_details=f"Attempted to send email to invalid address: {recipient}"
+        )
+        return Response(
+            {"detail": f"Invalid email address: {recipient}"},
+            status=400
+        )
+    
+    if not subject or not subject.strip():
+        logger.warning(f"Missing subject: subject={subject}")
+        log_error(
+            'EMAIL_REQUIRED_FIELDS',
+            level='WARNING',
+            user=request.user,
+            request=request,
+            additional_details=f"Attempted to send email with missing subject"
+        )
+        return DatabaseErrorResponse.create_response('EMAIL_REQUIRED_FIELDS', status_code=400)
+    
+    if not message_body or not message_body.strip():
+        logger.warning(f"Missing message body")
+        log_error(
+            'EMAIL_REQUIRED_FIELDS',
+            level='WARNING',
+            user=request.user,
+            request=request,
+            additional_details=f"Attempted to send email with missing message body"
         )
         return DatabaseErrorResponse.create_response('EMAIL_REQUIRED_FIELDS', status_code=400)
     
     sender = request.user
+    
+    # Final check - ensure recipient is not empty after all validation
+    recipient = recipient.strip() if recipient else ''
+    if not recipient:
+        logger.error(f"Empty recipient after validation: original={request.data.get('recipient')}")
+        return Response(
+            {"detail": "Recipient email address cannot be empty"},
+            status=400
+        )
+    
+    # Ensure recipient list doesn't contain empty strings
+    recipient_list = [email.strip() for email in [recipient] if email and email.strip()]
+    if not recipient_list:
+        logger.error(f"No valid recipient in list: recipient={recipient}")
+        return Response(
+            {"detail": "No valid recipient email address provided"},
+            status=400
+        )
+    
+    # Check if DEFAULT_FROM_EMAIL is configured
+    from_email = settings.DEFAULT_FROM_EMAIL or settings.EMAIL_HOST_USER or ''
+    if not from_email or not from_email.strip():
+        logger.error(f"DEFAULT_FROM_EMAIL is not configured: DEFAULT_FROM_EMAIL={settings.DEFAULT_FROM_EMAIL}, EMAIL_HOST_USER={settings.EMAIL_HOST_USER}")
+        return Response(
+            {"detail": "Email service is not configured. Please contact your administrator."},
+            status=500
+        )
     
     try:
         full_subject = f"FlowCounts: {subject}"
@@ -2080,23 +2143,54 @@ def send_email_to_user(request):
             f"This email was sent through the FlowCounts application."
         )
         
-        logger.info(f"Attempting to send email from {sender.email} to {recipient}")
+        logger.info(f"Attempting to send email from {from_email} to {recipient_list}")
+        logger.info(f"Recipient list details: {recipient_list}, length: {len(recipient_list)}, first item: {recipient_list[0] if recipient_list else 'N/A'}")
         
         result = send_mail(
             full_subject,
             full_message,
-            settings.DEFAULT_FROM_EMAIL,
-            [recipient],
+            from_email,
+            recipient_list,
             fail_silently=False,
         )
         
-        logger.info(f"Email sent successfully from {sender.email} to {recipient}, result: {result}")
+        logger.info(f"Email sent successfully from {from_email} to {recipient_list}, result: {result}")
         return Response({"detail": "Email sent successfully"})
         
-    except Exception as e:
-        logger.error(f"Failed to send email from {sender.email} to {recipient}: {e}", exc_info=True)
+    except ValueError as e:
+        # Django's send_mail raises ValueError for invalid email addresses
+        error_msg = str(e)
+        logger.error(f"Invalid email address error: {error_msg}, recipient_list={recipient_list}, from_email={from_email}", exc_info=True)
+        if "Invalid address" in error_msg or "empty" in error_msg.lower():
+            # Check if it's the from email or recipient
+            if not from_email or not from_email.strip():
+                return Response(
+                    {"detail": "Email service is not configured. The 'From' email address is missing."},
+                    status=500
+                )
+            return Response(
+                {"detail": f"Invalid recipient email address: {recipient}. Please ensure the recipient has a valid email address."},
+                status=400
+            )
         return Response(
-            {"detail": f"Failed to send email: {str(e)}"},
+            {"detail": f"Email error: {error_msg}"},
+            status=400
+        )
+    except Exception as e:
+        error_msg = str(e)
+        logger.error(f"Failed to send email from {from_email} to {recipient_list}: {error_msg}", exc_info=True)
+        if "Invalid address" in error_msg or "empty" in error_msg.lower():
+            if not from_email or not from_email.strip():
+                return Response(
+                    {"detail": "Email service is not configured. The 'From' email address is missing."},
+                    status=500
+                )
+            return Response(
+                {"detail": f"Invalid email address: {recipient}. Please check that the recipient has a valid email address."},
+                status=400
+            )
+        return Response(
+            {"detail": f"Failed to send email: {error_msg}"},
             status=500
         )
 

@@ -47,10 +47,22 @@ export default function Ledger() {
 
   async function fetchUserRole() {
     try {
+      // Try to get from localStorage first (faster)
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (storedUser.role) {
+        setUserRole(storedUser.role);
+      }
+      
+      // Then fetch from API to ensure it's up to date
       const res = await api.get("/auth/me/");
       setUserRole(res.data.role);
     } catch (err) {
       console.error("Failed to fetch user role:", err);
+      // Fallback to localStorage if API fails
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (storedUser.role) {
+        setUserRole(storedUser.role);
+      }
     }
   }
 
@@ -601,14 +613,25 @@ export default function Ledger() {
                     }}>
                       {tx.journal_entry_id ? (
                         <button
-                          onClick={() => navigate(`/${userRole.toLowerCase()}/journal/view/${tx.journal_entry_id}`)}
+                          onClick={() => {
+                            // Get role from state, localStorage, or default to manager
+                            let role = userRole?.toLowerCase();
+                            if (!role) {
+                              const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+                              role = storedUser.role?.toLowerCase() || 'manager';
+                            }
+                            navigate(`/${role}/journal/view/${tx.journal_entry_id}`);
+                          }}
                           className="clickable-link"
                           style={{
                             background: "none",
                             border: "none",
                             padding: 0,
                             fontSize: "inherit",
-                            fontFamily: "inherit"
+                            fontFamily: "inherit",
+                            color: "#1C5C59",
+                            cursor: "pointer",
+                            textDecoration: "underline"
                           }}
                           title="Click to view journal entry details"
                         >
